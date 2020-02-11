@@ -4,6 +4,38 @@ export function MyStylesheet() {
             display: 'flex',
             flexDirection: 'row',
         },
+        dateButton: {
+            width: '54px'
+        },
+        generalButton: {
+            border: '0px',
+            backgroundColor: '#FFFFFF'
+        },
+        addMargin: {
+            margin: '3px'
+        },
+        activefieldreport: {
+            backgroundColor: '#ED9FB9'
+        },
+        bottomMargin15: {
+            marginBottom: '15px'
+        },
+        minHeight: {
+            minHeight: '40px'
+        },
+        generalField: {
+            width: '95%',
+            padding: '3px'
+        },
+        showBorder: {
+            border: '1px solid'
+        },
+        marginAuto: {
+            margin: 'auto'
+        },
+        calendarContainer: {
+            maxWidth: '540px'
+        },
         flex1: {
             flex: 1
         },
@@ -30,6 +62,9 @@ export function MyStylesheet() {
         },
         generalContainer: {
             display: 'block'
+        },
+        alignCenter: {
+            textAlign: 'center'
         }
 
     })
