@@ -6,6 +6,8 @@
 .datemonthdown-2 {  fill: #666;}
 .datemonthup-1 {  fill: #e6e6e6;  stroke: #000;  stroke-miterlimit: 10;  stroke-width: 2px;}.datemonthup-2 {  fill: #666;}
 .removeicon-1{fill:#f41948;stroke:#000;stroke-miterlimit:10;stroke-width:0.5px;}
+.savereport-1{fill:#379937;stroke:#1c491c;stroke-miterlimit:10;}.savereport-2{font-size:48px;font-family:Roboto-Bold, Roboto;font-weight:700;letter-spacing:0.05em;}.savereport-3{letter-spacing:0.04em;}.savereport-4{letter-spacing:0.04em;}.savereport-5{letter-spacing:0.05em;}.savereport-6{letter-spacing:0.07em;}
+.addfieldimage-1{fill:#fbb03b;stroke:#000;stroke-miterlimit:10;}.addfieldimage-2{font-size:40px;font-family:Roboto-Regular, Roboto;}
 .App {
   text-align: center;
 }

@@ -91,6 +91,104 @@ class GFK {
         return key;
 
     }
+    getreporticon() {
+        if (this.state.width > 1200) {
+            return ({ width: '364px', height: '87px' })
+        } else if (this.state.width > 800) {
+            return ({ width: '300px', height: '75px' })
+        } else {
+            return ({ width: '229px', height: '64px' })
+        }
+    }
+    getfieldreportbyprojectid(projectid) {
+        const gfk = new GFK();
+        const reports = gfk.getfieldreports.call(this);
+        let myreports = [];
+        if (reports.length > 0) {
+            // eslint-disable-next-line
+            reports.map(report => {
+                if (report.projectid === projectid) {
+                    myreports.push(report)
+                }
+            })
+        }
+        return myreports;
+    }
+    getfieldimagesbyid(fieldid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let images = [];
+        if (myuser.hasOwnProperty("images")) {
+            // eslint-disable-next-line
+            myuser.images.image.map(image => {
+                if (image.fieldid === fieldid) {
+                    images.push(image)
+                }
+            })
+        }
+        return images;
+    }
+    getuploadbutton() {
+        if (this.state.width > 1200) {
+            return ({ width: '364px', height: '77px' })
+        } else if (this.state.width > 800) {
+            return ({ width: '241px', height: '53px' })
+        } else {
+            return ({ width: '155px', height: '44px' })
+        }
+    }
+    getthumbimage() {
+        if (this.state.width > 1200) {
+            return ({ width: '468px', height: '253px' })
+        } else if (this.state.width > 800) {
+            return ({ width: '310px', height: '175px' })
+        } else {
+            return ({ width: '155px', height: '134px' })
+        }
+    }
+    getimages() {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let images = false;
+        if (myuser) {
+            if (myuser.hasOwnProperty("images")) {
+                images = myuser.images.image;
+            }
+        }
+        return images;
+    }
+    getimagekeybyid(imageid) {
+        const gfk = new GFK();
+        const images = gfk.getimages.call(this)
+        let key = false;
+        if (images) {
+            // eslint-disable-next-line
+            images.map((image, i) => {
+                if (image.imageid === imageid) {
+                    key = i;
+
+                }
+            })
+        }
+        return key;
+
+    }
+    getimagebyid(imageid) {
+        const gfk = new GFK();
+        const images = gfk.getimages.call(this)
+        let myimage = false;
+        if (images) {
+            // eslint-disable-next-line
+            images.map((image) => {
+                if (image.imageid === imageid) {
+                    myimage = image;
+
+                }
+            })
+        }
+        return myimage;
+
+    }
     getcompactiontestsbyfieldid(fieldid) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
@@ -106,6 +204,7 @@ class GFK {
                         const location = test.location;
                         const wetpcf = test.wetpcf;
                         const moistpcf = test.moistpcf;
+                        const timetest = test.timetest;
 
 
                         const curve = gfk.getcurvebyid.call(this, test.curveid);
@@ -152,8 +251,8 @@ class GFK {
                         const calcdryden = dryden();
                         const calcmoist = moist()
                         const calcmaxden = maxden();
-                        const curvenumber = curve.curvenumber;
-                        compactiontests.push({ testid, testnum, elevation, location, wetpcf, moistpcf, dryden: calcdryden, moist: calcmoist, maxden: calcmaxden, relative: calcrelative, curvenumber })
+                        const curveid = curve.curveid;
+                        compactiontests.push({ testid, testnum, timetest, elevation, location, wetpcf, moistpcf, dryden: calcdryden, moist: calcmoist, maxden: calcmaxden, relative: calcrelative, curveid })
 
                     }
                 })

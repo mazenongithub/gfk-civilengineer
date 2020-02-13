@@ -593,7 +593,7 @@ class DateReport {
             let timein = fieldreport.datereport;
 
             let datereport = new Date(`${timein.replace(/-/g, '/')} UTC`);
-            console.log(datereport)
+
             showgrid.push(Datein.showgridcalender.call(this, datereport))
 
         }
