@@ -970,31 +970,35 @@ class FieldReports extends Component {
             }
             return myimages;
         }
-        return (
-            <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
-                <div style={{ ...styles.flex1 }}>
+        if (this.state.activefieldid) {
+            return (
+                <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
+                    <div style={{ ...styles.flex1 }}>
 
-                    <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont, ...styles.bottomMargin15 }}>
-                        <div style={{ ...styles.flex1 }}>
-                            {imagecontainer()}
+                        <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont, ...styles.bottomMargin15 }}>
+                            <div style={{ ...styles.flex1 }}>
+                                {imagecontainer()}
+                            </div>
                         </div>
-                    </div>
 
-                    <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
-                        <div style={{ ...styles.flex1 }}>
-                            Caption <br />
-                            <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
-                                value={this.getcaption()}
-                                onChange={event => { this.handlecaption(event.target.value) }}></textarea>
+                        <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
+                            <div style={{ ...styles.flex1 }}>
+                                Caption <br />
+                                <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
+                                    value={this.getcaption()}
+                                    onChange={event => { this.handlecaption(event.target.value) }}></textarea>
 
+                            </div>
                         </div>
+
+                        {imageids()}
+
                     </div>
-
-                    {imageids()}
-
                 </div>
-            </div>
-        )
+            )
+        } else {
+            return;
+        }
     }
     render() {
         const styles = MyStylesheet();
@@ -1044,7 +1048,7 @@ class FieldReports extends Component {
                         </div>
                     </div>
                     {this.showimageuploader()}
-                    {this.showotherreports()}
+
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                         <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont }}>
                             {this.state.message}
@@ -1055,6 +1059,7 @@ class FieldReports extends Component {
                             <button style={{ ...styles.generalButton, ...saveReportIcon }} onClick={() => { this.savereport() }}>{saveReport()}</button>
                         </div>
                     </div>
+                    {this.showotherreports()}
                 </div>
             </div>
         )

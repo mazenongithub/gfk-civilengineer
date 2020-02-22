@@ -1,5 +1,10 @@
-
+import React from 'react';
+import { saveBoringIcon } from './svg'
+import { MyStylesheet } from './styles';
+import { SaveBorings } from './actions/api'
+import { inputUTCStringForLaborID, Boring, Sample, CreateSieve } from './functions'
 class GFK {
+
     getuser() {
         let myuser = false;
         if (this.props.myuser) {
@@ -374,6 +379,310 @@ class GFK {
         }
 
     }
+    getsamplebyid(sampleid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let samples = false;
+        if (myuser.hasOwnProperty("samples")) {
+            // eslint-disable-next-line
+            myuser.samples.sample.map(sample => {
+                if (sample.sampleid === sampleid) {
+                    samples = sample;
+
+                }
+            })
+        }
+
+        return samples;
+    }
+    getsamplekeybyid(sampleid) {
+
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let key = false;
+        if (myuser.hasOwnProperty("samples")) {
+            // eslint-disable-next-line
+            myuser.samples.sample.map((sample, i) => {
+                if (sample.sampleid === sampleid) {
+                    key = i;
+
+                }
+            })
+        }
+
+        return key;
+    }
+    getsieveanalysisbysampleid(sampleid) {
+        return false;
+    }
+    getunconfinedbysampleid(sampleid) {
+        return false;
+    }
+    getsieves() {
+        const gfk = new GFK();
+        let sieves = false;
+        const myuser = gfk.getuser.call(this)
+
+        if (myuser.hasOwnProperty("sieves")) {
+            sieves = myuser.sieves.sieve;
+        }
+        return sieves;
+    }
+    getsievebysampleid(sampleid) {
+        const gfk = new GFK();
+        const sieves = gfk.getsieves.call(this);
+
+        let sieve = false;
+        if (sieves.length > 0) {
+            // eslint-disable-next-line
+            sieves.map(samplesieve => {
+                if (samplesieve.sampleid === sampleid) {
+                    sieve = samplesieve;
+                }
+            })
+        }
+        return sieve;
+
+    }
+    getsievekeybysampleid(sampleid) {
+        const gfk = new GFK();
+        const sieves = gfk.getsieves.call(this);
+        let key = false;
+        if (sieves.length) {
+            // eslint-disable-next-line
+            sieves.map((samplesieve, i) => {
+                if (samplesieve.sampleid === sampleid) {
+                    key = i;
+                }
+            })
+        }
+        return key;
+
+    }
+    getsamplesbyboringid(boringid) {
+        const gfk = new GFK();
+        const samples = gfk.getsamples.call(this);
+        let boringsamples = [];
+        if (samples.length > 0) {
+            // eslint-disable-next-line
+            samples.map(sample => {
+                if (sample.boringid === boringid) {
+                    boringsamples.push(sample);
+                }
+            })
+        }
+        boringsamples.sort((a, b) => {
+            if (Number(a.depth) >= Number(b.depth)) {
+                return 1;
+            } else {
+                return -1
+            }
+        })
+        return boringsamples;
+    }
+    getborings() {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let borings = false;
+        if (myuser.hasOwnProperty("borings")) {
+            borings = myuser.borings.boring;
+        }
+        return borings;
+    }
+    getsamples() {
+        const gfk = new GFK();
+        let samples = false;
+        const myuser = gfk.getuser.call(this);
+        if (myuser.hasOwnProperty("samples")) {
+            samples = myuser.samples.sample;
+        }
+
+        return samples;
+    }
+    getboringbyid(boringid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let borings = false;
+        if (myuser) {
+            if (myuser.hasOwnProperty("borings")) {
+                // eslint-disable-next-line
+                myuser.borings.boring.map(boring => {
+                    if (boring.boringid === boringid) {
+                        borings = boring;
+                    }
+                })
+            }
+        }
+        return borings;
+
+    }
+    getboringkeybyid(boringid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let key = false;
+        if (myuser) {
+            if (myuser.hasOwnProperty("borings")) {
+                // eslint-disable-next-line
+                myuser.borings.boring.map((boring, i) => {
+                    if (boring.boringid === boringid) {
+                        key = i;
+                    }
+                })
+            }
+        }
+        return key;
+
+    }
+    getboringsbyprojectid(projectid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let borings = [];
+        if (myuser.hasOwnProperty("borings")) {
+            // eslint-disable-next-line
+            myuser.borings.boring.map(boring => {
+                if (boring.projectid === projectid) {
+                    borings.push(boring)
+
+                }
+            })
+        }
+        borings.sort((a, b) => {
+            if (a.boringnumber > b.boringnumber) {
+                return 1
+            } else {
+                return -1
+            }
+
+        })
+        return borings;
+
+    }
+    getboringparams() {
+        const projectid = this.props.match.params.projectid;
+        const gfk = new GFK();
+        const borings = gfk.getboringsbyprojectid.call(this, projectid)
+        if (borings.length > 0) {
+            let myborings = borings;
+            // eslint-disable-next-line
+            borings.map((boring, i) => {
+
+                const samples = gfk.getsamplesbyboringid.call(this, boring.boringid);
+                if (samples.length > 0) {
+                    myborings[i].samples = { sample: samples }
+                    // eslint-disable-next-line
+                    samples.map((sample, j) => {
+
+                        let sieve = gfk.getsievebysampleid.call(this, sample.sampleid);
+                        if (sieve) {
+                            myborings[i].samples.sample[j].sieve = sieve
+                        }
+
+                    })
+                }
+
+
+
+            })
+
+            return (myborings)
+        }
+
+    }
+    async saveallborings() {
+        const gfk = new GFK();
+        let myuser = gfk.getuser.call(this)
+        if (myuser) {
+            try {
+                let engineerid = this.props.match.params.engineerid;
+                let projectid = this.props.match.params.projectid;
+                let borings = gfk.getboringparams.call(this)
+                console.log(borings)
+                let response = await SaveBorings(engineerid, projectid, borings)
+                console.log(response)
+                if (response.hasOwnProperty("message")) {
+                    let message = `${response.message} last updated ${inputUTCStringForLaborID(response.lastsaved)}`
+                    this.setState({ message })
+                }
+                if (response.hasOwnProperty("boringids")) {
+                    // eslint-disable-next-line
+                    response.boringids.boring.map(boring => {
+                        let i = gfk.getboringkeybyid.call(this, boring.oldboringid)
+                        myuser.borings.boring[i].boringid = boring.boringid;
+
+                        if (boring.oldboringid === this.state.activeboringid && this.state.activeboringid) {
+                            this.setState({ activeboringid: boring.boringid })
+                        }
+
+                    })
+                }
+
+                if (response.hasOwnProperty("sampleids")) {
+                    // eslint-disable-next-line
+                    response.sampleids.sample.map(sample => {
+                        let j = gfk.getsamplekeybyid.call(this, sample.oldsampleid)
+                        myuser.samples.sample[j].sampleid = sample.sampleid;
+
+                        if (sample.oldsampleid === this.state.activesampleid && this.state.activesampleid) {
+                            this.setState({ activesampleid: sample.sampleid })
+                        }
+                    })
+                }
+                this.props.reduxUser(myuser)
+
+                if (response.hasOwnProperty("borings")) {
+                    // eslint-disable-next-line
+                    response.borings.boring.map(boring => {
+                        let myboring = Boring(boring.boringid, projectid, boring.boringnumber, boring.datedrilled, boring.gwdepth, boring.elevation, boring.drillrig, boring.loggedby, boring.latitude, boring.longitude, boring.diameter)
+                        let k = gfk.getboringkeybyid.call(this, boring.boringid);
+                        myuser.borings.boring[k] = myboring;
+                        if (boring.hasOwnProperty("samples")) {
+                            // eslint-disable-next-line
+                            boring.samples.sample.map(sample => {
+                                let mysample = Sample(sample.sampleid, boring.boringid, sample.sampledepth, sample.depth, sample.samplenumber, sample.sampleset, sample.diameter, sample.samplelength, sample.description, sample.uscs, sample.spt, sample.wetwgt, sample.wetwgt_2, sample.drywgt, sample.tarewgt, sample.tareno, sample.graphiclog, sample.ll, sample.pi)
+                                let l = gfk.getsamplekeybyid.call(this, sample.sampleid)
+
+                                myuser.samples.sample[l] = mysample;
+
+                                if (sample.hasOwnProperty("sieve")) {
+                                    let m = gfk.getsievekeybysampleid.call(this, sample.sampleid);
+                                    let mysieve = CreateSieve(sample.sampleid, sample.sieve.wgt34, sample.sieve.wgt38, sample.sieve.wgt4, sample.sieve.wgt10, sample.sieve.wgt30, sample.sieve.wgt40, sample.sieve.wgt100, sample.sieve.wgt200)
+                                    myuser.sieves.sieve[m] = mysieve
+                                }
+                            })
+                        }
+                    })
+                }
+                this.props.reduxUser(myuser)
+
+
+            } catch (err) {
+                alert(err)
+            }
+
+        }
+
+    }
+    showsaveboring() {
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const saveIcon = () => {
+            if (this.state.width > 1200) {
+                return ({ width: '377px', height: '88px' })
+            } else if (this.state.width > 800) {
+                return ({ width: '311px', height: '72px' })
+            } else {
+                return ({ width: '241px', height: '55px' })
+            }
+        }
+        return (
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <button style={{ ...styles.generalButton, ...saveIcon() }} onClick={() => { gfk.saveallborings.call(this) }}>{saveBoringIcon()}</button>
+                </div>
+            </div>
+        )
+    }
+
 
 }
 

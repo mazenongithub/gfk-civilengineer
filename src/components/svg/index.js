@@ -5,6 +5,9 @@ export function openDateMenu() {
 export function removeIconSmall() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26.09 25.74"><defs><style></style></defs><title>removeIcon</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><path className="removeicon-1" d="M23.87,17.89a4.52,4.52,0,0,1,0,6.29,4.33,4.33,0,0,1-6.21,0L13.05,19.5,8.43,24.18a4.33,4.33,0,0,1-6.2,0,4.53,4.53,0,0,1,0-6.29l4.61-4.67L1.53,7.83a4.49,4.49,0,0,1,0-6.28A4.27,4.27,0,0,1,4.64.25a4.28,4.28,0,0,1,3.09,1.3l5.32,5.38,5.31-5.38a4.36,4.36,0,0,1,6.21,0,4.52,4.52,0,0,1,0,6.28l-5.32,5.39Z" /></g></g></svg>)
 }
+export function saveBoringIcon() {
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 378.54 89.85"><defs><style></style></defs><title>saveborings</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect className="saveborings-1" x="0.5" y="0.5" width="377.54" height="88.85" rx="10.69" /><text className="saveborings-2" transform="translate(30.5 58.19)">S<tspan className="saveborings-3" x="32.74" y="0">a</tspan><tspan className="saveborings-4" x="61.18" y="0">v</tspan><tspan x="88.13" y="0">e Borings</tspan></text></g></g></svg>)
+}
 export function uploadImage() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 365 78"><defs><style></style></defs><title>addfieldimage</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect className="addfieldimage-1" x="0.5" y="0.5" width="364" height="77" rx="9.01" /><text className="addfieldimage-2" transform="translate(38.69 50.5)">Add Field Image</text></g></g></svg>)
 }

@@ -11,8 +11,15 @@ export function MyStylesheet() {
             border: '0px',
             backgroundColor: '#FFFFFF'
         },
+        addLeftMargin: {
+            marginLeft: '3px'
+        },
         addMargin: {
             margin: '3px'
+        },
+        generalLink: {
+            textDecoration: 'none',
+            color: '#050505'
         },
         activefieldreport: {
             backgroundColor: '#ED9FB9'

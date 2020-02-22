@@ -76,9 +76,18 @@ export function check_29_feb_leapyear(dateobj) {
     }
 
 }
+export function CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200) {
+    return ({ sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200 })
+}
+export function Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi) {
+    return ({ sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi })
+}
 export function CreateImage(imageid, image, caption, fieldid) {
     return ({ imageid, image, caption, fieldid })
 
+}
+export function Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter) {
+    return { boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter }
 }
 export function check_31(dateobj) {
     let month = dateobj.getMonth();
