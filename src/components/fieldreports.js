@@ -494,6 +494,26 @@ class FieldReports extends Component {
             this.setState({ activefieldid: fieldid })
         }
     }
+    removefieldreport(fieldid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        if (myuser) {
+            const report = gfk.getfieldreportbyid.call(this, fieldid);
+            if (window.confirm(`Are you sure you want to delete report ${milestoneformatdatestring(report.datereport)}`)) {
+                const i = gfk.getfieldkeybyid.call(this, fieldid);
+                myuser.fieldreports.fieldreport.splice(i, 1);
+                if (myuser.fieldreports.fieldreport.length === 0) {
+                    delete myuser.fieldreports.fieldreport;
+                    delete myuser.fieldreports;
+                }
+                this.props.reduxUser(myuser);
+                this.setState({ activefieldid: false })
+            }
+
+        }
+
+
+    }
     showreportid(report) {
         const styles = MyStylesheet();
         const gfk = new GFK();
@@ -511,7 +531,7 @@ class FieldReports extends Component {
                 {milestoneformatdatestring(report.datereport)}
             </div>
             <div style={{ ...styles.flex1 }}>
-                <button style={{ ...styles.generalButton, ...removeIcon }}>
+                <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removefieldreport(report.fieldid) }}>
                     {removeIconSmall()}
                 </button>
             </div>
