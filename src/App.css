@@ -10,6 +10,14 @@
 .addfieldimage-1{fill:#fbb03b;stroke:#000;stroke-miterlimit:10;}.addfieldimage-2{font-size:40px;font-family:Roboto-Regular, Roboto;}
 .saveborings-1{fill:#591d19;}.saveborings-1,.saveborings-2{stroke:#231f20;stroke-miterlimit:10;}.saveborings-2{font-size:50px;fill:#d6b729;font-family:Roboto-Bold, Roboto;font-weight:700;letter-spacing:0.04em;}.saveborings-3{letter-spacing:0.03em;}.saveborings-4{letter-spacing:0.03em;}
 .plus20-1{fill:#2f170e;stroke:#231f20;stroke-width:2px;}.plus20-1,.plus20-2{stroke-miterlimit:10;}.plus20-2{font-size:40px;fill:#fbba30;stroke:#511110;font-family:Roboto-Bold, Roboto;font-weight:700;}
+.addnewimage-1{fill:#591d19;stroke-width:2px;}.addnewimage-1,.addnewimage-2{stroke:#231f20;stroke-miterlimit:10;}.addnewimage-2{font-size:28.25px;fill:#f3e93d;font-family:Roboto-Bold, Roboto;font-weight:700;}
+.hidescroll {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.hidescroll::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
+}
 .App {
   text-align: center;
 }

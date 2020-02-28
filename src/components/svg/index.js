@@ -2,6 +2,9 @@ import React from 'react';
 export function openDateMenu() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 54"><defs><style></style></defs><title>Asset 2</title><g id="Layer_2" data-name="Layer 2"><g id="guides"><rect className="opendatemenu-1" x="4" y="-2" width="52" height="58" transform="translate(57 -3) rotate(90)" /><polygon className="opendatemenu-2" points="31.58 40.18 14.71 13.82 48.45 13.82 31.58 40.18" /></g></g></svg>)
 }
+export function addNewImage() {
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222.07 47.64"><defs><style></style></defs><title>addnewimage</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="addnewimage-1" x="1" y="1" width="218.79" height="45.64" rx="5.08" /><text className="addnewimage-2" transform="translate(13.64 30.5) scale(0.98 1)">Add New Image</text></g></g></g></svg>)
+}
 export function minus20() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102.54 67.89"><defs><style></style></defs><title>plus20</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="plus20-1" x="1" y="1" width="100.54" height="65.89" rx="5.4" /><text className="plus20-2" transform="translate(20.57 46.08)">-20</text></g></g></g></svg>)
 }

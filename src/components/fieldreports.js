@@ -756,7 +756,7 @@ class FieldReports extends Component {
         }
 
         let values = { engineerid: myuser.engineerid, projectid, fieldreports: params.fieldreports }
-        console.log(values)
+
         // console.log(values)
         let response = await SaveFieldReport(values);
         console.log(response)
