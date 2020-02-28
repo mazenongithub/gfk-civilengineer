@@ -574,7 +574,7 @@ class Borings extends Component {
                         Drill Rig
     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getdrillrig()}
-                            onChange={event => { this.getdrillrig(event.target.value) }}
+                            onChange={event => { this.handledrillrig(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
@@ -595,7 +595,7 @@ class Borings extends Component {
                                 Drill Rig
                                 <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                                     value={this.getdrillrig()}
-                                    onChange={event => { this.getdrillrig(event.target.value) }} />
+                                    onChange={event => { this.handledrillrig(event.target.value) }} />
                             </div>
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                 Logged By

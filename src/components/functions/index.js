@@ -554,6 +554,20 @@ export function inputUTCStringForLaborID(timein) {
     return (`${month}/${date}/${year} ${hours}:${minutes} ${ampm}`)
 
 }
+export function sortdisplacement(testb, testa) {
+
+    if (Number(testa.displacement) < Number(testb.displacement)) {
+
+        return 1;
+    }
+    else if (Number(testb.displacement) < Number(testa.displacement)) {
+
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
 export function sorttimesdesc(timeina, timeinb) {
 
     timeina = new Date(timeina.replace(/-/g, '/'))
@@ -587,6 +601,26 @@ export function makeDatefromObj(datein) {
 }
 export function fieldReport(fieldid, projectid, datereport, content) {
     return ({ fieldid, projectid, datereport, content })
+}
+export function UnconfinedTestData(unid, loadreading, displacement) {
+    return ({
+        unid,
+        loadreading,
+        displacement
+    }
+    )
+}
+export function UnconfinedTest(unid, sampleid, loadreading, displacement) {
+    return ({
+        sampleid,
+        testdata: {
+            data: [{
+                unid,
+                loadreading,
+                displacement
+            }]
+        }
+    })
 }
 export function inputDateStringOutputSeconds(timein) {
     let offset = getOffset()

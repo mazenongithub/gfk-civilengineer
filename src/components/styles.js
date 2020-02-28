@@ -72,6 +72,15 @@ export function MyStylesheet() {
         },
         alignCenter: {
             textAlign: 'center'
+        },
+        alignRight: {
+            textAlign: 'right'
+        },
+        floatLeft: {
+            float: 'left'
+        },
+        rightMargin10: {
+            marginRight: '10px'
         }
 
     })

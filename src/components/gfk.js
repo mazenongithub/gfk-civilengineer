@@ -2,7 +2,7 @@ import React from 'react';
 import { saveBoringIcon } from './svg'
 import { MyStylesheet } from './styles';
 import { SaveBorings } from './actions/api'
-import { inputUTCStringForLaborID, Boring, Sample, CreateSieve } from './functions'
+import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestData } from './functions'
 class GFK {
 
     getuser() {
@@ -412,12 +412,7 @@ class GFK {
 
         return key;
     }
-    getsieveanalysisbysampleid(sampleid) {
-        return false;
-    }
-    getunconfinedbysampleid(sampleid) {
-        return false;
-    }
+
     getsieves() {
         const gfk = new GFK();
         let sieves = false;
@@ -573,8 +568,13 @@ class GFK {
                     samples.map((sample, j) => {
 
                         let sieve = gfk.getsievebysampleid.call(this, sample.sampleid);
+                        let unconfined = gfk.getunconfinedtestbyid.call(this, sample.sampleid)
                         if (sieve) {
                             myborings[i].samples.sample[j].sieve = sieve
+                        }
+                        if (unconfined) {
+
+                            myborings[i].samples.sample[j].unconfined = unconfined;
                         }
 
                     })
@@ -586,6 +586,77 @@ class GFK {
 
             return (myborings)
         }
+
+    }
+    getunconfinedtests() {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        let tests = false;
+        if (myuser.hasOwnProperty("unconfinedtests")) {
+            tests = myuser.unconfinedtests.unconfined;
+        }
+        return tests;
+    }
+    unconfinedtestdatabyid(sampleid, unid) {
+        const gfk = new GFK();
+        const test = gfk.getunconfinedtestbyid.call(this, sampleid)
+        let mydata = false;
+        if (test) {
+            if (test.hasOwnProperty("testdata")) {
+                // eslint-disable-next-line
+                test.testdata.data.map(data => {
+                    if (data.unid === unid) {
+                        mydata = data;
+                    }
+                })
+            }
+        }
+        return mydata;
+    }
+    unconfinedtestdatakeybyid(sampleid, unid) {
+        const gfk = new GFK();
+        const test = gfk.getunconfinedtestbyid.call(this, sampleid)
+        let key = false;
+        if (test) {
+            if (test.hasOwnProperty("testdata")) {
+                // eslint-disable-next-line
+                test.testdata.data.map((data, i) => {
+                    if (data.unid === unid) {
+                        key = i;
+                    }
+                })
+            }
+        }
+        return key;
+    }
+    getunconfinedtestbyid(sampleid) {
+        const gfk = new GFK();
+        const tests = gfk.getunconfinedtests.call(this);
+        let mytest = false;
+        if (tests) {
+            // eslint-disable-next-line
+            tests.map(test => {
+                if (test.sampleid === sampleid) {
+                    mytest = test;
+                }
+            })
+        }
+        return mytest;
+
+    }
+    getunconfinedtestkeybyid(sampleid) {
+        const gfk = new GFK();
+        const tests = gfk.getunconfinedtests.call(this);
+        let key = false;
+        if (tests) {
+            // eslint-disable-next-line
+            tests.map((test, i) => {
+                if (test.sampleid === sampleid) {
+                    key = i;
+                }
+            })
+        }
+        return key;
 
     }
     async saveallborings() {
@@ -627,6 +698,20 @@ class GFK {
                         }
                     })
                 }
+
+                if (response.hasOwnProperty("unconfined")) {
+                    // eslint-disable-next-line
+                    response.unconfined.test.map(test => {
+                        // let l = gfk.getunconfinedtestkeybyid.call(this, test.sampleid)
+                        // let k = gfk.unconfinedtestdatabyid.call(this, test.sampleid, test.oldtestid)
+                        //myuser.unconfinedtests.unconfined[l].testdata.data[k].unid = test.unid;
+                        if (test.oldunid === this.state.activeunid && this.state.activeunid) {
+                            this.setState({ activeunid: test.unid })
+                        }
+
+                    })
+                }
+                console.log(myuser)
                 this.props.reduxUser(myuser)
 
                 if (response.hasOwnProperty("borings")) {
@@ -647,6 +732,15 @@ class GFK {
                                     let m = gfk.getsievekeybysampleid.call(this, sample.sampleid);
                                     let mysieve = CreateSieve(sample.sampleid, sample.sieve.wgt34, sample.sieve.wgt38, sample.sieve.wgt4, sample.sieve.wgt10, sample.sieve.wgt30, sample.sieve.wgt40, sample.sieve.wgt100, sample.sieve.wgt200)
                                     myuser.sieves.sieve[m] = mysieve
+                                }
+                                if (sample.hasOwnProperty("unconfined")) {
+                                    // eslint-disable-next-line
+                                    sample.unconfined.testdata.data.map(data => {
+                                        let o = gfk.getunconfinedtestkeybyid.call(this, sample.sampleid)
+                                        let n = gfk.unconfinedtestdatakeybyid.call(this, sample.sampleid, data.unid)
+                                        let mydata = UnconfinedTestData(data.unid, data.loadreading, data.displacement)
+                                        myuser.unconfinedtests.unconfined[o].testdata.data[n] = mydata;
+                                    })
                                 }
                             })
                         }

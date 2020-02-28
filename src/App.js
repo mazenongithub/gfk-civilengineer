@@ -57,7 +57,7 @@ class App extends Component {
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings" component={Borings} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples" component={Samples} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Unconfined} />
+          <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples/:sampleid/unconfined" component={Unconfined} />
         </Switch>
       </div>
     </BrowserRouter>);

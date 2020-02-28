@@ -2,6 +2,12 @@ import React from 'react';
 export function openDateMenu() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 54"><defs><style></style></defs><title>Asset 2</title><g id="Layer_2" data-name="Layer 2"><g id="guides"><rect className="opendatemenu-1" x="4" y="-2" width="52" height="58" transform="translate(57 -3) rotate(90)" /><polygon className="opendatemenu-2" points="31.58 40.18 14.71 13.82 48.45 13.82 31.58 40.18" /></g></g></svg>)
 }
+export function minus20() {
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102.54 67.89"><defs><style></style></defs><title>plus20</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="plus20-1" x="1" y="1" width="100.54" height="65.89" rx="5.4" /><text className="plus20-2" transform="translate(20.57 46.08)">-20</text></g></g></g></svg>)
+}
+export function plus20() {
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102.54 67.89"><defs><style></style></defs><title>plus20</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="plus20-1" x="1" y="1" width="100.54" height="65.89" rx="5.4" /><text className="plus20-2" transform="translate(17.4 46.08)">+20</text></g></g></g></svg>)
+}
 export function removeIconSmall() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26.09 25.74"><defs><style></style></defs><title>removeIcon</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><path className="removeicon-1" d="M23.87,17.89a4.52,4.52,0,0,1,0,6.29,4.33,4.33,0,0,1-6.21,0L13.05,19.5,8.43,24.18a4.33,4.33,0,0,1-6.2,0,4.53,4.53,0,0,1,0-6.29l4.61-4.67L1.53,7.83a4.49,4.49,0,0,1,0-6.28A4.27,4.27,0,0,1,4.64.25a4.28,4.28,0,0,1,3.09,1.3l5.32,5.38,5.31-5.38a4.36,4.36,0,0,1,6.21,0,4.52,4.52,0,0,1,0,6.28l-5.32,5.39Z" /></g></g></svg>)
 }

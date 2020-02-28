@@ -128,7 +128,7 @@ class FieldReports extends Component {
                     let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
                     const compactiontests = gfk.getcompactiontests.call(this)
                     if (compactiontests) {
-                        myuser.compactiontests.compactiontests.push(newTest);
+                        myuser.compactiontests.compactiontest.push(newTest);
 
                     } else {
                         let compactiontests = { compactiontest: [newTest] }
@@ -177,10 +177,11 @@ class FieldReports extends Component {
                     let moistpcf = this.state.moistpcf;
                     let curveid = this.state.curveid;
                     let letterid = "";
-                    let newTest = compactionTest({ testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid })
+                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+                    console.log(newTest)
                     const compactiontests = gfk.getcompactiontests.call(this)
                     if (compactiontests) {
-                        myuser.compactiontests.compactiontests.push(newTest);
+                        myuser.compactiontests.compactiontest.push(newTest);
 
                     } else {
                         let compactiontests = { compactiontest: [newTest] }
@@ -229,10 +230,10 @@ class FieldReports extends Component {
                     let moistpcf = this.state.moistpcf;
                     let curveid = this.state.curveid;
                     let letterid = "";
-                    let newTest = compactionTest({ testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid })
+                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
                     const compactiontests = gfk.getcompactiontests.call(this)
                     if (compactiontests) {
-                        myuser.compactiontests.compactiontests.push(newTest);
+                        myuser.compactiontests.compactiontest.push(newTest);
 
                     } else {
                         let compactiontests = { compactiontest: [newTest] }
@@ -282,10 +283,10 @@ class FieldReports extends Component {
                     let curveid = this.state.curveid;
                     let wetpcf = this.state.wetpcf;
                     let letterid = "";
-                    let newTest = compactionTest({ testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid })
+                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
                     const compactiontests = gfk.getcompactiontests.call(this)
                     if (compactiontests) {
-                        myuser.compactiontests.compactiontests.push(newTest);
+                        myuser.compactiontests.compactiontest.push(newTest);
 
                     } else {
                         let compactiontests = { compactiontest: [newTest] }
@@ -335,10 +336,10 @@ class FieldReports extends Component {
                     let moistpcf = this.state.moistpcf;
                     let wetpcf = this.state.wetpcf;
                     let letterid = "";
-                    let newTest = compactionTest({ testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid })
+                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
                     const compactiontests = gfk.getcompactiontests.call(this)
                     if (compactiontests) {
-                        myuser.compactiontests.compactiontests.push(newTest);
+                        myuser.compactiontests.compactiontest.push(newTest);
 
                     } else {
                         let compactiontests = { compactiontest: [newTest] }
@@ -505,7 +506,7 @@ class FieldReports extends Component {
                 return;
             }
         }
-        return (<div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont, ...styles.bottomMargin15, ...activebackground() }}>
+        return (<div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont, ...styles.bottomMargin15, ...activebackground() }} key={report.fieldid}>
             <div style={{ ...styles.flex5 }} onClick={() => { this.makereportactive(report.fieldid) }}>
                 {milestoneformatdatestring(report.datereport)}
             </div>
@@ -581,6 +582,26 @@ class FieldReports extends Component {
             this.setState({ activetestid: testid })
         }
     }
+    removetest(testid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        if (myuser) {
+            const test = gfk.getcompactiontestbyid.call(this, testid)
+            if (window.confirm(`Are you sure you want to delete test number ${test.testnum}?`)) {
+                const i = gfk.getcompactiontestkeybyid.call(this, testid)
+                myuser.compactiontests.compactiontest.splice(i, 1);
+                if (myuser.compactiontests.compactiontest.length === 0) {
+                    delete myuser.compactiontests.compactiontest;
+                    delete myuser.compactiontests;
+                }
+                this.props.reduxUser(myuser);
+                this.setState({ activetestid: false })
+
+            }
+
+
+        }
+    }
     showtest(test) {
 
         const gfk = new GFK();
@@ -596,12 +617,12 @@ class FieldReports extends Component {
             }
         }
         return (
-            <div style={{ ...regularFont, ...styles.generalFont, ...styles.generalFlex, ...styles.bottomMargin15 }}>
+            <div style={{ ...regularFont, ...styles.generalFont, ...styles.generalFlex, ...styles.bottomMargin15 }} key={test.testid}>
                 <div style={{ ...styles.flex5, ...activebackground() }} onClick={() => { this.maketestactive(test.testid) }}>
                     {test.testnum} {test.elevation} {test.location} {test.wetpcf} {test.moistpcf} {test.dryden} {test.moistpcf} {test.moist} {test.maxden} {test.relative} {test.curvenumber}
                 </div>
                 <div style={{ ...styles.flex1 }}>
-                    <button style={{ ...styles.generalButton, ...removeIcon }}> {removeIconSmall()}</button>
+                    <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removetest(test.testid) }}> {removeIconSmall()}</button>
                 </div>
             </div>
         )
