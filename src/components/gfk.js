@@ -463,6 +463,8 @@ class GFK {
             samples.map(sample => {
                 if (sample.boringid === boringid) {
                     boringsamples.push(sample);
+                } else if (Number(sample.boringid) === Number(boringid)) {
+                    boringsamples.push(sample);
                 }
             })
         }
@@ -636,7 +638,7 @@ class GFK {
         if (tests) {
             // eslint-disable-next-line
             tests.map(test => {
-                if (test.sampleid === sampleid) {
+                if (Number(test.sampleid) === Number(sampleid)) {
                     mytest = test;
                 }
             })

@@ -10,8 +10,8 @@ import Borings from './components/borings';
 import Samples from './components/samples';
 import Sieve from './components/sieve';
 import Unconfined from './components/unconfined';
-import { CheckUserLogin } from './components/actions/api';
-
+import Login from './components/login'
+import { CheckUserLogin } from './components/actions/api'
 class App extends Component {
   componentDidMount() {
     this.checkuser()
@@ -53,6 +53,7 @@ class App extends Component {
       <div style={{ ...styles.generalContainer }}>
         <Switch>
           <Route exact path="/" component={defaultComponent} />
+          <Route exact path="/engineer/login" component={Login} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/fieldreports" component={FieldReports} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings" component={Borings} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples" component={Samples} />

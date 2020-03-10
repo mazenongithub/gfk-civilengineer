@@ -5,6 +5,7 @@ import GFK from './gfk';
 import { MyStylesheet } from './styles';
 import { minus20, plus20, removeIconSmall } from './svg'
 import { makeID, UnconfinedTest, UnconfinedTestData, sortdisplacement } from './functions';
+import { loadChart } from './functions/loadchart';
 import { Link } from 'react-router-dom';
 
 class Unconfined extends Component {
@@ -107,11 +108,35 @@ class Unconfined extends Component {
         }
 
     }
+    loadlbs(dial) {
+        let lbs = 0;
+        const loadchart = loadChart();
+        // eslint-disable-next-line
+        loadchart.map(chart => {
+            if (dial === chart.dial) {
+                lbs = chart.loadlbs;
+            }
+        })
+        return lbs;
+    }
+
     showtestid(data) {
         const gfk = new GFK();
         const styles = MyStylesheet();
         const regularFont = gfk.getRegularFont.call(this);
-        const removeIcon = gfk.getremoveicon.call(this)
+        const removeIcon = gfk.getremoveicon.call(this);
+        const sample = gfk.getsamplebyid.call(this, this.props.match.params.sampleid)
+
+
+        const strain = () => {
+            return (Number(data.displacement * .001) / Number(sample.samplelength))
+        }
+        const area = () => {
+            return (.25 * Math.PI * Math.pow(sample.diameter, 2) / (1 - strain()))
+        }
+        const stress = () => {
+            return (144 * (this.loadlbs(data.loadreading) / area()))
+        }
         const activeid = () => {
             if (this.state.activeunid === data.unid) {
                 return (styles.activefieldreport)
@@ -121,7 +146,7 @@ class Unconfined extends Component {
         }
         return (<div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }} key={data.unid}>
             <span style={{ ...activeid() }}
-                onClick={() => { this.maketestidactive(data.unid) }}> Displacement {data.displacement} Loading Reading:{data.loadreading}</span>
+                onClick={() => { this.maketestidactive(data.unid) }}> Displacement {data.displacement} Loading Reading:{data.loadreading} Lbs:{this.loadlbs(data.loadreading)}lbs Stress: {Math.round(stress())}psf Strain: {Number(strain()).toFixed(3)}</span>
             <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removetestdata(data.unid) }}>
                 {removeIconSmall()}
             </button>
@@ -139,11 +164,14 @@ class Unconfined extends Component {
             if (unconfined.hasOwnProperty("testdata")) {
 
                 const data = unconfined.testdata.data.sort((testa, testb) => {
+
                     return (sortdisplacement(testa, testb))
                 })
+
                 // eslint-disable-next-line
-                data.map(data => {
-                    ids.push(this.showtestid(data))
+                data.map(testdata => {
+
+                    ids.push(this.showtestid(testdata))
                 })
             }
         }
@@ -221,6 +249,152 @@ class Unconfined extends Component {
 
         }
 
+    }
+    showunconfinedchart() {
+        const gfk = new GFK();
+        const unconfined = gfk.getunconfinedtestbyid.call(this, this.props.match.params.sampleid)
+        const sample = gfk.getsamplebyid.call(this, this.props.match.params.sampleid)
+        const getmaxstrainunit = (maxstrain) => {
+
+            let unit = 0.01
+            if (maxstrain > .2) {
+                unit = 0.06;
+            } else if (maxstrain > .16) {
+                unit = 0.05;
+            } else if (maxstrain > .12) {
+                unit = 0.04;
+            } else if (maxstrain > .08) {
+                unit = 0.03
+            } else if (maxstrain > .04) {
+                unit = 0.02
+            }
+            return unit;
+
+        }
+        const strainunit = () => {
+            if (unconfined) {
+                if (unconfined.hasOwnProperty("testdata")) {
+                    const data = unconfined.testdata.data.sort((testa, testb) => {
+                        return (sortdisplacement(testa, testb))
+                    })
+
+
+                    const samplelength = Number(sample.samplelength);
+                    let key = unconfined.testdata.data.length - 1;
+                    let maxstrain = Number(.001 * data[key].displacement) / Number(samplelength);
+
+                    return getmaxstrainunit(maxstrain)
+
+                }
+            }
+
+        }
+        const getmaxstressunit = (stress) => {
+            let unit = 125;
+            if (stress > 15000) {
+                unit = 5000;
+            } else if (stress > 12000) {
+                unit = 4000;
+            } else if (stress > 8000) {
+                unit = 3000;
+            } else if (stress > 4000) {
+                unit = 2000;
+            } else if (stress > 2000) {
+                unit = 1000;
+            } else if (stress > 1000) {
+                unit = 500;
+            } else if (stress > 500) {
+                unit = 250;
+            }
+
+            return unit;
+        }
+        const stress = (testdata) => {
+            return (144 * (this.loadlbs(testdata.loadreading) / area(testdata)))
+        }
+        const strain = (testdata) => {
+            return (Number(testdata.displacement * .001) / Number(sample.samplelength))
+        }
+        const area = (testdata) => {
+            return (.25 * Math.PI * Math.pow(sample.diameter, 2) / (1 - strain(testdata)))
+        }
+        const stressunit = () => {
+            let maxstress = 0;
+            if (unconfined.hasOwnProperty("testdata")) {
+
+                // eslint-disable-next-line
+                unconfined.testdata.data.map(testdata => {
+                    let calcstress = stress(testdata)
+                    if (calcstress > maxstress) {
+                        maxstress = calcstress;
+                    }
+                })
+            }
+
+            return getmaxstressunit(maxstress)
+
+
+        }
+
+        const getstresscurve = () => {
+            let points = "0,0 ";
+            if (unconfined) {
+
+                if (unconfined.hasOwnProperty("testdata")) {
+                    const data = unconfined.testdata.data.sort((testa, testb) => {
+
+                        return (sortdisplacement(testa, testb))
+                    })
+
+
+                    // eslint-disable-next-line
+                    data.map(testdata => {
+
+                        let getstress = stress(testdata);
+                        let getstrain = strain(testdata);
+
+                        let x = (getstrain / strainunit()) * 200;
+                        let y = (getstress / stressunit()) * 200;
+
+                        points += `${x},${y} `
+                    })
+                }
+            }
+            return (<g transform="translate(165,803) scale(1,-1)">
+                <polyline className="unchart-8" points={points} />
+            </g>)
+        }
+
+
+
+
+
+
+        return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1025.85 903.16" > <defs><style></style></defs> <title>UnChart_1</title>
+            <g id="Layer_2" data-name="Layer 2">
+                <g id="Layer_1-2" data-name="Layer 1">
+                    <rect className="unchart-1" x="165.11" y="3.16" width="200" height="200" /><rect className="unchart-1" x="365.11" y="3.16" width="200" height="200" /><rect className="unchart-1" x="565.11" y="3.16" width="200" height="200" /><rect className="unchart-1" x="765.11" y="3.16" width="200" height="200" /><rect className="unchart-1" x="165.11" y="203.16" width="200" height="200" /><rect className="unchart-1" x="365.11" y="203.16" width="200" height="200" /><rect className="unchart-1" x="565.11" y="203.16" width="200" height="200" /><rect className="unchart-1" x="765.11" y="203.16" width="200" height="200" /><rect className="unchart-1" x="165.11" y="403.16" width="200" height="200" /><rect className="unchart-1" x="365.11" y="403.16" width="200" height="200" /><rect className="unchart-1" x="565.11" y="403.16" width="200" height="200" /><rect className="unchart-1" x="765.11" y="403.16" width="200" height="200" /><rect className="unchart-1" x="165.11" y="603.16" width="200" height="200" /><rect className="unchart-1" x="365.11" y="603.16" width="200" height="200" /><rect className="unchart-1" x="565.11" y="603.16" width="200" height="200" /><rect className="unchart-1" x="765.11" y="603.16" width="200" height="200" />
+                </g>
+                <g id="grid">
+                    <g id="Layer_3" data-name="Layer 3"><text className="unchart-2" transform="translate(491.08 878.9)">Strain</text><text className="unchart-2" transform="translate(18.51 323.64)">St<tspan className="unchart-3" x="38.11" y="0">r</tspan><tspan x="52.32" y="0">ess </tspan><tspan x="14.56" y="48">(ps</tspan>
+                        <tspan className="unchart-4" x="71.69" y="48">f</tspan><tspan x="86.42" y="48">)</tspan></text>
+                        <text className="unchart-5" transform="translate(46.17 25.66)">{4 * stressunit()}</text>
+                        <text className="unchart-5" transform="translate(49.46 225.66)">{3 * stressunit()}</text>
+                        <text className="unchart-5" transform="translate(50.74 425.66)">{2 * stressunit()}</text>
+                        <text className="unchart-5" transform="translate(50.96 625.66)">{stressunit()}</text>
+                        <text className="unchart-5" transform="translate(305.41 830.92)">{strainunit()}</text>
+                        <text className="unchart-5" transform="translate(518.88 830.92)">{Number(2 * strainunit()).toFixed(2)}</text>
+                        <text className="unchart-5" transform="translate(713.92 830.92)">{Number(3 * strainunit()).toFixed(2)}</text>
+                        <text className="unchart-5" transform="translate(904.73 830.92)">{Number(4 * strainunit()).toFixed(2)}</text>
+                        <rect className="unchart-7" x="165.11" y="3.16" width="800" height="800" />
+
+                    </g>
+                    {getstresscurve()}
+
+                </g>
+            </g>
+
+        </svg>)
     }
 
     render() {
@@ -403,6 +577,12 @@ class Unconfined extends Component {
                         <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                             <div style={{ ...styles.flex1 }}>
                                 {gfk.showsaveboring.call(this)}
+                            </div>
+                        </div>
+
+                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                            <div style={{ ...styles.flex1 }}>
+                                {this.showunconfinedchart()}
                             </div>
                         </div>
                     </div>

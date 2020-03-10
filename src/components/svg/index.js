@@ -5,6 +5,9 @@ export function openDateMenu() {
 export function addNewImage() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222.07 47.64"><defs><style></style></defs><title>addnewimage</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="addnewimage-1" x="1" y="1" width="218.79" height="45.64" rx="5.08" /><text className="addnewimage-2" transform="translate(13.64 30.5) scale(0.98 1)">Add New Image</text></g></g></g></svg>)
 }
+export function gfkLogin() {
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233.17 89.5"><defs><style></style></defs><title>login</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="gfklogin-1" x="0.5" y="0.5" width="232.17" height="82.05" rx="5.17" /><text className="gfklogin-2" transform="translate(31.38 57.53) scale(0.98 1)">Login</text></g></g></g></svg>)
+}
 export function minus20() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102.54 67.89"><defs><style></style></defs><title>plus20</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="plus20-1" x="1" y="1" width="100.54" height="65.89" rx="5.4" /><text className="plus20-2" transform="translate(20.57 46.08)">-20</text></g></g></g></svg>)
 }

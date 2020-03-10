@@ -554,7 +554,32 @@ export function inputUTCStringForLaborID(timein) {
     return (`${month}/${date}/${year} ${hours}:${minutes} ${ampm}`)
 
 }
+export function sortdisplacementdesc(testb, testa) {
+
+    if (Number(testa.displacement) < Number(testb.displacement)) {
+
+        return -1;
+    }
+    else if (Number(testb.displacement) < Number(testa.displacement)) {
+
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+export function sortdisplacementagain(testb, testa) {
+    if (Number(testa.displacement) > Number(testb.displacement)) {
+        console.log("sorting")
+        return -1;
+    } else if (Number(testa) < Number(testb)) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 export function sortdisplacement(testb, testa) {
+
 
     if (Number(testa.displacement) < Number(testb.displacement)) {
 
@@ -635,4 +660,7 @@ export function makeID(length) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
+}
+export function UnLoadChart() {
+    return
 }

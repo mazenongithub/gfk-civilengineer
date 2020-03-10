@@ -1,3 +1,60 @@
+export async function LogoutUser(values) {
+
+    var APIURL = `https://civilengineer.io/gfk/api/logout.php`
+    console.log(APIURL, values)
+    return fetch(APIURL, {
+        credentials: 'include'
+    })
+        .then(resp => {
+
+            if (!resp.ok) {
+                if (resp.status >= 400 && resp.status < 500) {
+                    return resp.json().then(data => {
+                        let err = { errorMessage: data.message };
+                        throw err;
+                    })
+                }
+                else {
+                    let err = { errorMessage: 'Please try again later, server is not responding' };
+                    throw err;
+                }
+            }
+
+            return resp.json();
+        })
+}
+export async function LoginUser(values) {
+
+    var APIURL = `https://civilengineer.io/gfk/api/login.php`
+    console.log(APIURL, values)
+    return fetch(APIURL, {
+        method: 'post',
+        credentials: 'include',
+        headers: new Headers({
+            'Content-Type': 'application/json',
+        }),
+
+        body: JSON.stringify(values)
+    })
+        .then(resp => {
+
+            if (!resp.ok) {
+                if (resp.status >= 400 && resp.status < 500) {
+                    return resp.json().then(data => {
+                        let err = { errorMessage: data.message };
+                        throw err;
+                    })
+                }
+                else {
+                    let err = { errorMessage: 'Please try again later, server is not responding' };
+                    throw err;
+                }
+            }
+
+            return resp.json();
+        })
+}
+
 export async function UploadFieldImage(formdata, imageid) {
     var APIURL = `${process.env.REACT_APP_SERVER_API}/${imageid}/uploadfieldimage`
 
@@ -26,8 +83,7 @@ export async function UploadFieldImage(formdata, imageid) {
 }
 
 export async function CheckUserLogin() {
-    let engineerid = 'mazen';
-    let APIURL = `${process.env.REACT_APP_SERVER_API}/${engineerid}/loadmyprofile`
+    let APIURL = `http://civilengineer.io/gfk/api/loadprofile.php?engineerid=mazen`
     console.log(APIURL)
 
     return fetch(APIURL, { credentials: 'include' }).then(resp => {
@@ -51,7 +107,7 @@ export async function CheckUserLogin() {
 
 export async function SaveBorings(engineerid, projectid, borings) {
     const values = { engineerid, projectid, borings }
-    var APIURL = `${process.env.REACT_APP_SERVER_API}/${projectid}/saveborings`
+    var APIURL = `https://civilengineer.io/gfk/api/saveborings.php`
 
     return fetch(APIURL, {
         method: 'post',
@@ -81,8 +137,7 @@ export async function SaveBorings(engineerid, projectid, borings) {
         })
 }
 export async function SaveFieldReport(values) {
-    let projectid = values.projectid;
-    var APIURL = `${process.env.REACT_APP_SERVER_API}/${projectid}/savefieldreport`
+    var APIURL = `https://civilengineer.io/gfk/api/savefieldreport.php`
     return fetch(APIURL, {
         method: 'post',
         credentials: 'include',

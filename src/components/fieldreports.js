@@ -489,9 +489,9 @@ class FieldReports extends Component {
     }
     makereportactive(fieldid) {
         if (this.state.activefieldid === fieldid) {
-            this.setState({ activefieldid: false })
+            this.setState({ activefieldid: false, testnum: '', elevation: '', location: '', wetpcf: 0, moistpcf: 0, curveid: '', message: '', image: '', caption: '', activetestid: false, activeimageid: false })
         } else {
-            this.setState({ activefieldid: fieldid })
+            this.setState({ activefieldid: fieldid, testnum: '', elevation: '', location: '', wetpcf: 0, moistpcf: 0, curveid: '', message: '', image: '', caption: '', activetestid: false, activeimageid: false })
         }
     }
     removefieldreport(fieldid) {
@@ -747,7 +747,7 @@ class FieldReports extends Component {
 
                 let images = gfk.getfieldimagesbyid.call(this, report.fieldid)
                 if (images) {
-                    console.log(images)
+
                     let myimages = { image: images }
                     params.fieldreports.fieldreport[i].images = myimages;
                 }
@@ -757,7 +757,7 @@ class FieldReports extends Component {
 
         let values = { engineerid: myuser.engineerid, projectid, fieldreports: params.fieldreports }
 
-        // console.log(values)
+        console.log(values)
         let response = await SaveFieldReport(values);
         console.log(response)
         if (response.hasOwnProperty("reports")) {

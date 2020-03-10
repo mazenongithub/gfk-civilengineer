@@ -11,7 +11,7 @@ import GraphicLog from './graphiclog'
 class Samples extends Component {
     constructor(props) {
         super(props);
-        this.state = { render: '', width: 0, height: 0, activesampleid: false, sampleset: '', samplenumber: '', sampledepth: '', depth: '', diameter: '', samplelength: '', tareno: '', tarewgt: '', wetwgt: '', wetwgt_2: '', drywgt: '', spt: '', ucsc: '', ll: '', pi: '', description: '' }
+        this.state = { render: '', width: 0, height: 0, activesampleid: false, sampleset: '', samplenumber: '', sampledepth: '', depth: '', diameter: '', samplelength: '', tareno: '', tarewgt: '', wetwgt: '', wetwgt_2: '', drywgt: '', spt: '', ucsc: '', ll: '', pi: '', description: '', graphiclog: '' }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
     componentDidMount() {
@@ -97,6 +97,7 @@ class Samples extends Component {
         const boringid = this.props.match.params.boringid;
         const myuser = gfk.getuser.call(this);
         const headerFont = gfk.getHeaderFont.call(this)
+
         if (myuser) {
             const engineerid = myuser.engineerid;
 
@@ -107,13 +108,115 @@ class Samples extends Component {
                     return;
                 }
             }
+            const moist = () => {
+                let wgtwater = 0;
+                let netweight = Number(sample.drywgt) - Number(sample.tarewgt)
+
+                if (Number(sample.wetwgt_2) > 0) {
+                    wgtwater = Number(sample.wetwgt_2) - Number(sample.drywgt)
+
+                } else {
+                    wgtwater = Number(sample.wetwgt) - Number(sample.drywgt);
+
+                }
+                if ((wgtwater / netweight) > 0) {
+                    return (wgtwater / netweight)
+                } else {
+                    return 0;
+                }
+
+            }
+            const netwgt_1 = () => {
+                if (Number(sample.wetwgt_2) > 0) {
+                    let netwgt_1 = (Number(sample.wetwgt) - Number(sample.tarewgt)) / (1 + moist())
+                    return netwgt_1;
+                }
+            }
+            const netwgt = () => {
+                if (Number(sample.drywgt) && Number(sample.tarewgt) > 0) {
+                    return (Number(sample.drywgt) - Number(sample.tarewgt));
+                } else {
+                    return 0;
+                }
+
+
+            }
+            const wgtwater_1 = () => {
+
+                if (Number(sample.wetwgt_2) > 0) {
+                    return (netwgt_1() * moist())
+                } else {
+                    return (Number(sample.wetwgt) - Number(sample.drywgt))
+                }
+
+            }
+            const wgtwater = () => {
+                if (Number(sample.wetwgt_2) > 0) {
+                    if (Number(sample.wetwgt_2) > 0 && Number(sample.drywgt) > 0) {
+                        return (Number(sample.wetwgt_2) - Number(sample.drywgt))
+                    } else {
+                        return 0;
+                    }
+
+                } else {
+                    if (Number(sample.wetwgt) > 0 && Number(sample.drywgt) > 0) {
+                        return (Number(sample.wetwgt) - Number(sample.drywgt))
+                    } else {
+                        return 0;
+                    }
+
+                }
+
+
+
+            }
+            const showwgtwater = () => {
+                if (Number(sample.wetwgt_2) > 0) {
+                    if (Number(wgtwater_1()) > 0 && Number(wgtwater()) > 0) {
+                        return (`${Number(wgtwater_1()).toFixed(1)}g/${Number(wgtwater()).toFixed(1)}g`)
+                    } else {
+                        return 0;
+                    }
+
+                } else {
+                    if (wgtwater() > 0) {
+                        return (`${Number(wgtwater()).toFixed(1)}g`)
+                    } else {
+                        return 0;
+                    }
+
+                }
+            }
+            const shownetwgt = () => {
+                if (Number(sample.wetwgt_2) > 0) {
+                    return (`${Number(netwgt_1()).toFixed(1)}/${Number(netwgt()).toFixed(1)}g`)
+                } else {
+                    return (`${Number(netwgt()).toFixed(1)}g`);
+                }
+            }
+            const dryden = () => {
+                let netweight = 0;
+                if (Number(sample.wetwgt_2) > 0) {
+                    netweight = netwgt_1()
+                } else {
+                    netweight = netwgt();
+                }
+                if (netweight > 0 && sample.diameter > 0 && sample.samplelength > 0) {
+                    return (netweight / (.25 * Math.pow(Number(sample.diameter), 2) * Math.PI * Number(sample.samplelength))) * (1 / 453.592) * (144 * 12)
+                } else {
+                    return 0;
+                }
+            }
+            const showdryden = () => {
+                return (`${Math.round(Number(dryden()))}`)
+            }
             return (
                 <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }} key={sample.sampleid}>
                     <div style={{ ...styles.flex1 }}>
 
                         <div style={{ ...styles.generalFlex }}>
                             <div style={{ ...styles.flex1, ...regularFont, ...styles.generalFont }} >
-                                <span style={{ ...activebackground() }} onClick={() => { this.makesampleactive(sample.sampleid) }}>{sample.sampleset}-({sample.samplenumber}) SampleDepth:{sample.sampledepth} Depth:{sample.depth}ft Diameter:{sample.diameter} in. Length {sample.samplelength} in. Description {sample.description} USCS: {sample.uscs} SPT: {sample.spt} WetWgt: {sample.wetwgt}g  Wet Wgt 2: {sample.wetwgt_2}g Dry Wgt:{sample.drywgt} Tare Wgt {sample.tarewgt} Tare No: {sample.tareno} LL: {sample.ll} PI: {sample.pi}</span>
+                                <span style={{ ...activebackground() }} onClick={() => { this.makesampleactive(sample.sampleid) }}>{sample.sampleset}-({sample.samplenumber}) SampleDepth:{sample.sampledepth} Depth:{sample.depth}ft Diameter:{sample.diameter} in. Length {sample.samplelength} in. Description {sample.description}  SPT: {sample.spt} WetWgt: {sample.wetwgt}g  Wet Wgt 2: {sample.wetwgt_2}g Dry Wgt:{sample.drywgt}g Tare Wgt {sample.tarewgt}g  WgtWater:{showwgtwater()} NetWgt:{shownetwgt()} Moist: {Number(moist() * 100).toFixed(1)}% DryDen:{showdryden()}pcf Tare No: {sample.tareno} LL: {sample.ll} PI: {sample.pi}</span>
                                 <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removesampleid(sample) }}>
                                     {removeIconSmall()}
                                 </button>
@@ -1156,17 +1259,17 @@ class Samples extends Component {
             if (this.state.width > 800) {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
                     <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                        Dry Wgt <br />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                            value={this.getdrywgt()}
+                            onChange={event => { this.handledrywgt(event.target.value) }}
+                        />
+                    </div>
+                    <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
                         SPT<br />
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getspt()}
                             onChange={event => { this.handlespt(event.target.value) }} />
-                    </div>
-                    <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                        USCS <br />
-                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getuscs()}
-                            onChange={event => { this.handleuscs(event.target.value) }}
-                        />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
                         LL<br />
@@ -1190,18 +1293,19 @@ class Samples extends Component {
                         <div style={{ ...styles.flex1 }}>
 
                             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                    Dry Wgt <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getdrywgt()}
+                                        onChange={event => { this.handledrywgt(event.target.value) }} />
+                                </div>
                                 <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
                                     SPT <br />
                                     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                                         value={this.getspt()}
                                         onChange={event => { this.handlespt(event.target.value) }}
                                     />
-                                </div>
-                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                    USCS <br />
-                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                        value={this.getuscs()}
-                                        onChange={event => { this.handleuscs(event.target.value) }} />
                                 </div>
                             </div>
                             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
@@ -1278,31 +1382,23 @@ class Samples extends Component {
                         <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
                             <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
 
-                                <div style={{ ...styles.generalFlex }}>
-                                    <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                        Wet Wgt <br />
-                                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                            value={this.getwetwgt()}
-                                            onChange={event => { this.handlewetwgt(event.target.value) }}
-                                        />
-                                    </div>
-                                    <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                        Wet Wgt 2 <br />
-                                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                            value={this.getwetwgt_2()}
-                                            onChange={event => { this.handlewetwgt_2(event.target.value) }}
-                                        />
-                                    </div>
-                                </div>
 
-
-                            </div>
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                Dry Wgt <br />
+                                Wet Wgt <br />
                                 <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getdrywgt()}
-                                    onChange={event => { this.handledrywgt(event.target.value) }}
+                                    value={this.getwetwgt()}
+                                    onChange={event => { this.handlewetwgt(event.target.value) }}
                                 />
+                            </div>
+
+                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                Wet Wgt 2 <br />
+                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                    value={this.getwetwgt_2()}
+                                    onChange={event => { this.handlewetwgt_2(event.target.value) }}
+                                />
+
+
+
                             </div>
 
                         </div>
