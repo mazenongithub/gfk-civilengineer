@@ -206,7 +206,7 @@ class Unconfined extends Component {
         const unid = makeID(16)
         const myuser = gfk.getuser.call(this);
         if (myuser) {
-
+        
             if (unconfined) {
                 const i = gfk.getunconfinedtestkeybyid.call(this, sampleid)
                 const newData = UnconfinedTestData(unid, loadreading, displacement)
@@ -286,6 +286,8 @@ class Unconfined extends Component {
                     return getmaxstrainunit(maxstrain)
 
                 }
+            } else {
+                return getmaxstrainunit(0)
             }
 
         }

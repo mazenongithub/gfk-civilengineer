@@ -496,11 +496,12 @@ class Borings extends Component {
         const Fields_1 = () => {
             if (this.state.width > 800) {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}
-                        value={this.getboringnumber()}
-                        onChange={event => { this.handleboringnumber(event.target.value) }}>
+                    <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Boring Number
-                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }} />
+                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                            value={this.getboringnumber()}
+                            onChange={event => { this.handleboringnumber(event.target.value) }}
+                        />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Boring Diameter

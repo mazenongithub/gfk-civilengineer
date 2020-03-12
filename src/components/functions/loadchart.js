@@ -1234,1771 +1234,1771 @@ export function loadChart() {
         },
         {
             dial: "309",
-            loadlbs: "99.9"
+            loadlbs: "100.0"
         },
         {
             dial: "310",
-            loadlbs: "99.9"
+            loadlbs: "100.0"
         },
         {
             dial: "311",
-            loadlbs: "99.9"
+            loadlbs: "100.0"
         },
         {
             dial: "312",
-            loadlbs: "99.9"
+            loadlbs: "101.0"
         },
         {
             dial: "313",
-            loadlbs: "99.9"
+            loadlbs: "101.0"
         },
         {
             dial: "314",
-            loadlbs: "99.9"
+            loadlbs: "101.0"
         },
         {
             dial: "315",
-            loadlbs: "99.9"
+            loadlbs: "102.0"
         },
         {
             dial: "316",
-            loadlbs: "99.9"
+            loadlbs: "102.0"
         },
         {
             dial: "317",
-            loadlbs: "99.9"
+            loadlbs: "102.0"
         },
         {
             dial: "318",
-            loadlbs: "99.9"
+            loadlbs: "103.0"
         },
         {
             dial: "319",
-            loadlbs: "99.9"
+            loadlbs: "103.0"
         },
         {
             dial: "320",
-            loadlbs: "99.9"
+            loadlbs: "103.0"
         },
         {
             dial: "321",
-            loadlbs: "99.9"
+            loadlbs: "104.0"
         },
         {
             dial: "322",
-            loadlbs: "99.9"
+            loadlbs: "104.0"
         },
         {
             dial: "323",
-            loadlbs: "99.9"
+            loadlbs: "104.0"
         },
         {
             dial: "324",
-            loadlbs: "99.9"
+            loadlbs: "104.0"
         },
         {
             dial: "325",
-            loadlbs: "99.9"
+            loadlbs: "105.0"
         },
         {
             dial: "326",
-            loadlbs: "99.9"
+            loadlbs: "105.0"
         },
         {
             dial: "327",
-            loadlbs: "99.9"
+            loadlbs: "105.0"
         },
         {
             dial: "328",
-            loadlbs: "99.9"
+            loadlbs: "106.0"
         },
         {
             dial: "329",
-            loadlbs: "99.9"
+            loadlbs: "106.0"
         },
         {
             dial: "330",
-            loadlbs: "99.9"
+            loadlbs: "106.0"
         },
         {
             dial: "331",
-            loadlbs: "99.9"
+            loadlbs: "107.0"
         },
         {
             dial: "332",
-            loadlbs: "99.9"
+            loadlbs: "107.0"
         },
         {
             dial: "333",
-            loadlbs: "99.9"
+            loadlbs: "107.0"
         },
         {
             dial: "334",
-            loadlbs: "99.9"
+            loadlbs: "108.0"
         },
         {
             dial: "335",
-            loadlbs: "99.9"
+            loadlbs: "108.0"
         },
         {
             dial: "336",
-            loadlbs: "99.9"
+            loadlbs: "108.0"
         },
         {
             dial: "337",
-            loadlbs: "99.9"
+            loadlbs: "109.0"
         },
         {
             dial: "338",
-            loadlbs: "99.9"
+            loadlbs: "109.0"
         },
         {
             dial: "339",
-            loadlbs: "99.9"
+            loadlbs: "109.0"
         },
         {
             dial: "340",
-            loadlbs: "99.9"
+            loadlbs: "110.0"
         },
         {
             dial: "341",
-            loadlbs: "99.9"
+            loadlbs: "110.0"
         },
         {
             dial: "342",
-            loadlbs: "99.9"
+            loadlbs: "110.0"
         },
         {
             dial: "343",
-            loadlbs: "99.9"
+            loadlbs: "110.0"
         },
         {
             dial: "344",
-            loadlbs: "99.9"
+            loadlbs: "111.0"
         },
         {
             dial: "345",
-            loadlbs: "99.9"
+            loadlbs: "111.0"
         },
         {
             dial: "346",
-            loadlbs: "99.9"
+            loadlbs: "111.0"
         },
         {
             dial: "347",
-            loadlbs: "99.9"
+            loadlbs: "112.0"
         },
         {
             dial: "348",
-            loadlbs: "99.9"
+            loadlbs: "112.0"
         },
         {
             dial: "349",
-            loadlbs: "99.9"
+            loadlbs: "112.0"
         },
         {
             dial: "350",
-            loadlbs: "99.9"
+            loadlbs: "113.0"
         },
         {
             dial: "351",
-            loadlbs: "99.9"
+            loadlbs: "113.0"
         },
         {
             dial: "352",
-            loadlbs: "99.9"
+            loadlbs: "113.0"
         },
         {
             dial: "353",
-            loadlbs: "99.9"
+            loadlbs: "114.0"
         },
         {
             dial: "354",
-            loadlbs: "99.9"
+            loadlbs: "114.0"
         },
         {
             dial: "355",
-            loadlbs: "99.9"
+            loadlbs: "114.0"
         },
         {
             dial: "356",
-            loadlbs: "99.9"
+            loadlbs: "115.0"
         },
         {
             dial: "357",
-            loadlbs: "99.9"
+            loadlbs: "115.0"
         },
         {
             dial: "358",
-            loadlbs: "99.9"
+            loadlbs: "115.0"
         },
         {
             dial: "359",
-            loadlbs: "99.9"
+            loadlbs: "116.0"
         },
         {
             dial: "360",
-            loadlbs: "99.9"
+            loadlbs: "116.0"
         },
         {
             dial: "361",
-            loadlbs: "99.9"
+            loadlbs: "116.0"
         },
         {
             dial: "362",
-            loadlbs: "99.9"
+            loadlbs: "116.0"
         },
         {
             dial: "363",
-            loadlbs: "99.9"
+            loadlbs: "117.0"
         },
         {
             dial: "364",
-            loadlbs: "99.9"
+            loadlbs: "117.0"
         },
         {
             dial: "365",
-            loadlbs: "99.9"
+            loadlbs: "117.0"
         },
         {
             dial: "366",
-            loadlbs: "99.9"
+            loadlbs: "118.0"
         },
         {
             dial: "367",
-            loadlbs: "99.9"
+            loadlbs: "118.0"
         },
         {
             dial: "368",
-            loadlbs: "99.9"
+            loadlbs: "118.0"
         },
         {
             dial: "369",
-            loadlbs: "99.9"
+            loadlbs: "119.0"
         },
         {
             dial: "370",
-            loadlbs: "99.9"
+            loadlbs: "119.0"
         },
         {
             dial: "371",
-            loadlbs: "99.9"
+            loadlbs: "119.0"
         },
         {
             dial: "372",
-            loadlbs: "99.9"
+            loadlbs: "120.0"
         },
         {
             dial: "373",
-            loadlbs: "99.9"
+            loadlbs: "120.0"
         },
         {
             dial: "374",
-            loadlbs: "99.9"
+            loadlbs: "120.0"
         },
         {
             dial: "375",
-            loadlbs: "99.9"
+            loadlbs: "121.0"
         },
         {
             dial: "376",
-            loadlbs: "99.9"
+            loadlbs: "121.0"
         },
         {
             dial: "377",
-            loadlbs: "99.9"
+            loadlbs: "121.0"
         },
         {
             dial: "378",
-            loadlbs: "99.9"
+            loadlbs: "121.0"
         },
         {
             dial: "379",
-            loadlbs: "99.9"
+            loadlbs: "122.0"
         },
         {
             dial: "380",
-            loadlbs: "99.9"
+            loadlbs: "122.0"
         },
         {
             dial: "381",
-            loadlbs: "99.9"
+            loadlbs: "122.0"
         },
         {
             dial: "382",
-            loadlbs: "99.9"
+            loadlbs: "123.0"
         },
         {
             dial: "383",
-            loadlbs: "99.9"
+            loadlbs: "123.0"
         },
         {
             dial: "384",
-            loadlbs: "99.9"
+            loadlbs: "123.0"
         },
         {
             dial: "385",
-            loadlbs: "99.9"
+            loadlbs: "124.0"
         },
         {
             dial: "386",
-            loadlbs: "99.9"
+            loadlbs: "125.0"
         },
         {
             dial: "387",
-            loadlbs: "99.9"
+            loadlbs: "125.0"
         },
         {
             dial: "388",
-            loadlbs: "99.9"
+            loadlbs: "126.0"
         },
         {
             dial: "389",
-            loadlbs: "99.9"
+            loadlbs: "127.0"
         },
         {
             dial: "390",
-            loadlbs: "99.9"
+            loadlbs: "128.0"
         },
         {
             dial: "391",
-            loadlbs: "99.9"
+            loadlbs: "129.0"
         },
         {
             dial: "392",
-            loadlbs: "99.9"
+            loadlbs: "129.0"
         },
         {
             dial: "393",
-            loadlbs: "99.9"
+            loadlbs: "130.0"
         },
         {
             dial: "394",
-            loadlbs: "99.9"
+            loadlbs: "131.0"
         },
         {
             dial: "395",
-            loadlbs: "99.9"
+            loadlbs: "132.0"
         },
         {
             dial: "396",
-            loadlbs: "99.9"
+            loadlbs: "132.0"
         },
         {
             dial: "397",
-            loadlbs: "99.9"
+            loadlbs: "133.0"
         },
         {
             dial: "398",
-            loadlbs: "99.9"
+            loadlbs: "134.0"
         },
         {
             dial: "399",
-            loadlbs: "99.9"
+            loadlbs: "135.0"
         },
         {
             dial: "400",
-            loadlbs: "99.9"
+            loadlbs: "136.0"
         },
         {
             dial: "401",
-            loadlbs: "99.9"
+            loadlbs: "136.0"
         },
         {
             dial: "402",
-            loadlbs: "99.9"
+            loadlbs: "137.0"
         },
         {
             dial: "403",
-            loadlbs: "99.9"
+            loadlbs: "138.0"
         },
         {
             dial: "404",
-            loadlbs: "99.9"
+            loadlbs: "139.0"
         },
         {
             dial: "405",
-            loadlbs: "99.9"
+            loadlbs: "140.0"
         },
         {
             dial: "406",
-            loadlbs: "99.9"
+            loadlbs: "140.0"
         },
         {
             dial: "407",
-            loadlbs: "99.9"
+            loadlbs: "141.0"
         },
         {
             dial: "408",
-            loadlbs: "99.9"
+            loadlbs: "142.0"
         },
         {
             dial: "409",
-            loadlbs: "99.9"
+            loadlbs: "143.0"
         },
         {
             dial: "410",
-            loadlbs: "99.9"
+            loadlbs: "143.0"
         },
         {
             dial: "411",
-            loadlbs: "99.9"
+            loadlbs: "144.0"
         },
         {
             dial: "412",
-            loadlbs: "99.9"
+            loadlbs: "145.0"
         },
         {
             dial: "413",
-            loadlbs: "99.9"
+            loadlbs: "146.0"
         },
         {
             dial: "414",
-            loadlbs: "99.9"
+            loadlbs: "147.0"
         },
         {
             dial: "415",
-            loadlbs: "99.9"
+            loadlbs: "147.0"
         },
         {
             dial: "416",
-            loadlbs: "99.9"
+            loadlbs: "148.0"
         },
         {
             dial: "417",
-            loadlbs: "99.9"
+            loadlbs: "149.0"
         },
         {
             dial: "418",
-            loadlbs: "99.9"
+            loadlbs: "150.0"
         },
         {
             dial: "419",
-            loadlbs: "99.9"
+            loadlbs: "150.0"
         },
         {
             dial: "420",
-            loadlbs: "99.9"
+            loadlbs: "151.0"
         },
         {
             dial: "421",
-            loadlbs: "99.9"
+            loadlbs: "152.0"
         },
         {
             dial: "422",
-            loadlbs: "99.9"
+            loadlbs: "153.0"
         },
         {
             dial: "423",
-            loadlbs: "99.9"
+            loadlbs: "154.0"
         },
         {
             dial: "424",
-            loadlbs: "99.9"
+            loadlbs: "154.0"
         },
         {
             dial: "425",
-            loadlbs: "99.9"
+            loadlbs: "155.0"
         },
         {
             dial: "426",
-            loadlbs: "99.9"
+            loadlbs: "156.0"
         },
         {
             dial: "427",
-            loadlbs: "99.9"
+            loadlbs: "157.0"
         },
         {
             dial: "428",
-            loadlbs: "99.9"
+            loadlbs: "157.0"
         },
         {
             dial: "429",
-            loadlbs: "99.9"
+            loadlbs: "158.0"
         },
         {
             dial: "430",
-            loadlbs: "99.9"
+            loadlbs: "159.0"
         },
         {
             dial: "431",
-            loadlbs: "99.9"
+            loadlbs: "160.0"
         },
         {
             dial: "432",
-            loadlbs: "99.9"
+            loadlbs: "161.0"
         },
         {
             dial: "433",
-            loadlbs: "99.9"
+            loadlbs: "161.0"
         },
         {
             dial: "434",
-            loadlbs: "99.9"
+            loadlbs: "162.0"
         },
         {
             dial: "435",
-            loadlbs: "99.9"
+            loadlbs: "163.0"
         },
         {
             dial: "436",
-            loadlbs: "99.9"
+            loadlbs: "164.0"
         },
         {
             dial: "437",
-            loadlbs: "99.9"
+            loadlbs: "164.0"
         },
         {
             dial: "438",
-            loadlbs: "99.9"
+            loadlbs: "165.0"
         },
         {
             dial: "439",
-            loadlbs: "99.9"
+            loadlbs: "166.0"
         },
         {
             dial: "440",
-            loadlbs: "99.9"
+            loadlbs: "167.0"
         },
         {
             dial: "441",
-            loadlbs: "99.9"
+            loadlbs: "168.0"
         },
         {
             dial: "442",
-            loadlbs: "99.9"
+            loadlbs: "168.0"
         },
         {
             dial: "443",
-            loadlbs: "99.9"
+            loadlbs: "169.0"
         },
         {
             dial: "444",
-            loadlbs: "99.9"
+            loadlbs: "170.0"
         },
         {
             dial: "445",
-            loadlbs: "99.9"
+            loadlbs: "171.0"
         },
         {
             dial: "446",
-            loadlbs: "99.9"
+            loadlbs: "171.0"
         },
         {
             dial: "447",
-            loadlbs: "99.9"
+            loadlbs: "172.0"
         },
         {
             dial: "448",
-            loadlbs: "99.9"
+            loadlbs: "173.0"
         },
         {
             dial: "449",
-            loadlbs: "99.9"
+            loadlbs: "174.0"
         },
         {
             dial: "450",
-            loadlbs: "99.9"
+            loadlbs: "175.0"
         },
         {
             dial: "451",
-            loadlbs: "99.9"
+            loadlbs: "175.0"
         },
         {
             dial: "452",
-            loadlbs: "99.9"
+            loadlbs: "176.0"
         },
         {
             dial: "453",
-            loadlbs: "99.9"
+            loadlbs: "177.0"
         },
         {
             dial: "454",
-            loadlbs: "99.9"
+            loadlbs: "178.0"
         },
         {
             dial: "455",
-            loadlbs: "99.9"
+            loadlbs: "178.0"
         },
         {
             dial: "456",
-            loadlbs: "99.9"
+            loadlbs: "179.0"
         },
         {
             dial: "457",
-            loadlbs: "99.9"
+            loadlbs: "180.0"
         },
         {
             dial: "458",
-            loadlbs: "99.9"
+            loadlbs: "181.0"
         },
         {
             dial: "459",
-            loadlbs: "99.9"
+            loadlbs: "182.0"
         },
         {
             dial: "460",
-            loadlbs: "99.9"
+            loadlbs: "182.0"
         },
         {
             dial: "461",
-            loadlbs: "99.9"
+            loadlbs: "183.0"
         },
         {
             dial: "462",
-            loadlbs: "99.9"
+            loadlbs: "184.0"
         },
         {
             dial: "463",
-            loadlbs: "99.9"
+            loadlbs: "185.0"
         },
         {
             dial: "464",
-            loadlbs: "99.9"
+            loadlbs: "185.0"
         },
         {
             dial: "465",
-            loadlbs: "99.9"
+            loadlbs: "186.0"
         },
         {
             dial: "466",
-            loadlbs: "99.9"
+            loadlbs: "187.0"
         },
         {
             dial: "467",
-            loadlbs: "99.9"
+            loadlbs: "188.0"
         },
         {
             dial: "468",
-            loadlbs: "99.9"
+            loadlbs: "189.0"
         },
         {
             dial: "469",
-            loadlbs: "99.9"
+            loadlbs: "189.0"
         },
         {
             dial: "470",
-            loadlbs: "99.9"
+            loadlbs: "190.0"
         },
         {
             dial: "471",
-            loadlbs: "99.9"
+            loadlbs: "191.0"
         },
         {
             dial: "472",
-            loadlbs: "99.9"
+            loadlbs: "192.0"
         },
         {
             dial: "473",
-            loadlbs: "99.9"
+            loadlbs: "192.0"
         },
         {
             dial: "474",
-            loadlbs: "99.9"
+            loadlbs: "193.0"
         },
         {
             dial: "475",
-            loadlbs: "99.9"
+            loadlbs: "194.0"
         },
         {
             dial: "476",
-            loadlbs: "99.9"
+            loadlbs: "195.0"
         },
         {
             dial: "477",
-            loadlbs: "99.9"
+            loadlbs: "196.0"
         },
         {
             dial: "478",
-            loadlbs: "99.9"
+            loadlbs: "196.0"
         },
         {
             dial: "479",
-            loadlbs: "99.9"
+            loadlbs: "197.0"
         },
         {
             dial: "480",
-            loadlbs: "99.9"
+            loadlbs: "198.0"
         },
         {
             dial: "481",
-            loadlbs: "99.9"
+            loadlbs: "199.0"
         },
         {
             dial: "482",
-            loadlbs: "99.9"
+            loadlbs: "199.0"
         },
         {
             dial: "483",
-            loadlbs: "99.9"
+            loadlbs: "200.0"
         },
         {
             dial: "484",
-            loadlbs: "99.9"
+            loadlbs: "201.0"
         },
         {
             dial: "485",
-            loadlbs: "99.9"
+            loadlbs: "202.0"
         },
         {
             dial: "486",
-            loadlbs: "99.9"
+            loadlbs: "203.0"
         },
         {
             dial: "487",
-            loadlbs: "99.9"
+            loadlbs: "203.0"
         },
         {
             dial: "488",
-            loadlbs: "99.9"
+            loadlbs: "204.0"
         },
         {
             dial: "489",
-            loadlbs: "99.9"
+            loadlbs: "205.0"
         },
         {
             dial: "490",
-            loadlbs: "99.9"
+            loadlbs: "206.0"
         },
         {
             dial: "491",
-            loadlbs: "99.9"
+            loadlbs: "206.0"
         },
         {
             dial: "492",
-            loadlbs: "99.9"
+            loadlbs: "207.0"
         },
         {
             dial: "493",
-            loadlbs: "99.9"
+            loadlbs: "208.0"
         },
         {
             dial: "494",
-            loadlbs: "99.9"
+            loadlbs: "209.0"
         },
         {
             dial: "495",
-            loadlbs: "99.9"
+            loadlbs: "210.0"
         },
         {
             dial: "496",
-            loadlbs: "99.9"
+            loadlbs: "210.0"
         },
         {
             dial: "497",
-            loadlbs: "99.9"
+            loadlbs: "211.0"
         },
         {
             dial: "498",
-            loadlbs: "99.9"
+            loadlbs: "212.0"
         },
         {
             dial: "499",
-            loadlbs: "99.9"
+            loadlbs: "213.0"
         },
         {
             dial: "500",
-            loadlbs: "99.9"
+            loadlbs: "213.0"
         },
         {
             dial: "501",
-            loadlbs: "99.9"
+            loadlbs: "214.0"
         },
         {
             dial: "502",
-            loadlbs: "99.9"
+            loadlbs: "215.0"
         },
         {
             dial: "503",
-            loadlbs: "99.9"
+            loadlbs: "216.0"
         },
         {
             dial: "504",
-            loadlbs: "99.9"
+            loadlbs: "217.0"
         },
         {
             dial: "505",
-            loadlbs: "99.9"
+            loadlbs: "217.0"
         },
         {
             dial: "506",
-            loadlbs: "99.9"
+            loadlbs: "218.0"
         },
         {
             dial: "507",
-            loadlbs: "99.9"
+            loadlbs: "219.0"
         },
         {
             dial: "508",
-            loadlbs: "99.9"
+            loadlbs: "220.0"
         },
         {
             dial: "509",
-            loadlbs: "99.9"
+            loadlbs: "221.0"
         },
         {
             dial: "510",
-            loadlbs: "99.9"
+            loadlbs: "221.0"
         },
         {
             dial: "511",
-            loadlbs: "99.9"
+            loadlbs: "222.0"
         },
         {
             dial: "512",
-            loadlbs: "99.9"
+            loadlbs: "223.0"
         },
         {
             dial: "513",
-            loadlbs: "99.9"
+            loadlbs: "224.0"
         },
         {
             dial: "514",
-            loadlbs: "99.9"
+            loadlbs: "224.0"
         },
         {
             dial: "515",
-            loadlbs: "99.9"
+            loadlbs: "225.0"
         },
         {
             dial: "516",
-            loadlbs: "99.9"
+            loadlbs: "226.0"
         },
         {
             dial: "517",
-            loadlbs: "99.9"
+            loadlbs: "227.0"
         },
         {
             dial: "518",
-            loadlbs: "99.9"
+            loadlbs: "228.0"
         },
         {
             dial: "519",
-            loadlbs: "99.9"
+            loadlbs: "228.0"
         },
         {
             dial: "520",
-            loadlbs: "99.9"
+            loadlbs: "229.0"
         },
         {
             dial: "521",
-            loadlbs: "99.9"
+            loadlbs: "230.0"
         },
         {
             dial: "522",
-            loadlbs: "99.9"
+            loadlbs: "231.0"
         },
         {
             dial: "523",
-            loadlbs: "99.9"
+            loadlbs: "231.0"
         },
         {
             dial: "524",
-            loadlbs: "99.9"
+            loadlbs: "232.0"
         },
         {
             dial: "525",
-            loadlbs: "99.9"
+            loadlbs: "233.0"
         },
         {
             dial: "526",
-            loadlbs: "99.9"
+            loadlbs: "234.0"
         },
         {
             dial: "527",
-            loadlbs: "99.9"
+            loadlbs: "235.0"
         },
         {
             dial: "528",
-            loadlbs: "99.9"
+            loadlbs: "235.0"
         },
         {
             dial: "529",
-            loadlbs: "99.9"
+            loadlbs: "236.0"
         },
         {
             dial: "530",
-            loadlbs: "99.9"
+            loadlbs: "237.0"
         },
         {
             dial: "531",
-            loadlbs: "99.9"
+            loadlbs: "238.0"
         },
         {
             dial: "532",
-            loadlbs: "99.9"
+            loadlbs: "238.0"
         },
         {
             dial: "533",
-            loadlbs: "99.9"
+            loadlbs: "239.0"
         },
         {
             dial: "534",
-            loadlbs: "99.9"
+            loadlbs: "240.0"
         },
         {
             dial: "535",
-            loadlbs: "99.9"
+            loadlbs: "241.0"
         },
         {
             dial: "536",
-            loadlbs: "99.9"
+            loadlbs: "242.0"
         },
         {
             dial: "537",
-            loadlbs: "99.9"
+            loadlbs: "242.0"
         },
         {
             dial: "538",
-            loadlbs: "99.9"
+            loadlbs: "243.0"
         },
         {
             dial: "539",
-            loadlbs: "99.9"
+            loadlbs: "244.0"
         },
         {
             dial: "540",
-            loadlbs: "99.9"
+            loadlbs: "245.0"
         },
         {
             dial: "541",
-            loadlbs: "99.9"
+            loadlbs: "245.0"
         },
         {
             dial: "542",
-            loadlbs: "99.9"
+            loadlbs: "246.0"
         },
         {
             dial: "543",
-            loadlbs: "99.9"
+            loadlbs: "247.0"
         },
         {
             dial: "544",
-            loadlbs: "99.9"
+            loadlbs: "248.0"
         },
         {
             dial: "545",
-            loadlbs: "99.9"
+            loadlbs: "249.0"
         },
         {
             dial: "546",
-            loadlbs: "99.9"
+            loadlbs: "249.0"
         },
         {
             dial: "547",
-            loadlbs: "99.9"
+            loadlbs: "250.0"
         },
         {
             dial: "548",
-            loadlbs: "99.9"
+            loadlbs: "251.0"
         },
         {
             dial: "549",
-            loadlbs: "99.9"
+            loadlbs: "252.0"
         },
         {
             dial: "550",
-            loadlbs: "99.9"
+            loadlbs: "252.0"
         },
         {
             dial: "551",
-            loadlbs: "99.9"
+            loadlbs: "253.0"
         },
         {
             dial: "552",
-            loadlbs: "99.9"
+            loadlbs: "254.0"
         },
         {
             dial: "553",
-            loadlbs: "99.9"
+            loadlbs: "255.0"
         },
         {
             dial: "554",
-            loadlbs: "99.9"
+            loadlbs: "256.0"
         },
         {
             dial: "555",
-            loadlbs: "99.9"
+            loadlbs: "256.0"
         },
         {
             dial: "556",
-            loadlbs: "99.9"
+            loadlbs: "257.0"
         },
         {
             dial: "557",
-            loadlbs: "99.9"
+            loadlbs: "258.0"
         },
         {
             dial: "558",
-            loadlbs: "99.9"
+            loadlbs: "259.0"
         },
         {
             dial: "559",
-            loadlbs: "99.9"
+            loadlbs: "259.0"
         },
         {
             dial: "560",
-            loadlbs: "99.9"
+            loadlbs: "260.0"
         },
         {
             dial: "561",
-            loadlbs: "99.9"
+            loadlbs: "261.0"
         },
         {
             dial: "562",
-            loadlbs: "99.9"
+            loadlbs: "262.0"
         },
         {
             dial: "563",
-            loadlbs: "99.9"
+            loadlbs: "263.0"
         },
         {
             dial: "564",
-            loadlbs: "99.9"
+            loadlbs: "263.0"
         },
         {
             dial: "565",
-            loadlbs: "99.9"
+            loadlbs: "264.0"
         },
         {
             dial: "566",
-            loadlbs: "99.9"
+            loadlbs: "265.0"
         },
         {
             dial: "567",
-            loadlbs: "99.9"
+            loadlbs: "266.0"
         },
         {
             dial: "568",
-            loadlbs: "99.9"
+            loadlbs: "266.0"
         },
         {
             dial: "569",
-            loadlbs: "99.9"
+            loadlbs: "267.0"
         },
         {
             dial: "570",
-            loadlbs: "99.9"
+            loadlbs: "268.0"
         },
         {
             dial: "571",
-            loadlbs: "99.9"
+            loadlbs: "269.0"
         },
         {
             dial: "572",
-            loadlbs: "99.9"
+            loadlbs: "270.0"
         },
         {
             dial: "573",
-            loadlbs: "99.9"
+            loadlbs: "270.0"
         },
         {
             dial: "574",
-            loadlbs: "99.9"
+            loadlbs: "271.0"
         },
         {
             dial: "575",
-            loadlbs: "99.9"
+            loadlbs: "272.0"
         },
         {
             dial: "576",
-            loadlbs: "99.9"
+            loadlbs: "273.0"
         },
         {
             dial: "577",
-            loadlbs: "99.9"
+            loadlbs: "273.0"
         },
         {
             dial: "578",
-            loadlbs: "99.9"
+            loadlbs: "274.0"
         },
         {
             dial: "579",
-            loadlbs: "99.9"
+            loadlbs: "275.0"
         },
         {
             dial: "580",
-            loadlbs: "99.9"
+            loadlbs: "276.0"
         },
         {
             dial: "581",
-            loadlbs: "99.9"
+            loadlbs: "277.0"
         },
         {
             dial: "582",
-            loadlbs: "99.9"
+            loadlbs: "277.0"
         },
         {
             dial: "583",
-            loadlbs: "99.9"
+            loadlbs: "278.0"
         },
         {
             dial: "584",
-            loadlbs: "99.9"
+            loadlbs: "279.0"
         },
         {
             dial: "585",
-            loadlbs: "99.9"
+            loadlbs: "280.0"
         },
         {
             dial: "586",
-            loadlbs: "99.9"
+            loadlbs: "280.0"
         },
         {
             dial: "587",
-            loadlbs: "99.9"
+            loadlbs: "281.0"
         },
         {
             dial: "588",
-            loadlbs: "99.9"
+            loadlbs: "282.0"
         },
         {
             dial: "589",
-            loadlbs: "99.9"
+            loadlbs: "283.0"
         },
         {
             dial: "590",
-            loadlbs: "99.9"
+            loadlbs: "284.0"
         },
         {
             dial: "591",
-            loadlbs: "99.9"
+            loadlbs: "284.0"
         },
         {
             dial: "592",
-            loadlbs: "99.9"
+            loadlbs: "285.0"
         },
         {
             dial: "593",
-            loadlbs: "99.9"
+            loadlbs: "286.0"
         },
         {
             dial: "594",
-            loadlbs: "99.9"
+            loadlbs: "287.0"
         },
         {
             dial: "595",
-            loadlbs: "99.9"
+            loadlbs: "287.0"
         },
         {
             dial: "596",
-            loadlbs: "99.9"
+            loadlbs: "288.0"
         },
         {
             dial: "597",
-            loadlbs: "99.9"
+            loadlbs: "289.0"
         },
         {
             dial: "598",
-            loadlbs: "99.9"
+            loadlbs: "290.0"
         },
         {
             dial: "599",
-            loadlbs: "99.9"
+            loadlbs: "291.0"
         },
         {
             dial: "600",
-            loadlbs: "99.9"
+            loadlbs: "291.0"
         },
         {
             dial: "601",
-            loadlbs: "99.9"
+            loadlbs: "292.0"
         },
         {
             dial: "602",
-            loadlbs: "99.9"
+            loadlbs: "293.0"
         },
         {
             dial: "603",
-            loadlbs: "99.9"
+            loadlbs: "294.0"
         },
         {
             dial: "604",
-            loadlbs: "99.9"
+            loadlbs: "295.0"
         },
         {
             dial: "605",
-            loadlbs: "99.9"
+            loadlbs: "295.0"
         },
         {
             dial: "606",
-            loadlbs: "99.9"
+            loadlbs: "296.0"
         },
         {
             dial: "607",
-            loadlbs: "99.9"
+            loadlbs: "297.0"
         },
         {
             dial: "608",
-            loadlbs: "99.9"
+            loadlbs: "298.0"
         },
         {
             dial: "609",
-            loadlbs: "99.9"
+            loadlbs: "298.0"
         },
         {
             dial: "610",
-            loadlbs: "99.9"
+            loadlbs: "299.0"
         },
         {
             dial: "611",
-            loadlbs: "99.9"
+            loadlbs: "300.0"
         },
         {
             dial: "612",
-            loadlbs: "99.9"
+            loadlbs: "301.0"
         },
         {
             dial: "613",
-            loadlbs: "99.9"
+            loadlbs: "302.0"
         },
         {
             dial: "614",
-            loadlbs: "99.9"
+            loadlbs: "302.0"
         },
         {
             dial: "615",
-            loadlbs: "99.9"
+            loadlbs: "303.0"
         },
         {
             dial: "616",
-            loadlbs: "99.9"
+            loadlbs: "304.0"
         },
         {
             dial: "617",
-            loadlbs: "99.9"
+            loadlbs: "305.0"
         },
         {
             dial: "618",
-            loadlbs: "99.9"
+            loadlbs: "305.0"
         },
         {
             dial: "619",
-            loadlbs: "99.9"
+            loadlbs: "306.0"
         },
         {
             dial: "620",
-            loadlbs: "99.9"
+            loadlbs: "307.0"
         },
         {
             dial: "621",
-            loadlbs: "99.9"
+            loadlbs: "308.0"
         },
         {
             dial: "622",
-            loadlbs: "99.9"
+            loadlbs: "309.0"
         },
         {
             dial: "623",
-            loadlbs: "99.9"
+            loadlbs: "309.0"
         },
         {
             dial: "624",
-            loadlbs: "99.9"
+            loadlbs: "310.0"
         },
         {
             dial: "625",
-            loadlbs: "99.9"
+            loadlbs: "311.0"
         },
         {
             dial: "626",
-            loadlbs: "99.9"
+            loadlbs: "312.0"
         },
         {
             dial: "627",
-            loadlbs: "99.9"
+            loadlbs: "312.0"
         },
         {
             dial: "628",
-            loadlbs: "99.9"
+            loadlbs: "313.0"
         },
         {
             dial: "629",
-            loadlbs: "99.9"
+            loadlbs: "314.0"
         },
         {
             dial: "630",
-            loadlbs: "99.9"
+            loadlbs: "315.0"
         },
         {
             dial: "631",
-            loadlbs: "99.9"
+            loadlbs: "316.0"
         },
         {
             dial: "632",
-            loadlbs: "99.9"
+            loadlbs: "316.0"
         },
         {
             dial: "633",
-            loadlbs: "99.9"
+            loadlbs: "317.0"
         },
         {
             dial: "634",
-            loadlbs: "99.9"
+            loadlbs: "318.0"
         },
         {
             dial: "635",
-            loadlbs: "99.9"
+            loadlbs: "319.0"
         },
         {
             dial: "636",
-            loadlbs: "99.9"
+            loadlbs: "319.0"
         },
         {
             dial: "637",
-            loadlbs: "99.9"
+            loadlbs: "320.0"
         },
         {
             dial: "638",
-            loadlbs: "99.9"
+            loadlbs: "321.0"
         },
         {
             dial: "639",
-            loadlbs: "99.9"
+            loadlbs: "322.0"
         },
         {
             dial: "640",
-            loadlbs: "99.9"
+            loadlbs: "323.0"
         },
         {
             dial: "641",
-            loadlbs: "99.9"
+            loadlbs: "323.0"
         },
         {
             dial: "642",
-            loadlbs: "99.9"
+            loadlbs: "324.0"
         },
         {
             dial: "643",
-            loadlbs: "99.9"
+            loadlbs: "325.0"
         },
         {
             dial: "644",
-            loadlbs: "99.9"
+            loadlbs: "326.0"
         },
         {
             dial: "645",
-            loadlbs: "99.9"
+            loadlbs: "326.0"
         },
         {
             dial: "646",
-            loadlbs: "99.9"
+            loadlbs: "327.0"
         },
         {
             dial: "647",
-            loadlbs: "99.9"
+            loadlbs: "328.0"
         },
         {
             dial: "648",
-            loadlbs: "99.9"
+            loadlbs: "329.0"
         },
         {
             dial: "649",
-            loadlbs: "99.9"
+            loadlbs: "330.0"
         },
         {
             dial: "650",
-            loadlbs: "99.9"
+            loadlbs: "330.0"
         },
         {
             dial: "651",
-            loadlbs: "99.9"
+            loadlbs: "331.0"
         },
         {
             dial: "652",
-            loadlbs: "99.9"
+            loadlbs: "332.0"
         },
         {
             dial: "653",
-            loadlbs: "99.9"
+            loadlbs: "333.0"
         },
         {
             dial: "654",
-            loadlbs: "99.9"
+            loadlbs: "333.0"
         },
         {
             dial: "655",
-            loadlbs: "99.9"
+            loadlbs: "334.0"
         },
         {
             dial: "656",
-            loadlbs: "99.9"
+            loadlbs: "335.0"
         },
         {
             dial: "657",
-            loadlbs: "99.9"
+            loadlbs: "336.0"
         },
         {
             dial: "658",
-            loadlbs: "99.9"
+            loadlbs: "337.0"
         },
         {
             dial: "659",
-            loadlbs: "99.9"
+            loadlbs: "337.0"
         },
         {
             dial: "660",
-            loadlbs: "99.9"
+            loadlbs: "338.0"
         },
         {
             dial: "661",
-            loadlbs: "99.9"
+            loadlbs: "339.0"
         },
         {
             dial: "662",
-            loadlbs: "99.9"
+            loadlbs: "340.0"
         },
         {
             dial: "663",
-            loadlbs: "99.9"
+            loadlbs: "340.0"
         },
         {
             dial: "664",
-            loadlbs: "99.9"
+            loadlbs: "341.0"
         },
         {
             dial: "665",
-            loadlbs: "99.9"
+            loadlbs: "342.0"
         },
         {
             dial: "666",
-            loadlbs: "99.9"
+            loadlbs: "343.0"
         },
         {
             dial: "667",
-            loadlbs: "99.9"
+            loadlbs: "344.0"
         },
         {
             dial: "668",
-            loadlbs: "99.9"
+            loadlbs: "344.0"
         },
         {
             dial: "669",
-            loadlbs: "99.9"
+            loadlbs: "345.0"
         },
         {
             dial: "670",
-            loadlbs: "99.9"
+            loadlbs: "346.0"
         },
         {
             dial: "671",
-            loadlbs: "99.9"
+            loadlbs: "347.0"
         },
         {
             dial: "672",
-            loadlbs: "99.9"
+            loadlbs: "347.0"
         },
         {
             dial: "673",
-            loadlbs: "99.9"
+            loadlbs: "348.0"
         },
         {
             dial: "674",
-            loadlbs: "99.9"
+            loadlbs: "349.0"
         },
         {
             dial: "675",
-            loadlbs: "99.9"
+            loadlbs: "350.0"
         },
         {
             dial: "676",
-            loadlbs: "99.9"
+            loadlbs: "351.0"
         },
         {
             dial: "677",
-            loadlbs: "99.9"
+            loadlbs: "351.0"
         },
         {
             dial: "678",
-            loadlbs: "99.9"
+            loadlbs: "352.0"
         },
         {
             dial: "679",
-            loadlbs: "99.9"
+            loadlbs: "353.0"
         },
         {
             dial: "680",
-            loadlbs: "99.9"
+            loadlbs: "354.0"
         },
         {
             dial: "681",
-            loadlbs: "99.9"
+            loadlbs: "354.0"
         },
         {
             dial: "682",
-            loadlbs: "99.9"
+            loadlbs: "355.0"
         },
         {
             dial: "683",
-            loadlbs: "99.9"
+            loadlbs: "356.0"
         },
         {
             dial: "684",
-            loadlbs: "99.9"
+            loadlbs: "357.0"
         },
         {
             dial: "685",
-            loadlbs: "99.9"
+            loadlbs: "358.0"
         },
         {
             dial: "686",
-            loadlbs: "99.9"
+            loadlbs: "358.0"
         },
         {
             dial: "687",
-            loadlbs: "99.9"
+            loadlbs: "359.0"
         },
         {
             dial: "688",
-            loadlbs: "99.9"
+            loadlbs: "360.0"
         },
         {
             dial: "689",
-            loadlbs: "99.9"
+            loadlbs: "361.0"
         },
         {
             dial: "690",
-            loadlbs: "99.9"
+            loadlbs: "361.0"
         },
         {
             dial: "691",
-            loadlbs: "99.9"
+            loadlbs: "362.0"
         },
         {
             dial: "692",
-            loadlbs: "99.9"
+            loadlbs: "363.0"
         },
         {
             dial: "693",
-            loadlbs: "99.9"
+            loadlbs: "365.0"
         },
         {
             dial: "694",
-            loadlbs: "99.9"
+            loadlbs: "365.0"
         },
         {
             dial: "695",
-            loadlbs: "99.9"
+            loadlbs: "365.0"
         },
         {
             dial: "696",
-            loadlbs: "99.9"
+            loadlbs: "366.0"
         },
         {
             dial: "697",
-            loadlbs: "99.9"
+            loadlbs: "367.0"
         },
         {
             dial: "698",
-            loadlbs: "99.9"
+            loadlbs: "368.0"
         },
         {
             dial: "699",
-            loadlbs: "99.9"
+            loadlbs: "368.0"
         },
         {
             dial: "700",
-            loadlbs: "99.9"
+            loadlbs: "369.0"
         },
         {
             dial: "701",
-            loadlbs: "99.9"
+            loadlbs: "370.0"
         },
         {
             dial: "702",
-            loadlbs: "99.9"
+            loadlbs: "371.0"
         },
         {
             dial: "703",
-            loadlbs: "99.9"
+            loadlbs: "372.0"
         },
         {
             dial: "704",
-            loadlbs: "99.9"
+            loadlbs: "372.0"
         },
         {
             dial: "705",
-            loadlbs: "99.9"
+            loadlbs: "373.0"
         },
         {
             dial: "706",
-            loadlbs: "99.9"
+            loadlbs: "374.0"
         },
         {
             dial: "707",
-            loadlbs: "99.9"
+            loadlbs: "375.0"
         },
         {
             dial: "708",
-            loadlbs: "99.9"
+            loadlbs: "376.0"
         },
         {
             dial: "709",
-            loadlbs: "99.9"
+            loadlbs: "376.0"
         },
         {
             dial: "710",
-            loadlbs: "99.9"
+            loadlbs: "377.0"
         },
         {
             dial: "711",
-            loadlbs: "99.9"
+            loadlbs: "378.0"
         },
         {
             dial: "712",
-            loadlbs: "99.9"
+            loadlbs: "379.0"
         },
         {
             dial: "713",
-            loadlbs: "99.9"
+            loadlbs: "379.0"
         },
         {
             dial: "714",
-            loadlbs: "99.9"
+            loadlbs: "380.0"
         },
         {
             dial: "715",
-            loadlbs: "99.9"
+            loadlbs: "381.0"
         },
         {
             dial: "716",
-            loadlbs: "99.9"
+            loadlbs: "382.0"
         },
         {
             dial: "717",
-            loadlbs: "99.9"
+            loadlbs: "383.0"
         },
         {
             dial: "718",
-            loadlbs: "99.9"
+            loadlbs: "383.0"
         },
         {
             dial: "719",
-            loadlbs: "99.9"
+            loadlbs: "384.0"
         },
         {
             dial: "720",
-            loadlbs: "99.9"
+            loadlbs: "385.0"
         },
         {
             dial: "721",
-            loadlbs: "99.9"
+            loadlbs: "386.0"
         },
         {
             dial: "722",
-            loadlbs: "99.9"
+            loadlbs: "386.0"
         },
         {
             dial: "723",
-            loadlbs: "99.9"
+            loadlbs: "387.0"
         },
         {
             dial: "724",
-            loadlbs: "99.9"
+            loadlbs: "388.0"
         },
         {
             dial: "725",
-            loadlbs: "99.9"
+            loadlbs: "389.0"
         },
         {
             dial: "726",
-            loadlbs: "99.9"
+            loadlbs: "390.0"
         },
         {
             dial: "727",
-            loadlbs: "99.9"
+            loadlbs: "390.0"
         },
         {
             dial: "728",
-            loadlbs: "99.9"
+            loadlbs: "391.0"
         },
         {
             dial: "729",
-            loadlbs: "99.9"
+            loadlbs: "392.0"
         },
         {
             dial: "730",
-            loadlbs: "99.9"
+            loadlbs: "393.0"
         },
         {
             dial: "731",
-            loadlbs: "99.9"
+            loadlbs: "393.0"
         },
         {
             dial: "732",
-            loadlbs: "99.9"
+            loadlbs: "394.0"
         },
         {
             dial: "733",
-            loadlbs: "99.9"
+            loadlbs: "395.0"
         },
         {
             dial: "734",
-            loadlbs: "99.9"
+            loadlbs: "396.0"
         },
         {
             dial: "735",
-            loadlbs: "99.9"
+            loadlbs: "397.0"
         },
         {
             dial: "736",
-            loadlbs: "99.9"
+            loadlbs: "397.0"
         },
         {
             dial: "737",
-            loadlbs: "99.9"
+            loadlbs: "398.0"
         },
         {
             dial: "738",
-            loadlbs: "99.9"
+            loadlbs: "399.0"
         },
         {
             dial: "739",
-            loadlbs: "99.9"
+            loadlbs: "400.0"
         },
         {
             dial: "740",
-            loadlbs: "99.9"
+            loadlbs: "400.0"
         },
         {
             dial: "741",
-            loadlbs: "99.9"
+            loadlbs: "401.0"
         },
         {
             dial: "742",
-            loadlbs: "99.9"
+            loadlbs: "402.0"
         },
         {
             dial: "743",
-            loadlbs: "99.9"
+            loadlbs: "403.0"
         },
         {
             dial: "744",
-            loadlbs: "99.9"
+            loadlbs: "404.0"
         },
         {
             dial: "745",
-            loadlbs: "99.9"
+            loadlbs: "404.0"
         },
         {
             dial: "746",
-            loadlbs: "99.9"
+            loadlbs: "405.0"
         },
         {
             dial: "747",
-            loadlbs: "99.9"
+            loadlbs: "406.0"
         },
         {
             dial: "748",
-            loadlbs: "99.9"
+            loadlbs: "407.0"
         },
         {
             dial: "749",
-            loadlbs: "99.9"
+            loadlbs: "407.0"
         },
         {
             dial: "750",
-            loadlbs: "99.9"
+            loadlbs: "408.0"
         }
     ])
 }
