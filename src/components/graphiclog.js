@@ -9,11 +9,25 @@ class GraphicLog {
         this.images = [];
     }
 
+    updateactiveimage(graphiclog) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        if(myuser) {
+            if(this.state.activesampleid) {
+                const i = gfk.getsamplekeybyid.call(this,this.state.activesampleid);
+                myuser.samples.sample[i].graphiclog = graphiclog;
+                this.props.reduxUser(myuser);
+                this.setState({render:'render'})
+            }
+        }
+    }
+
     getimages() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
         const styles = MyStylesheet();
-        const regularFont = gfk.getRegularFont.call(this)
+        const regularFont = gfk.getRegularFont.call(this);
+        const graphiclog = new GraphicLog();
         let myimages = [];
         const imageContainer = () => {
             if (this.state.width > 1200) {
@@ -26,7 +40,7 @@ class GraphicLog {
         }
         const showimage = (image) => {
             if (this.state.width > 1200) {
-                return (<div style={{ ...styles.generalFlex }}>
+                return (<div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}}>
                     <div style={{ ...styles.flex1 }}>
                         <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
                             <img src={image.graphiclog} alt={image.description} />
@@ -45,7 +59,7 @@ class GraphicLog {
             } else if (this.state.width > 800) {
 
                 return (
-                    <div style={{ ...styles.generalFlex }}>
+                    <div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
                                 <img src={image.graphiclog} alt={image.description} />
@@ -64,7 +78,7 @@ class GraphicLog {
             } else {
 
                 return (
-                    <div style={{ ...styles.generalFlex }}>
+                    <div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...imageContainer(), ...styles.alignRight }}>
                                 <img src={image.graphiclog} alt={image.description} />

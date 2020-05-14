@@ -1329,6 +1329,14 @@ class Samples extends Component {
             }
         }
 
+        const showgraphiclog = () => {
+            if(this.state.activesampleid) {
+                return(graphiclog.showgraphiclog.call(this))
+            } else {
+                return
+            }
+        }
+
         const myuser = gfk.getuser.call(this);
         if (myuser) {
             const engineerid = myuser.engineerid;
@@ -1415,7 +1423,7 @@ class Samples extends Component {
                             </div>
                         </div>
 
-                        {graphiclog.showgraphiclog.call(this)}
+                        {showgraphiclog()}
 
                         <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
                             {this.state.message}
