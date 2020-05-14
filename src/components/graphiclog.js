@@ -2,6 +2,7 @@ import React from 'react';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { addNewImage } from './svg'
+import { UploadGraphicLog } from './actions/api'
 
 class GraphicLog {
     constructor() {
@@ -131,6 +132,27 @@ class GraphicLog {
         }
         return myimages;
     }
+    async uploadnewimage() {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this)
+        if (this.state.activesampleid) {
+            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid)
+            let formData = new FormData();
+            let myfile = document.getElementById("graphic-log");
+            formData.append("graphiclog", myfile.files[0]);
+            formData.append("sample", JSON.stringify(sample))
+            let response = await UploadGraphicLog(formData);
+            if(response.hasOwnProperty("sample")) {
+                const sample = response.sample[0];
+                const sampleid = sample.sampleid;
+                const i = gfk.getsamplekeybyid.call(this,sampleid)
+                myuser.samples.sample[i] = sample;
+                this.props.reduxUser(myuser)
+                this.setState({render:'render'})
+                
+            }
+        }
+    }
 
     showgraphiclog() {
         const styles = MyStylesheet();
@@ -193,7 +215,7 @@ class GraphicLog {
 
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                         <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
-                            <input type="file" id="graphic-log" /> <button style={{ ...styles.generalButton, ...addnewimage(), ...buttonMargin() }}>{addNewImage()}</button>
+                            <input type="file" id="graphic-log" /> <button style={{ ...styles.generalButton, ...addnewimage(), ...buttonMargin() }} onClick={() => { graphiclog.uploadnewimage.call(this) }}>{addNewImage()}</button>
                         </div>
                     </div>
 

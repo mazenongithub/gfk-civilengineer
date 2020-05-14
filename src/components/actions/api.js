@@ -61,7 +61,8 @@ export async function UploadFieldImage(formdata, imageid) {
     return fetch(APIURL, {
         method: 'post',
         credentials: 'include',
-        body: formdata
+        body: formdata,
+        
     })
         .then(resp => {
 
@@ -166,6 +167,32 @@ export async function SaveFieldReport(values) {
         })
 }
 
+export async function UploadGraphicLog(formData) {
+
+    var APIURL = `https://civilengineer.io/gfk/api/uploadgraphiclog.php`
+    return fetch(APIURL, {
+        method: 'post',
+        credentials: 'include',
+        body: formData
+    })
+        .then(resp => {
+
+            if (!resp.ok) {
+                if (resp.status >= 400 && resp.status < 500) {
+                    return resp.json().then(data => {
+                    
+                        throw data.message;
+                    })
+                }
+                else {
+                    let err = { errorMessage: 'Please try again later, server is not responding' };
+                    throw err;
+                }
+            }
+
+            return resp.json();
+        })
+}
 export async function SaveTime(values) {
     var APIURL = `https://civilengineer.io/gfk/api/savetime.php`
     return fetch(APIURL, {
