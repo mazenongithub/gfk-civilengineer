@@ -89,14 +89,110 @@ export function CreateImage(imageid, image, caption, fieldid) {
 export function Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter) {
     return { boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter }
 }
+
+
+
+export function inputDateSecActiveIDTimein(dateencoded, timein) {
+    let newDate = new Date(dateencoded)
+    let offset = newDate.getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset < 0) {
+        offset = -offset;
+        sym = "+"
+    }
+    else {
+        sym = "-"
+    }
+    if (offset < 10) {
+        offset = `0${offset}`
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}-00:00`);
+    let month = newDate.getMonth() + 1;
+    if (month < 10) {
+        month = `0${month}`
+    }
+    let day = newDate.getDate();
+    if (day < 10) {
+        day = `0${day}`
+    }
+    let year = newDate.getFullYear();
+
+    let hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`
+    }
+    let fakedate = new Date(`${year}/${month}/${day} ${hours}:${minutes}:${seconds}${sym}${2 * offset}:00`)
+    hours = fakedate.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    minutes = fakedate.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    seconds = fakedate.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`
+    }
+    month = fakedate.getMonth() + 1;
+    if (month < 10) {
+        month = `0${month}`
+    }
+    year = fakedate.getFullYear();
+    day = fakedate.getDate();
+    if (day < 10) {
+        day = `0${day}`
+    }
+    return (`${year}-${month}-${day} ${hours}:${minutes}:${seconds}`)
+}
+
+export function inputtimeDBoutputCalendarDaySeconds(timein) {
+
+    let datein = new Date(`${timein.replace(/-/g, '/')} UTC`);
+    let month = datein.getMonth() + 1;
+    if (month < 10) {
+        month = `0${month}`
+    }
+    let date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`
+    }
+    let year = datein.getFullYear();
+    let offset = getOffsetTime(timein);
+    let newDate = new Date(`${year}/${month}/${date} 00:00:00${offset}`)
+    return (newDate.getTime())
+}
 export function check_31(dateobj) {
     let month = dateobj.getMonth();
     if (month === 0 || month === 2 || month === 4 || month === 6 || month === 7 || month === 9 || month === 11) {
         return 31;
     }
 }
-export function getOffset() {
-    let offset = new Date().getTimezoneOffset() / 60
+
+export function AMPMfromTimeIn(timein) {
+    let datein = new Date(`${timein.replace(/-/g, '/')} UTC`);
+    let hours = datein.getHours();
+    let ampm = "";
+    if (hours >= 12) {
+        ampm = "PM"
+    } else {
+        ampm = "AM"
+    }
+    return (ampm)
+}
+export function getOffsetTime(timein) {
+    let datein = new Date(`${timein.replace(/-/g, '/')} UTC`)
+let offset = datein.getTimezoneOffset() / 60;
+
     let sym = "+";
     if (offset > 0) {
         sym = "-";
@@ -104,7 +200,24 @@ export function getOffset() {
     if (Math.abs(offset) < 10) {
         offset = `0${offset}`
     }
-    return (`${sym}${offset}:00`)
+ return(`${sym}${offset}:00`)
+
+}
+export function CreateTime(laborid,projectid,timein,timeout,traveltimein,traveltimeout,description,invoiceid) {
+    return({laborid,projectid,timein,timeout,traveltimein,traveltimeout,description,invoiceid})
+}
+export function getOffset(timein) {
+    let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00`)
+let offset = datein.getTimezoneOffset() / 60;
+
+    let sym = "+";
+    if (offset > 0) {
+        sym = "-";
+    }
+    if (Math.abs(offset) < 10) {
+        offset = `0${offset}`
+    }
+ return(`${sym}${offset}:00`)
 
 }
 export function check_30(dateobj) {
@@ -144,7 +257,7 @@ export function inputDatePickerOutputDateObj(value) {
     return newDate;
 }
 export function decreaseCalendarDaybyOneYear(timein) {
-    let offset = getOffset();
+    let offset = getOffsetTime(timein);
     let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00${offset}`)
     let currentYear = datein.getFullYear();
     let decreaseYear = currentYear - 1;
@@ -191,7 +304,7 @@ export function subtractoneYearDateObj(datein) {
     return (new Date(`${year}/${month}/${date} ${hours}:${minutes}:${seconds}`))
 }
 export function increaseCalendarDayOneMonth(timein) {
-    let offset = getOffset();
+    let offset = getOffsetTime(timein);
     let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00${offset}`)
     let currentMonth = datein.getMonth() + 1;
     let year = datein.getFullYear();
@@ -215,6 +328,55 @@ export function increaseCalendarDayOneMonth(timein) {
     let newDate = `${year}-${increaseMonth}-${day}`
     return (newDate)
 }
+
+export function decreaseDateStringByOneMonth(timein) {
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+        offset = -offset;
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}${sym}${offset}:00`);
+    let month = datein.getMonth();
+    let year = datein.getFullYear();
+    if (month === 0) {
+        month = 11;
+        year = year - 1;
+    }
+    else {
+        month = month - 1;
+    }
+
+    let date = datein.getDate();
+    let hours = datein.getHours();
+    month = month + 1;
+    if (month < 10) {
+        month = `0${month}`;
+    }
+    date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`;
+    }
+    hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
+}
+
 export function addoneMonthDateObj(datein) {
     let month = datein.getMonth();
     let year = datein.getFullYear();
@@ -252,8 +414,314 @@ export function addoneMonthDateObj(datein) {
 
     return (new Date(`${year}/${month}/${date} ${hours}:${minutes}:${seconds}`))
 }
+
+export function inputTimeDateOutputUTCString(timein) {
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+
+    }
+    if (Math.abs(offset) < 10) {
+        offset = `0${offset}`
+    }
+    let dates = timein.split('T');
+    let datein = dates[0];
+    timein = dates[1];
+
+    let newDate = new Date(`${datein.replace(/-/g, '/')} ${timein}:00${sym}${offset}:00`)
+    let newDatesec = newDate.getTime();
+    let offsetsec = newDate.getTimezoneOffset() * (60 * 1000)
+    let fakedate = new Date(newDatesec + offsetsec)
+    let year = fakedate.getFullYear()
+    let month = fakedate.getMonth() + 1;
+    let date = fakedate.getDate();
+    let hours = fakedate.getHours();
+    if (month < 10) {
+        month = `0${month}`;
+    }
+
+    if (date < 10) {
+        date = `0${date}`;
+    }
+
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = fakedate.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = fakedate.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
+}
+
+export function inputUTCStringAddOffsetString(timein) {
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}-00:00`)
+    let fullyear = datein.getFullYear();
+    let month = datein.getMonth() + 1
+    let date = datein.getDate();
+    let hours = datein.getHours();
+    fullyear = datein.getFullYear();
+    month = datein.getMonth() + 1
+    if (month < 10) {
+        month = `0${month}`
+    }
+    date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`
+    }
+    hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`
+    }
+
+
+    return (`${fullyear}-${month}-${date} ${hours}:${minutes}:${seconds}`)
+
+}
+
+
+export function inputDateObjOutputCalendarString(datein) {
+
+    let month = datein.getMonth() + 1;
+    let day = datein.getDate();
+    let hours = datein.getHours();
+    let ampm = 'AM'
+    if (hours > 12) {
+        hours = hours - 12;
+        ampm = 'PM'
+    }
+    let minutes = datein.getMinutes();
+    let year = datein.getFullYear();
+    if (month < 10) {
+        month = `0${month}`
+    }
+    if (day < 10) {
+        day = `0${day}`
+    }
+
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    return (`${month}/${day}/${year} ${hours}:${minutes} ${ampm}`)
+}
+export function inputDateTimeOutDateObj(timein) {
+
+    let newDate = new Date(`${timein.replace(/-/g, '/')} UTC`);
+    return (newDate)
+}
+export function inputDateObjOutputString(dateobj) {
+    let day = dateobj.getDate();
+    let year = dateobj.getFullYear();
+    let hours = dateobj.getHours();
+    let month = dateobj.getMonth() + 1;
+    hours = trailingzero(hours);
+    let minutes = dateobj.getMinutes();
+    minutes = trailingzero(minutes);
+    let dayzero = trailingzero(day);
+    month = trailingzero(month)
+    let timestring = `${year}-${month}-${dayzero}T${hours}:${minutes}`;
+    return timestring;
+}
+
+export function toggleAMDateObj(datein) {
+    let hours = datein.getHours();
+    let newDate = {};
+    if (hours > 12) {
+        newDate = new Date(datein.getTime() - (1000 * 60 * 60 * 12))
+    }
+    else {
+        newDate = new Date(datein.getTime() + (1000 * 60 * 60 * 12))
+    }
+    return (newDate)
+
+}
+
+
+export function toggleAMTimeString(timein) {
+    let datein = new Date(`${timein.replace(/-/g, '/')} UTC`)
+    let hours = datein.getHours();
+    let newDate = {};
+    if (hours > 12) {
+        newDate = new Date(datein.getTime() - (1000 * 60 * 60 * 12))
+    }
+    else {
+        newDate = new Date(datein.getTime() + (1000 * 60 * 60 * 12))
+    }
+    let year = newDate.getFullYear();
+
+    let month = newDate.getMonth() + 1;
+    if (month < 10) {
+        month = `0${month}`
+    }
+    hours = newDate.getHours()
+
+
+    let day = newDate.getDate()
+    if (day < 10) {
+        day = `0${day}`
+    }
+    let minutes = newDate.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    let offset = 2 * new Date().getTimezoneOffset() / 60
+    let sym = "+";
+    if (offset > 0) {
+        sym = "-";
+    }
+    if (Math.abs(offset) < 10) {
+        offset = `0${offset}`
+    }
+    offset = `${sym}${offset}:00`
+    let UTCDate = new Date(`${year}-${month}-${day} ${hours}:${minutes}:00${offset}`)
+    hours = UTCDate.getHours()
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    month = UTCDate.getMonth() + 1;
+    if (month < 10) {
+        month = `0${month}`
+    }
+    day = UTCDate.getDate();
+    if (day < 10) {
+        day = `0${day}`
+    }
+    year = UTCDate.getFullYear();
+    return (`${year}-${month}-${day} ${hours}:${minutes}:00`)
+
+}
+
+export function inputTimeInDateStringforPicker(timein) {
+    let dateobj = new Date(`${timein.replace(/-/g, '/')}-00:00`)
+
+
+    let day = dateobj.getDate();
+    let year = dateobj.getFullYear();
+    let hours = dateobj.getHours();
+    let month = dateobj.getMonth() + 1;
+    hours = trailingzero(hours);
+    let minutes = dateobj.getMinutes();
+    minutes = trailingzero(minutes);
+    let dayzero = trailingzero(day);
+    month = trailingzero(month)
+    let timestring = `${year}-${month}-${dayzero}T${hours}:${minutes}`;
+    return timestring;
+}
+
+export function addincDateObj(datein, inc) {
+    return (new Date(datein.getTime() + inc))
+}
+
+export function increasedateStringbyInc(timein, inc) {
+
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+        offset = -offset;
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}${sym}${offset}:00`);
+    let newdate = new Date(datein.getTime() + inc)
+
+    let month = newdate.getMonth();
+    let year = newdate.getFullYear();
+
+    let date = newdate.getDate();
+    let hours = newdate.getHours();
+    month = month + 1;
+    if (month < 10) {
+        month = `0${month}`;
+    }
+    date = newdate.getDate();
+    if (date < 10) {
+        date = `0${date}`;
+    }
+    hours = newdate.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = newdate.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = newdate.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
+}
+
+export function subtractincDateObj(datein, inc) {
+    return (new Date(datein.getTime() - inc))
+}
+
+export function decreasedateStringbyInc(timein, inc) {
+
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+        offset = -offset;
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}${sym}${offset}:00`);
+    let newdate = new Date(datein.getTime() - inc)
+
+    let month = newdate.getMonth();
+    let year = newdate.getFullYear();
+
+    let date = newdate.getDate();
+    let hours = newdate.getHours();
+    month = month + 1;
+    if (month < 10) {
+        month = `0${month}`;
+    }
+    date = newdate.getDate();
+    if (date < 10) {
+        date = `0${date}`;
+    }
+    hours = newdate.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = newdate.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = newdate.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
+}
+
 export function decreaseCalendarDaybyOneMonth(timein) {
-    let offset = getOffset();
+    let offset = getOffsetTime(timein);
     let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00${offset}`)
     let currentMonth = datein.getMonth() + 1;
     let year = datein.getFullYear();
@@ -277,6 +745,124 @@ export function decreaseCalendarDaybyOneMonth(timein) {
     let newDate = `${year}-${decreaseMonth}-${day}`
     return (newDate)
 }
+
+
+
+export function decreaseDateStringByOneYear(timein) {
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+        offset = -offset;
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}${sym}${offset}:00`);
+    let month = datein.getMonth();
+    let year = datein.getFullYear();
+    year = year - 1;
+
+    let date = datein.getDate();
+    let hours = datein.getHours();
+    month = month + 1;
+    if (month < 10) {
+        month = `0${month}`;
+    }
+    date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`;
+    }
+    hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
+}
+
+export function addoneYearDateObj(datein) {
+    let month = datein.getMonth();
+    let year = datein.getFullYear();
+    year = year + 1;
+
+    let date = datein.getDate();
+    let hours = datein.getHours();
+    month = month + 1
+    if (month < 10) {
+        month = `0${month}`
+    }
+    date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`
+    }
+    hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`
+    }
+
+
+    return (new Date(`${year}/${month}/${date} ${hours}:${minutes}:${seconds}`))
+}
+export function increaseDateStringByOneYear(timein) {
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+        offset = -offset;
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}${sym}${offset}:00`);
+    let month = datein.getMonth();
+    let year = datein.getFullYear();
+    year = year + 1;
+
+    let date = datein.getDate();
+    let hours = datein.getHours();
+    month = month + 1;
+    if (month < 10) {
+        month = `0${month}`;
+    }
+    date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`;
+    }
+    hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
+}
+
 export function subtractMonthDateObj(datein) {
     let month = datein.getMonth();
     let year = datein.getFullYear();
@@ -371,7 +957,7 @@ export function inputDateObjandSecReturnObj(dateencoded, datein) {
 }
 
 export function increaseCalendarDaybyOneYear(timein) {
-    let offset = getOffset();
+    let offset = getOffsetTime(timein);
     let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00${offset}`)
     let currentYear = datein.getFullYear();
     let increaseYear = currentYear + 1;
@@ -387,37 +973,8 @@ export function increaseCalendarDaybyOneYear(timein) {
     return (newDate)
 }
 
-export function addoneYearDateObj(datein) {
-    let month = datein.getMonth();
-    let year = datein.getFullYear();
-    year = year + 1;
-
-    let date = datein.getDate();
-    let hours = datein.getHours();
-    month = month + 1
-    if (month < 10) {
-        month = `0${month}`
-    }
-    date = datein.getDate();
-    if (date < 10) {
-        date = `0${date}`
-    }
-    hours = datein.getHours();
-    if (hours < 10) {
-        hours = `0${hours}`
-    }
-    let minutes = datein.getMinutes();
-    if (minutes < 10) {
-        minutes = `0${minutes}`
-    }
-    let seconds = datein.getSeconds();
-    if (seconds < 10) {
-        seconds = `0${seconds}`
-    }
 
 
-    return (new Date(`${year}/${month}/${date} ${hours}:${minutes}:${seconds}`))
-}
 export function inputDateObjOutputCalendarDaySeconds(datein) {
     let offset = datein.getTimezoneOffset() / 60;
     let sym = "";
@@ -518,6 +1075,54 @@ export function milestoneformatdatestring(datein) {
         return datein;
     }
 
+}
+export function increaseDateStringByOneMonth(timein) {
+
+    let offset = new Date().getTimezoneOffset() / 60;
+    let sym = "";
+    if (offset > 0) {
+        sym = "-";
+    }
+    else {
+        sym = "+";
+        offset = -offset;
+    }
+
+    let datein = new Date(`${timein.replace(/-/g, '/')}${sym}${offset}:00`);
+    let month = datein.getMonth() + 1;
+    let year = datein.getFullYear();
+    if (month === 12) {
+        month = 1;
+        year = year + 1;
+    }
+    else {
+        month = month + 1;
+    }
+
+    let date = datein.getDate();
+    let hours = datein.getHours();
+
+    if (month < 10) {
+        month = `0${month}`;
+    }
+    date = datein.getDate();
+    if (date < 10) {
+        date = `0${date}`;
+    }
+    hours = datein.getHours();
+    if (hours < 10) {
+        hours = `0${hours}`;
+    }
+    let minutes = datein.getMinutes();
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+    let seconds = datein.getSeconds();
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+
+    return (`${year}-${month}-${date} ${hours}:${minutes}:${seconds}`);
 }
 export function inputUTCStringForLaborID(timein) {
 
@@ -647,8 +1252,60 @@ export function UnconfinedTest(unid, sampleid, loadreading, displacement) {
         }
     })
 }
+
+export function inputDateObjOutputAdjString(datein) {
+    let offset = new Date().getTimezoneOffset() / 60
+    let sym = "-";
+    if (offset < 0) {
+        sym = "+";
+        offset = -offset;
+    }
+    if (offset < 10) {
+        offset = `0${offset}`
+    }
+    let year = datein.getFullYear();
+
+
+    let month = datein.getMonth() + 1;
+    let day = datein.getDate();
+    let hours = datein.getHours();
+    let minutes = datein.getMinutes();
+    if (month < 10) {
+        month = `0${month}`
+    }
+    if (day < 10) {
+        day = `0${day}`
+    }
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+    let newDate = new Date(`${year}/${month}/${day} ${hours}:${minutes}:00${sym}${2 * offset}:00`)
+
+    hours = newDate.getHours()
+    month = newDate.getMonth() + 1;
+    day = newDate.getDate();
+    minutes = newDate.getMinutes();
+    year = newDate.getFullYear();
+    if (month < 10) {
+        month = `0${month}`
+    }
+    if (day < 10) {
+        day = `0${day}`
+    }
+    if (hours < 10) {
+        hours = `0${hours}`
+    }
+    if (minutes < 10) {
+        minutes = `0${minutes}`
+    }
+
+    return (`${year}-${month}-${day} ${hours}:${minutes}:00`)
+}
 export function inputDateStringOutputSeconds(timein) {
-    let offset = getOffset()
+    let offset = getOffsetTime(timein)
     let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00${offset}`);
     return (datein.getTime())
 }

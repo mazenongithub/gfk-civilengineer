@@ -24,6 +24,10 @@ export function MyStylesheet() {
         activefieldreport: {
             backgroundColor: '#ED9FB9'
         },
+        timeButton: {
+            width: '62px',
+            height: '41px'
+        },
         bottomMargin15: {
             marginBottom: '15px'
         },

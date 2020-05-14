@@ -4,7 +4,15 @@ import { MyStylesheet } from './styles';
 import { SaveBorings } from './actions/api'
 import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestData } from './functions'
 class GFK {
-
+getsavetime() {
+    if(this.state.width>1200) {
+        return({width:'364px',height:'87px'})
+    } else if (this.state.width>800) {
+        return({width:'281px',height:'67px'})
+    } else {
+        return({width:'209px',height:'51px'})
+    }
+}
     getuser() {
         let myuser = false;
         if (this.props.myuser) {
@@ -438,6 +446,64 @@ class GFK {
         }
         return sieve;
 
+    }
+    getactuallaborkeybyid(laborid) {
+        const gfk = new GFK();
+        const mylabor = gfk.getactuallabor.call(this);
+        let key = false;
+        if(mylabor) {
+            // eslint-disable-next-line
+            mylabor.map((labor,i)=> {
+                if(labor.laborid === laborid) {
+                    key = i;
+                }
+            })
+        }
+        return key
+    }
+    getactuallaborbyid(laborid) {
+        const gfk = new GFK();
+        const mylabor = gfk.getactuallabor.call(this);
+        let getlabor = false;
+        if(mylabor) {
+            // eslint-disable-next-line
+            mylabor.map(labor=> {
+                if(labor.laborid === laborid) {
+                    getlabor = labor;
+                }
+            })
+        }
+        return getlabor;
+    }
+      getactuallabor() {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this)
+        let labor = false;
+        if(myuser.hasOwnProperty("actuallabor")) {
+            labor = myuser.actuallabor.mylabor;
+           
+
+        }
+        
+        return labor;
+    }
+
+    getactuallaborbyproject(projectid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this)
+        let labor = [];
+        if(myuser.hasOwnProperty("actuallabor")) {
+            // eslint-disable-next-line
+            myuser.actuallabor.mylabor.map(mylabor=> {
+                if(mylabor.projectid === projectid) {
+                    labor.push(mylabor)
+                }
+            })
+           
+
+        }
+        
+        return labor;
     }
     getsievekeybysampleid(sampleid) {
         const gfk = new GFK();

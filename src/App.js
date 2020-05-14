@@ -10,7 +10,8 @@ import Borings from './components/borings';
 import Samples from './components/samples';
 import Sieve from './components/sieve';
 import Unconfined from './components/unconfined';
-import Login from './components/login'
+import Login from './components/login';
+import Timesheet from './components/timesheet'
 import { CheckUserLogin } from './components/actions/api'
 class App extends Component {
   componentDidMount() {
@@ -55,6 +56,7 @@ class App extends Component {
           <Route exact path="/" component={defaultComponent} />
           <Route exact path="/engineer/login" component={Login} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/fieldreports" component={FieldReports} />
+          <Route exact path="/:engineerid/gfk/projects/:projectid/timesheet" component={Timesheet} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings" component={Borings} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples" component={Samples} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />

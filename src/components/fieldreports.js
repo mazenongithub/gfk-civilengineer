@@ -1080,7 +1080,6 @@ class FieldReports extends Component {
                                 onChange={event => { this.handlecontent(event.target.value) }}> </textarea>
                         </div>
                     </div>
-
                     {this.compactiontestinput()}
                     {this.showcompactiontests()}
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
