@@ -13,6 +13,7 @@ import Unconfined from './components/unconfined';
 import Login from './components/login';
 import Timesheet from './components/timesheet'
 import { CheckUserLogin } from './components/actions/api'
+import Projects from './components/projects';
 class App extends Component {
   componentDidMount() {
     this.checkuser()
@@ -55,6 +56,7 @@ class App extends Component {
         <Switch>
           <Route exact path="/" component={defaultComponent} />
           <Route exact path="/engineer/login" component={Login} />
+          <Route exact path="/:engineerid/gfk/projects" component={Projects} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/fieldreports" component={FieldReports} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/timesheet" component={Timesheet} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/borings" component={Borings} />

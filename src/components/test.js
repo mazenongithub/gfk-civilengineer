@@ -1,54 +1,45 @@
-handlegraphiclog(graphiclog) {
+getcity() {
     const gfk = new GFK();
-    const myuser = gfk.getuser.call(this);
-    if (myuser) {
-        if (this.state.activesampleid) {
-            const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-            myuser.samples.sample[i].graphiclog = graphiclog;
-            this.props.reduxUser(myuser)
-            this.setState({ render: 'render' })
-        } else {
-            const sampleid = makeID(16);
-            const boringid = this.props.match.params.boringid;
-            const samplenumber = this.state.samplenumber;
-            const sampledepth = this.state.sampledepth;
-            const sampleset = this.state.sampleset;
-            const depth = this.state.depth;
-            const diameter = this.state.diameter;
-            const pi = this.state.pi;
-            const uscs = this.state.uscs;
-            const drywgt = this.state.drywgt;
-            const tarewgt = this.state.tarewgt;
-            const wetwgt = this.state.wgtwgt;
-            const wetwgt_2 = this.state.wetwgt_2;
-            const tareno = this.state.tareno;
-            const samplelength = this.state.samplelength;
-            const description = this.state.description;
-            const spt = this.state.spt;
-            const ll = this.state.ll;
-            const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
-            const samples = gfk.getsamples.call(this)
-            if (samples) {
-                myuser.samples.sample.push(newSample)
 
-            } else {
-                myuser.samples = { sample: [newSample] }
-
-            }
-            this.props.reduxUser(myuser)
-            this.setState({ activesampleid: sampleid, graphiclog: '' })
-
-        }
+    if (this.state.activeprojectid) {
+        const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid);
+        return myproject.city;
+    } else {
+        return this.state.city;
     }
 
-
 }
-getgraphiclog() {
+handlecity(city) {
+    const makeid = new MakeID();
     const gfk = new GFK();
-    if (this.state.activesampleid) {
-        const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-        return sample.graphiclog;
-    } else {
-        return this.state.graphiclog;
+    const myuser = gfk.getuser.call(this)
+    if (myuser) {
+        const engineerid = myuser.engineerid;
+        if (this.state.activeprojectid) {
+            const i = gfk.getprojectkeybyid.call(this,this.state.activeprojectid)
+            myuser.projects.project[i].city = city;
+            this.props.reduxUser(myuser);
+            this.setState({render:'render'})
+
+        } else {
+            const projectid = makeid.projectid.call(this);
+            const series = this.state.series;
+            const projectnumber = '0';
+            const title = this.state.title
+            const address = this.state.address;
+            const proposedproject = this.state.proposedproject;
+            const projectapn = this.state.projectapn;
+            const clientid = this.state.clientid;
+            let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
+            const projects = gfk.getprojects.call(this);
+            if(projects) {
+                myuser.projects.project.push(newproject)
+            } else {
+                const project = {project:[newproject]}
+                myuser.projects = project;
+            }
+            this.props.reduxUser(myuser)
+            this.setState({activeprojectid:projectid})
+        }
     }
 }

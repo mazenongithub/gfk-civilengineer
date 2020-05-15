@@ -4,6 +4,15 @@ import { MyStylesheet } from './styles';
 import { SaveBorings } from './actions/api'
 import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestData } from './functions'
 class GFK {
+getsaveprojecticon() {
+    if(this.state.width>1200) {
+        return({width:'328px',height:'76px'})
+    } else if (this.state.width>800) {
+        return({width:'265px',height:'61px'})
+    } else {
+        return({width:'199px',height:'46px'})
+    }  
+}
 getsavetime() {
     if(this.state.width>1200) {
         return({width:'364px',height:'87px'})
@@ -318,19 +327,36 @@ getsavetime() {
         return projects;
     }
     getprojectbyid(projectid) {
+   
         const gfk = new GFK();
         const projects = gfk.getprojects.call(this);
         let project = false;
         if (projects) {
             // eslint-disable-next-line
             projects.map(myproject => {
-                if (myproject.projectid === projectid) {
+                if (myproject.projectid.toString() === projectid.toString()) {
                     project = myproject;
+                   
+                } 
+            })
+        }
+        return project;
+    }
+
+    getprojectkeybyid(projectid) {
+        const gfk = new GFK();
+        const projects = gfk.getprojects.call(this);
+        let key= false;
+        if (projects) {
+            // eslint-disable-next-line
+            projects.map((myproject,i) => {
+                if (myproject.projectid === projectid) {
+                    key = i;
 
                 }
             })
         }
-        return project;
+        return key;
     }
     getfieldreportkeybyid(fieldid) {
         const gfk = new GFK();
@@ -779,7 +805,7 @@ getsavetime() {
 
                     })
                 }
-                console.log(myuser)
+             
                 this.props.reduxUser(myuser)
 
                 if (response.hasOwnProperty("borings")) {
