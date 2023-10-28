@@ -2,7 +2,6 @@ import React from 'react';
 import { MyStylesheet } from './styles'
 import GFK from './gfk'
 import { goToIcon } from './svg';
-import * as actions from './actions';
 import { Link } from 'react-router-dom';
 
 class Profile {
@@ -195,7 +194,7 @@ class Profile {
             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                 <div style={{ ...styles.flex1 }}>
                 <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                        to={`/${engineerid}/gfk/projects`}>
+                        to={`/${engineerid}/projects`}>
                     <button style={{ ...styles.generalButton, ...goIconWidth }}>
                         {goToIcon()}
                     </button>
@@ -204,7 +203,7 @@ class Profile {
                 </div>
                 <div style={{ ...styles.flex6 }}>
                     <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                        to={`/${engineerid}/gfk/projects`}>
+                        to={`/${engineerid}/projects`}>
                         Projects
                     </Link>
 

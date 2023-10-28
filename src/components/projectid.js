@@ -1,6 +1,9 @@
 import React from 'react';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
+import { Link } from 'react-router-dom';
+import { goToIcon } from './svg';
+
 class ProjectID {
     findprojectbycity() {
         const gfk = new GFK();
@@ -62,12 +65,28 @@ class ProjectID {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
+        const engineerid = this.props.match.params.engineerid;
+        const headerFont = gfk.getHeaderFont.call(this)
+        const goIconWidth = gfk.getgotoicon.call(this)
         if (this.state.activeprojectid) {
             const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid)
 
-            return (<div style={{ ...regularFont, ...styles.generalFont, ...styles.bottomMargin15, ...styles.activefieldreport }} onClick={() => { this.makeprojectactive(myproject.projectid) }}>
-                Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city}
-            </div>)
+            return (
+                <div style={{ ...styles.generalContainer }}>
+                    <div style={{ ...styles.activefieldreport, ...styles.bottomMargin15, }} onClick={() => { this.makeprojectactive(myproject.projectid) }}>
+                        <span style={{ ...regularFont, ...styles.generalFont }} >Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city} </span>
+                    </div>
+                    <div style={{ ...styles.generalContainer }}>
+                        <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                            to={`/${engineerid}/projects/${this.state.activeprojectid}`}>
+                            <button style={{ ...styles.generalButton, ...goIconWidth }}>
+                                {goToIcon()} 
+                            </button>
+                            <span style={{...styles.generalFont, ...regularFont}}>Go to Project</span>
+                        </Link>
+                    </div>
+
+                </div>)
         }
     }
     showsearchprojectid(myproject) {

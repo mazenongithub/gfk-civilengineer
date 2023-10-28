@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import * as actions from './components/actions';
 import { connect } from 'react-redux';
@@ -15,11 +14,12 @@ import Login from './components/login';
 import Timesheet from './components/timesheet'
 import { CheckUserLogin } from './components/actions/api'
 import Projects from './components/projects';
+import ViewProject from './components/viewproject';
 class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { render: '', width: 0, height: 0,render:'' }
+    this.state = { render: '', width: 0, height: 0 }
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
 }
 componentDidMount() {
@@ -61,13 +61,15 @@ updateWindowDimensions() {
         <Switch>
           <Route exact path="/" render={showprofile} />
           <Route exact path="/engineer/login" component={Login} />
-          <Route exact path="/:engineerid/gfk/projects" component={Projects} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/fieldreports" component={FieldReports} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/timesheet" component={Timesheet} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/borings" component={Borings} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples" component={Samples} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />
-          <Route exact path="/:engineerid/gfk/projects/:projectid/borings/:boringid/samples/:sampleid/unconfined" component={Unconfined} />
+          <Route exact path="/:engineerid" render={showprofile} />
+          <Route exact path="/:engineerid/projects" component={Projects} />
+          <Route exact path="/:engineerid/projects/:projectid" component={ViewProject} />
+          <Route exact path="/:engineerid/projects/:projectid/fieldreports" component={FieldReports} />
+          <Route exact path="/:engineerid/projects/:projectid/timesheet" component={Timesheet} />
+          <Route exact path="/:engineerid/projects/:projectid/borings" component={Borings} />
+          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples" component={Samples} />
+          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />
+          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/unconfined" component={Unconfined} />
         </Switch>
       </div>
     </BrowserRouter>);

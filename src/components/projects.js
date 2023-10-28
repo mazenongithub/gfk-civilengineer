@@ -9,6 +9,9 @@ import ProjectID from './projectid';
 import { CreateProject } from './functions'
 import { saveProjectIcon } from './svg';
 import { SaveProjects } from './actions/api'
+import { Link } from 'react-router-dom';
+
+
 class Projects extends Component {
     constructor(props) {
         super(props);
@@ -247,8 +250,8 @@ class Projects extends Component {
                     })
                 }
             }
-            if(response.hasOwnProperty("message")) {
-                this.setState({message:response.message})
+            if (response.hasOwnProperty("message")) {
+                this.setState({ message: response.message })
             }
         }
     }
@@ -364,14 +367,27 @@ class Projects extends Component {
 
             }
         }
+        const engineerid = this.props.match.params.engineerid
         return (
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex1 }}>
 
                     <div style={{ ...styles.generalFlex }}>
-                        <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont, ...styles.alignCenter, ...styles.boldFont }}>
-                            /{this.props.match.params.engineerid}/gfk/projects
-                    </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+
+                            <Link
+                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                to={`/${engineerid}`}>
+                                /{engineerid}
+                            </Link>
+                            <div style={{ ...styles.generalContainer }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects`}>
+                                    /projects
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
                     {showtitle()}

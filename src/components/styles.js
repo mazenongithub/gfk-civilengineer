@@ -31,6 +31,9 @@ export function MyStylesheet() {
         bottomMargin15: {
             marginBottom: '15px'
         },
+        minHeight150: {
+            minHeight: '150px'
+        },
         minHeight: {
             minHeight: '40px'
         },
