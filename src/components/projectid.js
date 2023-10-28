@@ -15,7 +15,7 @@ class ProjectID {
             })
 
             if (projects.length > 0) {
-               projects.sort((a, b) => {
+                projects.sort((a, b) => {
 
                     if (Number(a.projectnumber) > Number(b.projectnumber)) {
                         return -1;
@@ -62,19 +62,19 @@ class ProjectID {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
-        if(this.state.activeprojectid) {
-            const myproject = gfk.getprojectbyid.call(this,this.state.activeprojectid)
-         
-        return (<div style={{ ...regularFont, ...styles.generalFont, ...styles.bottomMargin15, ...styles.activefieldreport }} onClick={()=>{this.makeprojectactive(myproject.projectid)}}>
-            Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city}
-        </div>)
+        if (this.state.activeprojectid) {
+            const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid)
+
+            return (<div style={{ ...regularFont, ...styles.generalFont, ...styles.bottomMargin15, ...styles.activefieldreport }} onClick={() => { this.makeprojectactive(myproject.projectid) }}>
+                Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city}
+            </div>)
         }
     }
     showsearchprojectid(myproject) {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
-        return (<div style={{ ...regularFont, ...styles.generalFont, ...styles.bottomMargin15 }} onClick={()=>{this.makeprojectactive(myproject.projectid)}}>
+        return (<div style={{ ...regularFont, ...styles.generalFont, ...styles.bottomMargin15 }} onClick={() => { this.makeprojectactive(myproject.projectid) }}>
             Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city}
         </div>)
 

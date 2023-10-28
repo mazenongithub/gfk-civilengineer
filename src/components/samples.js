@@ -41,8 +41,8 @@ class Samples extends Component {
     }
     validateremovesample(sample) {
         const gfk = new GFK();
-        const sieveanalysis = gfk.getsieveanalysisbysampleid.call(this, sample.sampleid);
-        const unconfined = gfk.getunconfinedbysampleid.call(this, sample.sampleid)
+        const sieveanalysis = gfk.getsievebysampleid.call(this, sample.sampleid);
+        const unconfined = gfk.getunconfinedtestbyid.call(this, sample.sampleid)
         let validate = {};
         validate.validate = true;
         if (sieveanalysis) {

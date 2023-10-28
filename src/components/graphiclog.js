@@ -40,7 +40,7 @@ class GraphicLog {
         }
         const showimage = (image) => {
             if (this.state.width > 1200) {
-                return (<div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}}>
+                return (<div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}} key={image.imageid}>
                     <div style={{ ...styles.flex1 }}>
                         <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
                             <img src={image.graphiclog} alt={image.description} />
@@ -151,6 +151,7 @@ class GraphicLog {
         const myuser = gfk.getuser.call(this)
         if (this.state.activesampleid) {
             const sample = gfk.getsamplebyid.call(this, this.state.activesampleid)
+            console.log(sample)
             let formData = new FormData();
             let myfile = document.getElementById("graphic-log");
             formData.append("graphiclog", myfile.files[0]);

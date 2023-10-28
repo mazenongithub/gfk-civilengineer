@@ -7,6 +7,7 @@ import { MyStylesheet } from './components/styles'
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import FieldReports from './components/fieldreports';
 import Borings from './components/borings';
+import Profile from './components/profile';
 import Samples from './components/samples';
 import Sieve from './components/sieve';
 import Unconfined from './components/unconfined';
@@ -15,9 +16,26 @@ import Timesheet from './components/timesheet'
 import { CheckUserLogin } from './components/actions/api'
 import Projects from './components/projects';
 class App extends Component {
-  componentDidMount() {
+
+  constructor(props) {
+    super(props);
+    this.state = { render: '', width: 0, height: 0,render:'' }
+    this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+}
+componentDidMount() {
+    window.addEventListener('resize', this.updateWindowDimensions);
+    this.updateWindowDimensions();
     this.checkuser()
-  }
+}
+
+componentWillUnmount() {
+    window.removeEventListener('resize', this.updateWindowDimensions);
+}
+
+updateWindowDimensions() {
+    this.setState({ width: window.innerWidth, height: window.innerHeight });
+}
+  
   async checkuser() {
     try {
       let response = await CheckUserLogin();
@@ -31,30 +49,17 @@ class App extends Component {
   }
   render() {
     const styles = MyStylesheet();
-    const defaultComponent = () => {
-      return (<div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-        </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-        </a>
-        </header>
-      </div>)
+    const profile = new Profile();
 
+    const showprofile = () => {
+      return(profile.showprofile.call(this))
     }
+   
 
     return (<BrowserRouter>
       <div style={{ ...styles.generalContainer }}>
         <Switch>
-          <Route exact path="/" component={defaultComponent} />
+          <Route exact path="/" render={showprofile} />
           <Route exact path="/engineer/login" component={Login} />
           <Route exact path="/:engineerid/gfk/projects" component={Projects} />
           <Route exact path="/:engineerid/gfk/projects/:projectid/fieldreports" component={FieldReports} />

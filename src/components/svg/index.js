@@ -5,7 +5,11 @@ export function openDateMenu() {
 export function addNewImage() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222.07 47.64"><defs><style></style></defs><title>addnewimage</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="addnewimage-1" x="1" y="1" width="218.79" height="45.64" rx="5.08" /><text className="addnewimage-2" transform="translate(13.64 30.5) scale(0.98 1)">Add New Image</text></g></g></g></svg>)
 }
+export function goToIcon() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185.01 71.41"><defs><style>
+    </style></defs><g id="content"><polygon className="goToIcon-1" points="122 69.7 122 52.2 1 52.2 1 19.2 122 19.2 122 1.7 182.96 35.7 122 69.7"/></g></svg>)
 
+}
 export function ActualDateArrowUp() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40.84 31.42"><defs><style></style></defs><title>datearrowup</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><polygon className="actualdatearrowup-1" points="20.42 0.92 0.92 30.92 39.92 30.92 20.42 0.92" /></g></g></svg>)
 }

@@ -34,6 +34,10 @@ export function MyStylesheet() {
         minHeight: {
             minHeight: '40px'
         },
+        mediumWidth: {
+            width: '66%',
+            padding: '3px'
+        },
         generalField: {
             width: '95%',
             padding: '3px'

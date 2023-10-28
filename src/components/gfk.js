@@ -4,6 +4,16 @@ import { MyStylesheet } from './styles';
 import { SaveBorings } from './actions/api'
 import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestData } from './functions'
 class GFK {
+
+ getgotoicon() {
+        if(this.state.width>1200) {
+            return({width:'180px',height:'auto'})
+        } else if (this.state.width>800) {
+            return({width:'135px',height:'auto'})
+        } else {
+            return({width:'90px',height:'auto'})
+        }  
+    }
 getsaveprojecticon() {
     if(this.state.width>1200) {
         return({width:'328px',height:'76px'})
@@ -210,6 +220,16 @@ getsavetime() {
         }
         return myimage;
 
+    }
+    getunconfinedbysampleid(sampleid) {
+        const gfk = new GFK();
+        const unconfined = gfk.call(this,sampleid)
+        return unconfined;
+    }
+    getsieveanalysisbysampleid(sampleid) {
+        const gfk = new GFK();
+        const sieve = gfk.getsievebysampleid.call(this)
+        return sieve;
     }
     getcompactiontestsbyfieldid(fieldid) {
         const gfk = new GFK();
@@ -420,7 +440,7 @@ getsavetime() {
         if (myuser.hasOwnProperty("samples")) {
             // eslint-disable-next-line
             myuser.samples.sample.map(sample => {
-                if (sample.sampleid === sampleid) {
+                if (sample.sampleid.toString() === sampleid.toString()) {
                     samples = sample;
 
                 }
@@ -596,7 +616,7 @@ getsavetime() {
             if (myuser.hasOwnProperty("borings")) {
                 // eslint-disable-next-line
                 myuser.borings.boring.map(boring => {
-                    if (boring.boringid === boringid) {
+                    if (boring.boringid.toString() === boringid.toString()) {
                         borings = boring;
                     }
                 })

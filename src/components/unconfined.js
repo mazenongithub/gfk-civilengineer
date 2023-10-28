@@ -198,6 +198,7 @@ class Unconfined extends Component {
         }
     }
     addtest() {
+        console.log("ADD TEST")
         const gfk = new GFK();
         const sampleid = this.props.match.params.sampleid;
         const unconfined = gfk.getunconfinedtestbyid.call(this, sampleid);
@@ -224,6 +225,7 @@ class Unconfined extends Component {
             } else {
                 const sampleid = this.props.match.params.sampleid;
                 const newTest = UnconfinedTest(unid, sampleid, loadreading, displacement)
+                console.log(newTest)
                 const tests = gfk.getunconfinedtests.call(this);
                 if (tests) {
                     myuser.unconfinedtests.unconfined.push(newTest)
@@ -443,13 +445,13 @@ class Unconfined extends Component {
                 return (
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1 }}>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
-                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight,...styles.bottomMargin30 }}>
+                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }} onClick={() => { this.addtest() }}>
                                     {plus20()}
                                 </button>
                             </div>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
-                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight, ...styles.bottomMargin30 }}>
+                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }} onClick={() => { this.handleminus20() }}>
                                     {minus20()}
                                 </button>
                             </div>
@@ -480,13 +482,13 @@ class Unconfined extends Component {
                 return (
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1 }}>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
-                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight,...styles.bottomMargin30}}>
+                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10,...styles.bottomMargin15 }} onClick={() => { this.addtest() }}>
                                     {plus20()}
                                 </button>
                             </div>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
-                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight,...styles.bottomMargin30 }}>
+                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10,...styles.bottomMargin15 }} onClick={() => { this.handleminus20() }}>
                                     {minus20()}
                                 </button>
                             </div>
@@ -516,8 +518,8 @@ class Unconfined extends Component {
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }}>
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <button style={{ ...styles.generalButton, ...plusIcon() }} onClick={() => { this.addtest() }}>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter,...styles.bottomMargin15 }}>
+                                    <button style={{ ...styles.generalButton, ...plusIcon(),...styles.bottomMargin15 }} onClick={() => { this.addtest() }}>
                                         {plus20()}
                                     </button>
                                 </div>
