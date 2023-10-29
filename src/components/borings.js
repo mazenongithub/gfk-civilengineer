@@ -476,7 +476,7 @@ class Borings extends Component {
                 const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
 
                 return (<Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                    to={`/${engineerid}/gfk/projects/${projectid}/borings/${boringid}/samples`}>
+                    to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>
                     Boring {boring.boringnumber} Samples
                 </Link>)
             } else {
@@ -657,23 +657,41 @@ class Borings extends Component {
 
             }
         }
+        const engineerid = this.props.match.params.engineerid;
+        const projectid = this.props.match.params.projectid;
 
         return (
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex1 }}>
 
-                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
-                            Project Number {project.projectnumber} /{project.title} <br />
-                            {project.address} {project.city} <br />
-                            Borings
-                        </div>
+                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}`}>
+                            /{engineerid}
+                        </Link>
+                    </div>
+                    <div style={{ ...styles.generalContainer,...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects`}>
+                            /projects
+                        </Link>
+                    </div>
+                    <div style={{ ...styles.generalContainer,...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}`}>
+                            /{project.projectnumber} - {project.title}
+                        </Link>
                     </div>
 
-                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
-                        <div style={{ ...styles.flex1, ...regularFont, ...styles.bottomMargin15 }}>
-                            Date
-                        </div>
+                    <div style={{ ...styles.generalContainer,...styles.alignCenter, ...styles.bottomMargin15 }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/borings`}>
+                            /Borings
+                        </Link>
                     </div>
 
                     {Fields_1()}

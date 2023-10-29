@@ -411,7 +411,8 @@ class Unconfined extends Component {
         const myuser = gfk.getuser.call(this);
         const projectid = this.props.match.params.projectid;
         const boringid = this.props.match.params.boringid;
-        const regularFont = gfk.getRegularFont.call(this)
+        const regularFont = gfk.getRegularFont.call(this);
+        const sampleid = this.props.match.params.sampleid
         const plusIcon = () => {
             if (this.state.width > 1200) {
                 return ({ width: '101px', height: '66px' })
@@ -563,11 +564,43 @@ class Unconfined extends Component {
 
                         <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
                             <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
-                                Project Number {project.projectnumber} /{project.title} <br />
-                                {project.address} {project.city} <br />
-                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/gfk/projects/${projectid}/borings`}>Boring Number {boring.boringnumber}</Link> <br />
-                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/gfk/projects/${projectid}/borings/${boringid}/samples`}> Depth {sample.depth} ft </Link> <br />
-                                Unconfined
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}`}>
+                                    /{engineerid}
+                                </Link>
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects`}>
+                                    /projects
+                                </Link>
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects/${projectid}`}>
+                                    /{project.projectnumber} - {project.title}
+                                </Link>
+                            </div>
+
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects/${projectid}/borings`}>
+                                    /Borings
+                                </Link>
+                            </div>
+
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} Samples</Link>
+                            </div>
+                           
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples/${sampleid}/unconfined`}>/Depth: {sample.depth}ft  Unconfined </Link> <br />
+                            </div>
                             </div>
                         </div>
                         {showForm()}

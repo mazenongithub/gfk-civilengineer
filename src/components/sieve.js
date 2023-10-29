@@ -409,6 +409,7 @@ class Sieve extends Component {
         const boringid = this.props.match.params.boringid;
         const myuser = gfk.getuser.call(this);
         const projectid = this.props.match.params.projectid;
+        const sampleid = this.props.match.params.sampleid;
         if (myuser) {
             const engineerid = myuser.engineerid;
 
@@ -417,12 +418,46 @@ class Sieve extends Component {
 
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
                         <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
-                            Project Number {project.projectnumber} /{project.title} <br />
-                            {project.address} {project.city} <br />
-                            <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/gfk/projects/${projectid}/borings`}>Boring Number {boring.boringnumber}</Link> <br />
-                            <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/gfk/projects/${projectid}/borings/${boringid}/samples`}> Depth {sample.depth} ft </Link> <br />
-                            Sieve Analysis
-                    </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}`}>
+                                    /{engineerid}
+                                </Link>
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects`}>
+                                    /projects
+                                </Link>
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects/${projectid}`}>
+                                    /{project.projectnumber} - {project.title}
+                                </Link>
+                            </div>
+
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link
+                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                    to={`/${engineerid}/projects/${projectid}/borings`}>
+                                    /Borings
+                                </Link>
+                            </div>
+
+                           
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} Samples</Link>
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples/${sampleid}/sieve`}> /Depth {sample.depth}ft Sieve Analysis </Link> <br />
+                            </div>
+
+
+                        </div>
                     </div>
 
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>

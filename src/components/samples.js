@@ -226,15 +226,15 @@ class Samples extends Component {
                         <div style={{ ...styles.generalFlex }}>
                             <div style={{ ...styles.flex1, ...activebackground(), ...styles.addLeftMargin }}>
                                 <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                                    to={`/${engineerid}/gfk/projects/${projectid}/borings/${boringid}/samples/${sample.sampleid}/sieve`}>
+                                    to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples/${sample.sampleid}/sieve`}>
                                     Sieve Analysis
-                            </Link>
+                                </Link>
                             </div>
                             <div style={{ ...styles.flex1, ...activebackground() }}>
                                 <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.addLeftMargin }}
-                                    to={`/${engineerid}/gfk/projects/${projectid}/borings/${boringid}/samples/${sample.sampleid}/unconfined`}>
+                                    to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples/${sample.sampleid}/unconfined`}>
                                     Unconfined
-                            </Link>
+                                </Link>
                             </div>
                         </div>
 
@@ -1172,10 +1172,7 @@ class Samples extends Component {
     render() {
         const gfk = new GFK();
         const graphiclog = new GraphicLog();
-        const project = () => {
-            return (gfk.getprojectbyid.call(this, this.props.match.params.projectid))
-
-        }
+       
         const boring = gfk.getboringbyid.call(this, this.props.match.params.boringid);
         const styles = MyStylesheet();
         const headerFont = gfk.getHeaderFont.call(this)
@@ -1330,8 +1327,8 @@ class Samples extends Component {
         }
 
         const showgraphiclog = () => {
-            if(this.state.activesampleid) {
-                return(graphiclog.showgraphiclog.call(this))
+            if (this.state.activesampleid) {
+                return (graphiclog.showgraphiclog.call(this))
             } else {
                 return
             }
@@ -1341,17 +1338,52 @@ class Samples extends Component {
         if (myuser) {
             const engineerid = myuser.engineerid;
             const projectid = this.props.match.params.projectid;
+            const project = gfk.getprojectbyid.call(this, projectid)
+            const boringid = this.props.match.params.boringid;
             return (
                 <div style={{ ...styles.generalFlex }}>
                     <div style={{ ...styles.flex1 }}>
 
                         <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
                             <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
-                                Project Number {project().projectnumber} /{project().title} <br />
-                                {project().address} {project().city} <br />
-                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/gfk/projects/${projectid}/borings`}>Boring Number {boring.boringnumber}</Link>  <br />
-                                Samples
-                        </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}`}>
+                                        /{engineerid}
+                                    </Link>
+                                </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}/projects`}>
+                                        /projects
+                                    </Link>
+                                </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}/projects/${projectid}`}>
+                                        /{project.projectnumber} - {project.title}
+                                    </Link>
+                                </div>
+
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}/projects/${projectid}/borings`}>
+                                        /Borings
+                                    </Link>
+                                </div>
+
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} - Samples</Link> 
+                                </div>
+
+
+
+
+                            </div>
                         </div>
 
                         {samples_1()}
@@ -1416,7 +1448,7 @@ class Samples extends Component {
                         <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                             <div style={{ ...styles.flex1, ...regularFont, ...styles.generalFont }}>
                                 Description
-                            <input type="text" style={{ ...styles.generalField, ...regularFont }}
+                                <input type="text" style={{ ...styles.generalField, ...regularFont }}
                                     value={this.getdescription()}
                                     onChange={event => { this.handledescription(event.target.value) }}
                                 />
