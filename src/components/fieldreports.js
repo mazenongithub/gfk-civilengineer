@@ -5,9 +5,11 @@ import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import DateReport from './datereport';
 import CurveID from './curveid';
-import { removeIconSmall, saveReport, uploadImage } from './svg';
+import { removeIconSmall, saveReport, uploadImage, goToIcon } from './svg';
 import { fieldReport, makeID, makeDatefromObj, makeUTCStringCurrentTime, compactionTest, milestoneformatdatestring, inputUTCStringForLaborID, sorttimesdesc, CreateImage } from './functions';
 import { SaveFieldReport, UploadFieldImage } from './actions/api'
+import { Link } from 'react-router-dom';
+
 class FieldReports extends Component {
     constructor(props) {
         super(props);
@@ -519,6 +521,10 @@ class FieldReports extends Component {
         const gfk = new GFK();
         const removeIcon = gfk.getremoveicon.call(this)
         const regularFont = gfk.getRegularFont.call(this);
+        const headerFont = gfk.getHeaderFont.call(this)
+        const engineerid = this.props.match.params.engineerid;
+        const projectid = this.props.match.params.projectid;
+        const goIconWidth = gfk.getgotoicon.call(this)
         const activebackground = () => {
             if (this.state.activefieldid === report.fieldid) {
                 return (styles.activefieldreport)
@@ -526,16 +532,29 @@ class FieldReports extends Component {
                 return;
             }
         }
-        return (<div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont, ...styles.bottomMargin15, ...activebackground() }} key={report.fieldid}>
-            <div style={{ ...styles.flex5 }} onClick={() => { this.makereportactive(report.fieldid) }}>
-                {milestoneformatdatestring(report.datereport)}
-            </div>
-            <div style={{ ...styles.flex1 }}>
-                <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removefieldreport(report.fieldid) }}>
-                    {removeIconSmall()}
-                </button>
-            </div>
-        </div>)
+        return (
+            <div style={{ ...styles.generalContainer,...styles.bottomMargin15, }}>
+                <div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont,  ...activebackground() }} key={report.fieldid}>
+                    <div style={{ ...styles.flex5 }} onClick={() => { this.makereportactive(report.fieldid) }}>
+                        {milestoneformatdatestring(report.datereport)}
+                    </div>
+                    <div style={{ ...styles.flex1 }}>
+                        <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removefieldreport(report.fieldid) }}>
+                            {removeIconSmall()}
+                        </button>
+                    </div>
+                </div>
+                <div style={{ ...styles.generalContainer }}>
+                        <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                            to={`/${engineerid}/projects/${projectid}/fieldreports/${report.fieldid}`}>
+                            <button style={{ ...styles.generalButton, ...goIconWidth }}>
+                                {goToIcon()} 
+                            </button>
+                            <span style={{...styles.generalFont, ...regularFont}}>View Report</span>
+                        </Link>
+                    </div>
+
+            </div>)
     }
     showotherreports() {
         const gfk = new GFK();
@@ -1047,23 +1066,46 @@ class FieldReports extends Component {
         const headerFont = gfk.getHeaderFont.call(this);
         const smallFont = gfk.getSmallFont.call(this);
         const regularFont = gfk.getRegularFont.call(this);
+        const engineerid = this.props.match.params.engineerid;
+        const projectid = this.props.match.params.projectid;
 
-        const projecttitle = () => {
-            const myproject = gfk.getprojectbyid.call(this, this.props.match.params.projectid)
-            return (<div style={{ ...styles.generalContainer, ...headerFont }}>{myproject.projectnumber}/{myproject.title} <br />
-                {myproject.address} {myproject.city}</div>)
-        }
+
+        const myproject = gfk.getprojectbyid.call(this, this.props.match.params.projectid)
+
         const datereport = new DateReport();
         const saveReportIcon = gfk.getreporticon.call(this)
         return (
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex1 }}>
 
-                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                        <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont, ...styles.alignCenter }}>
-                            Field Reports
-                            {projecttitle()}
-                        </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}`}>
+                            /{engineerid}
+                        </Link>
+                    </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects`}>
+                            /projects
+                        </Link>
+                    </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}`}>
+                            /{myproject.projectnumber} - {myproject.title} {myproject.address} {myproject.city}
+                        </Link>
+                    </div>
+
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/fieldreports`}>
+                            /fieldreports
+                        </Link>
                     </div>
 
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>

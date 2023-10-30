@@ -30,7 +30,7 @@ import GFK from './gfk';
 class DateReport {
 
     setDay(dateencoded) {
-        console.log(dateencoded)
+
         const gfk = new GFK();
         if (this.state.activefieldid) {
             const fieldid = this.state.activefieldid;
@@ -38,7 +38,7 @@ class DateReport {
             let i = gfk.getfieldreportkeybyid.call(this, fieldid);
 
             let newtimein = inputSecOutDateString(dateencoded)
-            console.log(newtimein)
+          
             myuser.fieldreports.fieldreport[i].datereport = newtimein;
             this.props.reduxUser(myuser)
             this.setState({ render: 'render' })
@@ -76,6 +76,7 @@ class DateReport {
         return activeclass;
     }
     showdate(dateobj, day) {
+   
         const Datein = new DateReport();
         let showday = [];
         if (day) {
@@ -83,8 +84,9 @@ class DateReport {
             month = trailingzero(month)
             let year = dateobj.getFullYear();
             let dayzero = trailingzero(day);
-            let offset = getOffset()
-            let timestring = `${year}/${month}/${dayzero} 00:00:00${offset}`;
+            let datein = `${year}/${month}/${dayzero}`
+            let offset = getOffset(datein)
+            let timestring = `${datein} 00:00:00${offset}`;
 
             let calendardate = new Date(timestring);
 
