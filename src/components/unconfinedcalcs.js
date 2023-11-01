@@ -85,6 +85,7 @@ class UnconfinedCalcs {
         const stresscurve = unconfinedcalcs.getStressCurve.call(this,sampleid)
         let maxstrain = 0;
         if(maxstress > 0 && stresscurve.length > 0) {
+            // eslint-disable-next-line
             stresscurve.map(value => {
                 if(maxstress ===  Number(value.stress)) {
                     maxstrain = value.strain;

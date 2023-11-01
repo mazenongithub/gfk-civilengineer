@@ -122,16 +122,32 @@ class ViewProject extends Component {
                     <div style={{...styles.generalFlex, ...styles.bottomMargin15}}>
                         <div style={{...styles.flex1, ...styles.alignCenter}}>
                         <Link
-                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                             to={`/${engineerid}/projects/${projectid}/borings`}>
-                            Borings
+                           /Borings
+                        </Link>
+                        </div>
+                        <div style={{...styles.flex1, ...styles.alignCenter}}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/fieldreports`}>
+                            /FieldReports
+                        </Link>
+                        </div>
+                    </div>
+                    <div style={{...styles.generalFlex, ...styles.bottomMargin15}}>
+                        <div style={{...styles.flex1, ...styles.alignCenter}}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/labsummary`}>
+                            /Lab Summary
                         </Link>
                         </div>
                         <div style={{...styles.flex1, ...styles.alignCenter}}>
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
                             to={`/${engineerid}/projects/${projectid}/fieldreports`}>
-                            FieldReports
+                            &nbsp;
                         </Link>
                         </div>
                     </div>
