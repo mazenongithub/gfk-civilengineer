@@ -3,15 +3,17 @@ import * as actions from './actions';
 import { connect } from 'react-redux';
 import GFK from './gfk';
 import { MyStylesheet } from './styles';
-import { removeIconSmall } from './svg'
+import { removeIconSmall, goToIcon, calculateIcon, remarksIcon, addSieveIcon } from './svg'
 import { makeID, Sample } from './functions';
 import { Link } from 'react-router-dom';
 import GraphicLog from './graphiclog'
+import SoilClassification from './soilclassification';
+import UnconfinedCalcs from './unconfinedcalcs';
 
 class Samples extends Component {
     constructor(props) {
         super(props);
-        this.state = { render: '', width: 0, height: 0, activesampleid: false, sampleset: '', samplenumber: '', sampledepth: '', depth: '', diameter: '', samplelength: '', tareno: '', tarewgt: '', wetwgt: '', wetwgt_2: '', drywgt: '', spt: '', ucsc: '', ll: '', pi: '', description: '', graphiclog: '' }
+        this.state = { render: '', width: 0, height: 0, activesampleid: false, sampleset: '', samplenumber: '', sampledepth: '', depth: '', diameter: '', samplelength: '', tareno: '', tarewgt: '', wetwgt: '', wetwgt_2: '', drywgt: '', spt: '', uscs: '', ll: '', pi: '', description: '', graphiclog: '', sptlength: '', remarks: '' }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
     componentDidMount() {
@@ -267,6 +269,8 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
+                const remarks = this.state.remarks;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -275,7 +279,7 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -322,6 +326,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -330,7 +335,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -376,6 +382,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -384,7 +391,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -431,6 +439,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -439,7 +448,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -485,15 +495,17 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
                 const tarewgt = this.state.tarewgt;
                 const tareno = this.state.tareno;
                 const graphiclog = this.state.graphiclog;
+                const remarks = this.state.remarks;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -539,6 +551,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -547,7 +560,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -594,6 +608,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -602,7 +617,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -648,15 +664,17 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const wetwgt = this.state.wetwgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
                 const tareno = this.state.tareno;
                 const samplelength = this.state.samplelength;
                 const graphiclog = this.state.graphiclog;
+                const remarks = this.state.remarks;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -703,6 +721,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const tarewgt = this.state.tarewgt;
                 const wetwgt_2 = this.state.wgtwgt_2;
                 const drywgt = this.state.drywgt;
@@ -711,7 +730,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -757,6 +777,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const tarewgt = this.state.tarewgt;
                 const wetwgt = this.state.wgtwgt;
                 const drywgt = this.state.drywgt;
@@ -765,7 +786,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -811,6 +833,7 @@ class Samples extends Component {
                 const description = this.state.description;
                 const uscs = this.state.uscs;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const tarewgt = this.state.tarewgt;
                 const wetwgt = this.state.wgtwgt;
                 const wetwgt_2 = this.state.wetwgt_2;
@@ -819,7 +842,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -864,6 +888,7 @@ class Samples extends Component {
                 const diameter = this.state.diameter;
                 const description = this.state.description;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const drywgt = this.state.drywgt;
                 const tarewgt = this.state.tarewgt;
                 const wetwgt = this.state.wgtwgt;
@@ -873,7 +898,8 @@ class Samples extends Component {
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -924,10 +950,12 @@ class Samples extends Component {
                 const wetwgt_2 = this.state.wetwgt_2;
                 const tareno = this.state.tareno;
                 const samplelength = this.state.samplelength;
+                const sptlength = this.state.sptlength;
                 const graphiclog = this.state.graphiclog;
                 const ll = this.state.ll;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -953,6 +981,121 @@ class Samples extends Component {
             return this.state.spt;
         }
     }
+
+    handlesptlength(sptlength) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        if (myuser) {
+            if (this.state.activesampleid) {
+                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
+                myuser.samples.sample[i].sptlength = sptlength;
+                this.props.reduxUser(myuser)
+                this.setState({ render: 'render' })
+            } else {
+                const sampleid = makeID(16);
+                const boringid = this.props.match.params.boringid;
+                const samplenumber = this.state.samplenumber;
+                const sampledepth = this.state.sampledepth;
+                const sampleset = this.state.sampleset;
+                const depth = this.state.depth;
+                const diameter = this.state.diameter;
+                const description = this.state.description;
+                const uscs = this.state.uscs;
+                const drywgt = this.state.drywgt;
+                const tarewgt = this.state.tarewgt;
+                const wetwgt = this.state.wgtwgt;
+                const wetwgt_2 = this.state.wetwgt_2;
+                const tareno = this.state.tareno;
+                const samplelength = this.state.samplelength;
+                const graphiclog = this.state.graphiclog;
+                const remarks = this.state.remarks;
+                const spt = this.state.spt;
+                const ll = this.state.ll;
+                const pi = this.state.pi;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                const samples = gfk.getsamples.call(this)
+                if (samples) {
+                    myuser.samples.sample.push(newSample)
+
+                } else {
+                    myuser.samples = { sample: [newSample] }
+
+                }
+                this.props.reduxUser(myuser)
+                this.setState({ activesampleid: sampleid, sptlength: '' })
+
+            }
+        }
+
+
+    }
+    getsptlength() {
+        const gfk = new GFK();
+        if (this.state.activesampleid) {
+            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
+            return sample.sptlength;
+        } else {
+            return this.state.sptlength;
+        }
+    }
+
+    handleremarks(remarks) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        if (myuser) {
+            if (this.state.activesampleid) {
+                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
+                myuser.samples.sample[i].remarks = remarks;
+                this.props.reduxUser(myuser)
+                this.setState({ render: 'render' })
+            } else {
+                const sampleid = makeID(16);
+                const boringid = this.props.match.params.boringid;
+                const samplenumber = this.state.samplenumber;
+                const sampledepth = this.state.sampledepth;
+                const sampleset = this.state.sampleset;
+                const depth = this.state.depth;
+                const diameter = this.state.diameter;
+                const description = this.state.description;
+                const uscs = this.state.uscs;
+                const drywgt = this.state.drywgt;
+                const tarewgt = this.state.tarewgt;
+                const wetwgt = this.state.wgtwgt;
+                const wetwgt_2 = this.state.wetwgt_2;
+                const tareno = this.state.tareno;
+                const samplelength = this.state.samplelength;
+                const graphiclog = this.state.graphiclog;
+                const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
+                const ll = this.state.ll;
+                const pi = this.state.pi;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                const samples = gfk.getsamples.call(this)
+                if (samples) {
+                    myuser.samples.sample.push(newSample)
+
+                } else {
+                    myuser.samples = { sample: [newSample] }
+
+                }
+                this.props.reduxUser(myuser)
+                this.setState({ activesampleid: sampleid, remarks: '' })
+
+            }
+        }
+
+
+    }
+    getremarks() {
+        const gfk = new GFK();
+        if (this.state.activesampleid) {
+            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
+            return sample.remarks;
+        } else {
+            return this.state.remarks;
+        }
+    }
+
     handlell(ll) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
@@ -980,8 +1123,10 @@ class Samples extends Component {
                 const samplelength = this.state.samplelength;
                 const graphiclog = this.state.graphiclog;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -1034,8 +1179,10 @@ class Samples extends Component {
                 const samplelength = this.state.samplelength;
                 const graphiclog = this.state.graphiclog;
                 const spt = this.state.spt;
+                const sptlength = this.state.sptlength;
                 const ll = this.state.ll;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                const remarks = this.state.remarks;
+                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
                 const samples = gfk.getsamples.call(this)
                 if (samples) {
                     myuser.samples.sample.push(newSample)
@@ -1060,6 +1207,54 @@ class Samples extends Component {
         } else {
             return this.state.pi;
         }
+    }
+    calcUSCS() {
+        const gfk = new GFK();
+        const sampleid = this.state.activesampleid;
+        const sample = gfk.getsamplebyid.call(this, sampleid);
+        let uscs = ''
+        if (sample) {
+            const ll = Number(sample.ll);
+            const pi = Number(sample.pi);
+            if (!ll || !pi) {
+                alert(`No LL or PI found`)
+            } else {
+                const sieve = gfk.getsievebysampleid.call(this, sampleid)
+                if (!sieve) {
+
+                    alert(`No Sieve Found`)
+
+                } else {
+
+
+                    const netwgt = Number(sample.drywgt) - Number(sample.tarewgt)
+                    const ll = Number(sample.ll);
+                    const pi = Number(sample.pi)
+                    const wgt34 = Number(sieve.wgt34)
+                    const wgt38 = Number(sieve.wgt38)
+                    const wgt4 = Number(sieve.wgt4)
+                    const wgt10 = Number(sieve.wgt10)
+                    const wgt30 = Number(sieve.wgt30)
+                    const wgt40 = Number(sieve.wgt40)
+                    const wgt100 = Number(sieve.wgt100)
+                    const wgt200 = Number(sieve.wgt200)
+
+                    const getSoilClassification = new SoilClassification(netwgt, ll, pi, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200)
+                    const classification = getSoilClassification.getClassification();
+                    uscs = classification.uscs;
+                    this.handleuscs(uscs)
+
+
+                }
+
+
+
+            }
+
+        } else {
+            alert(`Sample Not Found`)
+        }
+       
     }
     handledescription(description) {
         const gfk = new GFK();
@@ -1169,10 +1364,92 @@ class Samples extends Component {
             return this.state.graphiclog;
         }
     }
+    generateRemarks() {
+        let remarks = '';
+        const gfk = new GFK();
+
+        if (this.state.activesampleid) {
+            let sampleid = this.state.activesampleid;
+            let sample = gfk.getsamplebyid.call(this, sampleid)
+
+            let ll = Number(sample.ll)
+            let pi = Number(sample.pi)
+
+            if (ll && pi) {
+                remarks += `LL=${ll}% PI=${pi}`
+            }
+
+
+            const unconfined = gfk.getunconfinedtestbyid.call(this, sampleid)
+            if (unconfined) {
+
+                const unconfinedcalcs = new UnconfinedCalcs()
+                const maxstress = unconfinedcalcs.getMaxStress.call(this, sampleid);
+                const maxstrain = unconfinedcalcs.getMaxStrain.call(this, sampleid)
+
+                remarks += `Unconfined Strength=${maxstress}psf Strain=${maxstrain}%`
+
+            }
+
+
+
+        }
+
+        if (remarks) {
+            this.handleremarks(remarks)
+        }
+    }
+
+    getSieveTest() {
+        const gfk = new GFK();
+
+        const sampleid = this.state.activesampleid;
+        const sample = gfk.getsamplebyid.call(this, sampleid)
+        let description = '';
+        if (sample) {
+            description += sample.description;
+            const netwgt = Number(sample.drywgt) - Number(sample.tarewgt);
+            const ll = Number(sample.ll)
+            const pi = Number(sample.pi);
+            const sieve = gfk.getsievebysampleid.call(this, sampleid)
+            if (sieve) {
+                description +=` (`
+                const wgt34 = Number(sieve.wgt34)
+                const wgt38 = Number(sieve.wgt38)
+                const wgt4 = Number(sieve.wgt4)
+                const wgt10 = Number(sieve.wgt10)
+                const wgt30 = Number(sieve.wgt30)
+                const wgt40 = Number(sieve.wgt40)
+                const wgt100 = Number(sieve.wgt100)
+                const wgt200 = Number(sieve.wgt200)
+                const getSoilClassification = new SoilClassification(netwgt, ll, pi, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200)
+                const gravelfrac = Number(getSoilClassification.getGravFrac())
+                const sandfrac = Number(getSoilClassification.getSandFrac())
+                const fines = Number(getSoilClassification.getFines())
+                if (gravelfrac > 0) {
+                    description += ` Gravel ${gravelfrac}%,`
+                }
+                if (sandfrac > 0) {
+                    description += ` Sand ${sandfrac}%,`
+                }
+                if (fines > 0) {
+                    description += ` Fines ${fines}%`
+                }
+
+                description +=` )`
+            }
+
+            if (description) {
+                this.handledescription(description)
+            }
+
+        }
+
+    }
     render() {
         const gfk = new GFK();
         const graphiclog = new GraphicLog();
-       
+
         const boring = gfk.getboringbyid.call(this, this.props.match.params.boringid);
         const styles = MyStylesheet();
         const headerFont = gfk.getHeaderFont.call(this)
@@ -1326,11 +1603,101 @@ class Samples extends Component {
             }
         }
 
+        const calculateUSCS = () => {
+            if (this.state.activesampleid) {
+                return (<div style={{ ...styles.flex1 }}>
+                    <button style={{ ...styles.generalButton, ...styles.fullWidth }}
+                        onClick={() => { this.calcUSCS() }}>
+                        {calculateIcon()}
+                    </button>
+                </div>)
+            }
+        }
+        const remarksWidth = gfk.remarksWidth.call(this)
+        const remarksButton = () => {
+            if (this.state.activesampleid) {
+                return (<div style={{ ...styles.flex1 }}>
+                    <button style={{ ...styles.generalButton, ...remarksWidth }}
+                        onClick={() => { this.generateRemarks() }}>{remarksIcon()}</button>
+                </div>)
+            }
+        }
+
+        const samples_3 = () => {
+            return (
+                <div style={{ ...styles.generalContainer }}>
+                    <div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1 }}>
+                            <div style={{ ...styles.generalFlex }}>
+                                <div style={{ ...styles.flex1 }}>
+                                    <span style={{ ...regularFont }}>USCS</span>
+                                </div>
+                                {calculateUSCS()}
+                            </div>
+
+                            <div style={{ ...styles.generalContainer }}>
+                                <input type="text" style={{ ...regularFont, ...styles.alignCenter }}
+                                    value={this.getuscs()}
+                                    onChange={event => { this.handleuscs(event.target.value) }}
+                                />
+                            </div>
+
+
+                        </div>
+
+                        <div style={{ ...styles.flex1 }}>
+                            <span style={{ ...regularFont }}>SPT-Length</span>
+                            <div style={{ ...styles.generalContainer }}>
+                                <input type="text" style={{ ...regularFont, ...styles.alignCenter }}
+                                    value={this.getsptlength()}
+                                    onChange={event => { this.handlesptlength(event.target.value) }}
+                                />
+                            </div>
+
+
+                        </div>
+
+
+
+
+                    </div>
+                    <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.generalContainer }}>
+                            <div style={{ ...styles.generalFlex }}>
+                                <div style={{ ...styles.flex1 }}>
+                                    <span style={{ ...regularFont }}>Remarks</span>
+
+                                </div>
+                                {remarksButton()}
+                            </div>
+
+                            <input type="text" style={{ ...styles.generalField, ...regularFont }}
+                                value={this.getremarks()}
+                                onChange={event => { this.handleremarks(event.target.value) }}
+                            />
+
+                        </div>
+                    </div>
+
+                </div>
+
+            )
+        }
+
         const showgraphiclog = () => {
             if (this.state.activesampleid) {
                 return (graphiclog.showgraphiclog.call(this))
             } else {
                 return
+            }
+        }
+
+        const showsievebutton = () => {
+            if (this.state.activesampleid) {
+                return (<div style={{ ...styles.flex1 }}>
+                    <button style={{ ...styles.generalButton, ...remarksWidth }}
+                        onClick={() => { this.getSieveTest() }}>{addSieveIcon()}</button>
+                </div>)
             }
         }
 
@@ -1340,6 +1707,7 @@ class Samples extends Component {
             const projectid = this.props.match.params.projectid;
             const project = gfk.getprojectbyid.call(this, projectid)
             const boringid = this.props.match.params.boringid;
+            const goIconWidth = gfk.getgotoicon.call(this)
             return (
                 <div style={{ ...styles.generalFlex }}>
                     <div style={{ ...styles.flex1 }}>
@@ -1377,7 +1745,7 @@ class Samples extends Component {
                                 </div>
 
                                 <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} - Samples</Link> 
+                                    <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} - Samples</Link>
                                 </div>
 
 
@@ -1444,15 +1812,22 @@ class Samples extends Component {
                         </div>
 
                         {samples_2()}
+                        {samples_3()}
 
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                            <div style={{ ...styles.flex1, ...regularFont, ...styles.generalFont }}>
-                                Description
+                        <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                            <div style={{ ...styles.generalFlex }}>
+                                <div style={{ ...styles.flex1, ...regularFont, }}>
+                                    <span style={{ ...regularFont }}>Description</span>
+                                </div>
+                                {showsievebutton()}
+                            </div>
+                            <div style={{ ...styles.generalContainer }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
                                     value={this.getdescription()}
                                     onChange={event => { this.handledescription(event.target.value) }}
                                 />
                             </div>
+
                         </div>
 
                         {showgraphiclog()}
@@ -1464,6 +1839,16 @@ class Samples extends Component {
                         {gfk.showsaveboring.call(this)}
 
                         {this.showsampleids()}
+
+                        <div style={{ ...styles.generalContainer }}>
+                            <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                                to={`/${engineerid}/projects/${projectid}/borings/${boringid}/logdraft`}>
+                                <button style={{ ...styles.generalButton, ...goIconWidth }}>
+                                    {goToIcon()}
+                                </button>
+                                <span style={{ ...styles.generalFont, ...regularFont }}>View LogDraft</span>
+                            </Link>
+                        </div>
 
 
                     </div>

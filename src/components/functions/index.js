@@ -35,6 +35,64 @@ export function getmonth(dateobj) {
             break;
     }
 }
+
+export function formatDateReport(datestring) {
+    datestring = datestring.replace(/-/g, '/');
+    let dateob = new Date(datestring);
+
+    let offset = dateob.getTimezoneOffset();
+    offset = offset * 60 * 1000;
+
+    let gettime = dateob.getTime() + offset;
+    let dateobj = new Date(gettime);
+    let month = Number(dateob.getMonth());
+    let datereport = "";
+    switch (month) {
+        case 0:
+            datereport += "January";
+            break;
+        case 1:
+            datereport += "February";
+            break;
+        case 2:
+            datereport += "March";
+            break;
+        case 3:
+            datereport += "April";
+            break;
+        case 4:
+            datereport += "May";
+            break;
+        case 5:
+            datereport += "June";
+            break;
+        case 6:
+            datereport += "July";
+            break;
+        case 7:
+            datereport += "August";
+            break;
+        case 8:
+            datereport += "September";
+            break;
+        case 9:
+            datereport += "October";
+            break;
+        case 10:
+            datereport += "November";
+            break;
+        case 11:
+            datereport += "December";
+            break;
+        default:
+            break;
+    }
+    let day = dateobj.getDate();
+    let year = dateobj.getFullYear();
+    return `${datereport} ${day}, ${year}`
+
+}
+
 export function getFirstIsOn(mydate) {
     let monthdisplay = mydate.getMonth() + 1;
     let fullyear = mydate.getFullYear();
@@ -79,8 +137,8 @@ export function check_29_feb_leapyear(dateobj) {
 export function CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200) {
     return ({ sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200 })
 }
-export function Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi) {
-    return ({ sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi })
+export function Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks) {
+    return ({ sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt,sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks })
 }
 export function CreateImage(imageid, image, caption, fieldid) {
     return ({ imageid, image, caption, fieldid })
@@ -202,6 +260,55 @@ let offset = datein.getTimezoneOffset() / 60;
     }
  return(`${sym}${offset}:00`)
 
+}
+
+export function moist (drywgt,tarewgt, wetwgt,wetwgt_2) {
+    let wgtwater = 0;
+    let netweight = Number(drywgt) - Number(tarewgt)
+
+    if (Number(wetwgt_2) > 0) {
+        wgtwater = Number(wetwgt_2) - Number(drywgt)
+
+    } else {
+        wgtwater = Number(wetwgt) - Number(drywgt);
+
+    }
+    if ((wgtwater / netweight) > 0) {
+        return (wgtwater / netweight)
+    } else {
+        return 0;
+    }
+
+}
+
+export function  netwgt_1 (wetwgt_2, wetwgt,tarewgt, drywgt) {
+    let netwgt_1 = 0
+    if (Number(wetwgt_2) > 0) {
+         netwgt_1 = (Number(wetwgt) - Number(tarewgt)) / (1 + moist(drywgt,tarewgt, wetwgt,wetwgt_2))
+        
+    }
+    return netwgt_1;
+}
+export function netwgt (drywgt,tarewgt) {
+    if (Number(drywgt) && Number(tarewgt) > 0) {
+        return (Number(drywgt) - Number(tarewgt));
+    } else {
+        return 0;
+    }
+}
+
+export function calcdryden (wetwgt_2, wetwgt, tarewgt, drywgt, diameter,samplelength) {
+    let netweight = 0;
+    if (Number(wetwgt_2) > 0) {
+        netweight = netwgt_1(wetwgt_2, wetwgt,tarewgt, drywgt)
+    } else {
+        netweight = netwgt(drywgt,tarewgt);
+    }
+    if (netweight > 0 && diameter > 0 && samplelength > 0) {
+        return Math.round(Number((netweight / (.25 * Math.pow(Number(diameter), 2) * Math.PI * Number(samplelength))) * (1 / 453.592) * (144 * 12)))
+    } else {
+        return 0;
+    }
 }
 export function CreateTime(laborid,projectid,timein,timeout,traveltimein,traveltimeout,description,invoiceid) {
     return({laborid,projectid,timein,timeout,traveltimein,traveltimeout,description,invoiceid})

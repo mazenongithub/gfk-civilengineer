@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed|Roboto:400,500&display=swap');
+.logdraft-container {
+    width: 96%;
+    margin: auto;
+}
+
+.logdraft-title {
+    text-align: center;
+}
+
+.logdraft-description {
+    padding: 0px;
+    font-size: 14px;
+    color: #000000;
+}
+
+.logdraft-1,
+.logdraft-2 {
+    fill: none;
+    stroke: #000;
+    stroke-miterlimit: 10;
+}
+
+.logdraft-1 {
+    stroke-width: 2px;
+}
+
+.logdraft-3,
+.logdraft-4,
+.logdraft-6 {
+    writing-mode: tb;
+}
+
+.logdraft-3,
+.logdraft-4 {
+    text-orientation: upright;
+    glyph-orientation-vertical: 0deg;
+}
+
+.logdraft-3 {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+}
+
+.logdraft-11,
+.logdraft-3,
+.logdraft-4,
+.logdraft-6,
+.logdraft-7,
+.logdraft-8,
+.logdraft-description,
+.logdraft-label,
+.logdraft-20,
+.logdraft-21,
+.logdraft-title {
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.exploratorylog {
+    font-family: 'Roboto', sans-serif;
+}
+
+.logdraft-title {
+    font-size: 24px;
+}
+
+.logdraft-4,
+.logdraft-6,
+.logdraft-7,
+.logdraft-label {
+    font-size: 16px;
+}
+
+.logdraft-5 {
+    letter-spacing: 0.03em;
+}
+
+.logdraft-6 {
+    text-orientation: sideways-right;
+    glyph-orientation-vertical: 90deg;
+    letter-spacing: 0.1em;
+}
+
+.logdraft-7 {
+    letter-spacing: 0.1em;
+}
+
+.logdraft-11,
+.logdraft-8 {
+    font-size: 18px;
+}
+
+.logdraft-8 {
+    letter-spacing: 0.1em;
+}
+
+.logdraft-9 {
+    letter-spacing: 0.08em;
+}
+
+.logdraft-10 {
+    letter-spacing: 0.08em;
+}
+
+.logdraft-11 {
+    letter-spacing: 0.1em;
+}
+
+.logdraft-12 {
+    letter-spacing: 0.11em;
+}
+
+.logdraft-13 {
+    letter-spacing: 0.11em;
+}
+
+.logdraft-14 {
+    letter-spacing: 0.09em;
+}
+
+.logdraft-15 {
+    letter-spacing: 0.1em;
+}
+
+.logdraft-16 {
+    font-size: 36px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+}
+
+.logdraft-17 {
+    letter-spacing: 0.07em;
+}
+
+.logdraft-18 {
+    letter-spacing: 0.04em;
+}
+
+.logdraft-19 {
+    letter-spacing: 0.09em;
+}
+
+.logdraft-20 {
+    letter-spacing: 0.08em;
+}
+
+.logdraft-21 {
+    font-size: 24px;
+}
+
+.logdraft-22 {
+    letter-spacing: -0.01em;
+}
+
+@media print {
+    .logdraft-container {
+        width: 850px;
+        margin: auto;
+    }
+
+}

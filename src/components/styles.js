@@ -37,6 +37,10 @@ export function MyStylesheet() {
         minHeight: {
             minHeight: '40px'
         },
+        fullWidth: {
+            width: '66%',
+            padding: '3px'
+        },
         mediumWidth: {
             width: '66%',
             padding: '3px'

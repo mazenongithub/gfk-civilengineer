@@ -5,6 +5,16 @@ import { SaveBorings } from './actions/api'
 import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestData } from './functions'
 class GFK {
 
+    remarksWidth() {
+        if(this.state.width>1200) {
+            return({width:'240px',height:'auto'})
+        } else if (this.state.width>800) {
+            return({width:'180px',height:'auto'})
+        } else {
+            return({width:'120px',height:'auto'})
+        }  
+    }
+
  getgotoicon() {
         if(this.state.width>1200) {
             return({width:'180px',height:'auto'})
@@ -221,11 +231,7 @@ getsavetime() {
         return myimage;
 
     }
-    getunconfinedbysampleid(sampleid) {
-        const gfk = new GFK();
-        const unconfined = gfk.call(this,sampleid)
-        return unconfined;
-    }
+  
     getsieveanalysisbysampleid(sampleid) {
         const gfk = new GFK();
         const sieve = gfk.getsievebysampleid.call(this)
@@ -743,6 +749,8 @@ getsavetime() {
         }
         return key;
     }
+
+    
     getunconfinedtestbyid(sampleid) {
         const gfk = new GFK();
         const tests = gfk.getunconfinedtests.call(this);

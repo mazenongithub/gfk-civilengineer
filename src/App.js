@@ -15,7 +15,8 @@ import Timesheet from './components/timesheet'
 import { CheckUserLogin } from './components/actions/api'
 import Projects from './components/projects';
 import ViewProject from './components/viewproject';
-import ViewFieldReport from './components/viewfieldreport'
+import ViewFieldReport from './components/viewfieldreport';
+import LogDraft from './components/logdraft'
 class App extends Component {
 
   constructor(props) {
@@ -69,6 +70,7 @@ updateWindowDimensions() {
           <Route exact path="/:engineerid/projects/:projectid/fieldreports/:fieldid" component={ViewFieldReport} />
           <Route exact path="/:engineerid/projects/:projectid/timesheet" component={Timesheet} />
           <Route exact path="/:engineerid/projects/:projectid/borings" component={Borings} />
+          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/logdraft" component={LogDraft} />
           <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples" component={Samples} />
           <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />
           <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/unconfined" component={Unconfined} />

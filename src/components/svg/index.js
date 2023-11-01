@@ -5,6 +5,19 @@ export function openDateMenu() {
 export function addNewImage() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222.07 47.64"><defs><style></style></defs><title>addnewimage</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="addnewimage-1" x="1" y="1" width="218.79" height="45.64" rx="5.08" /><text className="addnewimage-2" transform="translate(13.64 30.5) scale(0.98 1)">Add New Image</text></g></g></g></svg>)
 }
+export function calculateIcon() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="calculateIcon-2" width="149" height="39" rx="8.85" ry="8.85"/><text className="calculateIcon-1" transform="translate(7.55 27)"><tspan x="0" y="0">CA</tspan><tspan className="calculateIcon-4" x="31.85" y="0">L</tspan><tspan x="44.1" y="0">CU</tspan><tspan className="calculateIcon-5" x="75.6" y="0">L</tspan><tspan className="calculateIcon-3" x="88.82" y="0">A</tspan><tspan x="103.56" y="0">TE</tspan></text></g></svg>)
+}
+export function addSieveIcon() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="addSieve-2" width="149" height="39" rx="8.85" ry="8.85"/><text className="addSieve-1" transform="translate(14.62 27)"><tspan x="0" y="0">ADD SIEVE</tspan></text></g></svg>)
+}
+export function remarksIcon() {
+    return(
+        <svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
+        </style></defs><g id="Layer_1-2"><rect className="remarkIcon-3" width="149" height="39" rx="8.85" ry="8.85"/><text className="remarkIcon-2" transform="translate(17.75 27)"><tspan x="0" y="0">RE</tspan><tspan className="remarkIcon-1" x="28.82" y="0">M</tspan><tspan x="50.05" y="0">ARKS</tspan></text></g></svg>)
+}
 export function goToIcon() {
     return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185.01 71.41"><defs><style>
     </style></defs><g id="content"><polygon className="goToIcon-1" points="122 69.7 122 52.2 1 52.2 1 19.2 122 19.2 122 1.7 182.96 35.7 122 69.7"/></g></svg>)

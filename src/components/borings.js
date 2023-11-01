@@ -83,6 +83,7 @@ class Borings extends Component {
         const regularFont = gfk.getRegularFont.call(this);
         const styles = MyStylesheet();
         const removeIcon = gfk.getremoveicon.call(this)
+   
 
         const activebackground = () => {
             if (boring.boringid === this.state.activeboringid) {
@@ -90,11 +91,15 @@ class Borings extends Component {
             }
         }
         return (
-            <div style={{ ...styles.generalFont, ...styles.generalContainer, ...regularFont, ...styles.bottomMargin15 }} key={boring.boringid}>
-                <span onClick={() => { this.makeboringactive(boring.boringid) }} style={{ ...activebackground() }}>BoringID: {boring.boringid} DateDrilled:{boring.datedrilled} Number:{boring.boringnumber} Diameter:{boring.diameter} Elevation: {boring.elevation} Drill Rig:{boring.drillrig} LoggedBy: {boring.loggedby} Latitude: {boring.latitude} Longitude: {boring.longitude}</span>
-                <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeboringid(boring) }}>
-                    {removeIconSmall()}
-                </button>
+            <div style={{ ...styles.generalContainer, ...styles.generalFont }}>
+                <div style={{ ...styles.generalFont, ...styles.generalContainer, ...styles.bottomMargin15 }} key={boring.boringid}>
+                    <span onClick={() => { this.makeboringactive(boring.boringid) }} style={{ ...activebackground(), ...regularFont }}>BoringID: {boring.boringid} DateDrilled:{boring.datedrilled} Number:{boring.boringnumber} Diameter:{boring.diameter} Elevation: {boring.elevation} Drill Rig:{boring.drillrig} LoggedBy: {boring.loggedby} Latitude: {boring.latitude} Longitude: {boring.longitude}</span>
+                    <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeboringid(boring) }}>
+                        {removeIconSmall()}
+                    </button>
+                </div>
+              
+
             </div>
         )
 
@@ -498,28 +503,28 @@ class Borings extends Component {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Boring Number
-                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getboringnumber()}
                             onChange={event => { this.handleboringnumber(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Boring Diameter
-                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getdiameter()}
                             onChange={event => this.handlediameter(event.target.value)}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         GW Depth
-                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getgwdepth()}
                             onChange={event => { this.handlegwdepth(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Surface Elevation
-                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getelevation()}
                             onChange={event => { this.handleelevation(event.target.value) }}
                         />
@@ -556,7 +561,7 @@ class Borings extends Component {
                                 </div>
                                 <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                     Surface Elevation
-                                     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                                         value={this.getelevation()}
                                         onChange={event => { this.handleelevation(event.target.value) }} />
                                 </div>
@@ -573,14 +578,14 @@ class Borings extends Component {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Drill Rig
-    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getdrillrig()}
                             onChange={event => { this.handledrillrig(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Logged By
-    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getloggedby()}
                             onChange={event => { this.handleloggedby(event.target.value) }}
                         />
@@ -619,13 +624,13 @@ class Borings extends Component {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Latitude
-    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getlatitude()}
                             onChange={event => { this.handlelatitude(event.target.value) }} />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Longitude
-    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
                             value={this.getlongitude()}
                             onChange={event => { this.handlelongitude(event.target.value) }} />
                     </div>
@@ -664,21 +669,21 @@ class Borings extends Component {
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex1 }}>
 
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                             to={`/${engineerid}`}>
                             /{engineerid}
                         </Link>
                     </div>
-                    <div style={{ ...styles.generalContainer,...styles.alignCenter }}>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                             to={`/${engineerid}/projects`}>
                             /projects
                         </Link>
                     </div>
-                    <div style={{ ...styles.generalContainer,...styles.alignCenter }}>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                             to={`/${engineerid}/projects/${projectid}`}>
@@ -686,7 +691,7 @@ class Borings extends Component {
                         </Link>
                     </div>
 
-                    <div style={{ ...styles.generalContainer,...styles.alignCenter, ...styles.bottomMargin15 }}>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                             to={`/${engineerid}/projects/${projectid}/borings`}>
