@@ -9,6 +9,14 @@ export function calculateIcon() {
     return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
     </style></defs><g id="Layer_1-2"><rect className="calculateIcon-2" width="149" height="39" rx="8.85" ry="8.85"/><text className="calculateIcon-1" transform="translate(7.55 27)"><tspan x="0" y="0">CA</tspan><tspan className="calculateIcon-4" x="31.85" y="0">L</tspan><tspan x="44.1" y="0">CU</tspan><tspan className="calculateIcon-5" x="75.6" y="0">L</tspan><tspan className="calculateIcon-3" x="88.82" y="0">A</tspan><tspan x="103.56" y="0">TE</tspan></text></g></svg>)
 }
+export function saveSection() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 69"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="savesection-1" width="290" height="69" rx="13.71" ry="13.71"/><text className="savesection-2" transform="translate(39.91 41.5)"><tspan x="0" y="0">S</tspan><tspan className="savesection-4" x="18.44" y="0">A</tspan><tspan x="37.5" y="0">VE SE</tspan><tspan className="savesection-3" x="116.78" y="0">C</tspan><tspan x="135.98" y="0">TION</tspan></text></g></svg>)
+}
+export function addSection() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 69"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="addsection-1" width="290" height="69" rx="13.71" ry="13.71"/><text className="addsection-3" transform="translate(64.64 41.5)"><tspan x="0" y="0">ADD </tspan><tspan className="addsection-4" x="66.65" y="0">L</tspan><tspan className="addsection-2" x="83.17" y="0">A</tspan><tspan x="101.16" y="0">YER</tspan></text></g></svg>)
+}
 export function addSieveIcon() {
     return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
     </style></defs><g id="Layer_1-2"><rect className="addSieve-2" width="149" height="39" rx="8.85" ry="8.85"/><text className="addSieve-1" transform="translate(14.62 27)"><tspan x="0" y="0">ADD SIEVE</tspan></text></g></svg>)

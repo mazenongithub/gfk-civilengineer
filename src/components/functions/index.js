@@ -1,3 +1,10 @@
+export function PTSlabLayer(layerid,layername,toplayer,bottomlayer,ll,pi,fines,micro) {
+    return({layerid,layername,toplayer,bottomlayer,ll,pi,fines,micro})
+
+}
+export function PTSlabSection(projectid,sectionid,sectionname) {
+    return{projectid,sectionid,sectionname,layers:[]}
+}
 export function formatDateforCalendarDisplay(datein) {
     let month = getmonth(datein);
     let year = datein.getFullYear();
@@ -1320,6 +1327,7 @@ export function sorttimesdesc(timeina, timeinb) {
         return 0;
     }
 }
+
 export function compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid) {
     return ({ testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid })
 }

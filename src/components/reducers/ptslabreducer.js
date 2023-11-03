@@ -1,0 +1,10 @@
+import { PTSLAB } from '../actions/types';
+
+export default function (state = {}, action) {
+    switch (action.type) {
+        case PTSLAB:
+            return action.payload;
+        default:
+            return state;
+    }
+}

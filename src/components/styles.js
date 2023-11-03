@@ -55,6 +55,9 @@ export function MyStylesheet() {
         marginAuto: {
             margin: 'auto'
         },
+        maxWidth400:{
+            width: '400px'
+        },
         calendarContainer: {
             maxWidth: '540px'
         },

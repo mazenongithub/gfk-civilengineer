@@ -145,9 +145,9 @@ class ViewProject extends Component {
                         </div>
                         <div style={{...styles.flex1, ...styles.alignCenter}}>
                         <Link
-                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                            to={`/${engineerid}/projects/${projectid}/fieldreports`}>
-                            &nbsp;
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/ptslab`}>
+                            /PTSlab
                         </Link>
                         </div>
                     </div>

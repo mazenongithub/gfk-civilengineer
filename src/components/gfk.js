@@ -6,42 +6,42 @@ import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestDa
 class GFK {
 
     remarksWidth() {
-        if(this.state.width>1200) {
-            return({width:'240px',height:'auto'})
-        } else if (this.state.width>800) {
-            return({width:'180px',height:'auto'})
+        if (this.state.width > 1200) {
+            return ({ width: '240px', height: 'auto' })
+        } else if (this.state.width > 800) {
+            return ({ width: '180px', height: 'auto' })
         } else {
-            return({width:'120px',height:'auto'})
-        }  
+            return ({ width: '120px', height: 'auto' })
+        }
     }
 
- getgotoicon() {
-        if(this.state.width>1200) {
-            return({width:'180px',height:'auto'})
-        } else if (this.state.width>800) {
-            return({width:'135px',height:'auto'})
+    getgotoicon() {
+        if (this.state.width > 1200) {
+            return ({ width: '180px', height: 'auto' })
+        } else if (this.state.width > 800) {
+            return ({ width: '135px', height: 'auto' })
         } else {
-            return({width:'90px',height:'auto'})
-        }  
+            return ({ width: '90px', height: 'auto' })
+        }
     }
-getsaveprojecticon() {
-    if(this.state.width>1200) {
-        return({width:'328px',height:'76px'})
-    } else if (this.state.width>800) {
-        return({width:'265px',height:'61px'})
-    } else {
-        return({width:'199px',height:'46px'})
-    }  
-}
-getsavetime() {
-    if(this.state.width>1200) {
-        return({width:'364px',height:'87px'})
-    } else if (this.state.width>800) {
-        return({width:'281px',height:'67px'})
-    } else {
-        return({width:'209px',height:'51px'})
+    getsaveprojecticon() {
+        if (this.state.width > 1200) {
+            return ({ width: '328px', height: '76px' })
+        } else if (this.state.width > 800) {
+            return ({ width: '265px', height: '61px' })
+        } else {
+            return ({ width: '199px', height: '46px' })
+        }
     }
-}
+    getsavetime() {
+        if (this.state.width > 1200) {
+            return ({ width: '364px', height: '87px' })
+        } else if (this.state.width > 800) {
+            return ({ width: '281px', height: '67px' })
+        } else {
+            return ({ width: '209px', height: '51px' })
+        }
+    }
     getuser() {
         let myuser = false;
         if (this.props.myuser) {
@@ -49,6 +49,14 @@ getsavetime() {
 
         }
         return myuser;
+    }
+
+    getZoneCharts() {
+        let zonecharts = false;
+        if (this.props.zonecharts.hasOwnProperty("zone_1")) {
+            zonecharts = this.props.zonecharts;
+        }
+        return zonecharts;
     }
     getSmallFont() {
 
@@ -78,6 +86,95 @@ getsavetime() {
         }
 
         return fieldreport;
+    }
+
+    getPTSlabkeybyID(sectionid) {
+
+        const gfk = new GFK();
+        let key = false;
+        const ptslabs = gfk.getPTslabs.call(this)
+        // eslint-disable-next-line
+        ptslabs.map((ptslab, i) => {
+            if (ptslab.sectionid === sectionid) {
+                key = i;
+            }
+        })
+        return key;
+    }
+
+    getPTSlabbyID(sectionid) {
+
+        const gfk = new GFK();
+        let slab = false;
+        const ptslabs = gfk.getPTslabs.call(this)
+        // eslint-disable-next-line
+        ptslabs.map(ptslab => {
+            if (ptslab.sectionid === sectionid) {
+                slab = ptslab;
+            }
+        })
+        return slab;
+    }
+
+    getPTSlabLayerKeybyID(sectionid, layerid) {
+        const gfk = new GFK();
+        let key = false;
+        const layers = gfk.getPTSlabLayersbysectionID.call(this, sectionid)
+        if (layers) {
+            // eslint-disable-next-line
+            layers.map((layer, i) => {
+                if (layer.layerid === layerid) {
+                    key = i
+                }
+            })
+        }
+        return key;
+
+    }
+
+    getPTSlabLayerbyID(sectionid, layerid) {
+        const gfk = new GFK();
+        let getlayer = false;
+        const layers = gfk.getPTSlabLayersbysectionID.call(this, sectionid)
+        if (layers) {
+            // eslint-disable-next-line
+            layers.map(layer => {
+                if (layer.layerid === layerid) {
+                    getlayer = layer;
+                }
+            })
+        }
+        return getlayer;
+
+    }
+
+    getPTSlabLayersbysectionID(sectionid) {
+        let layers = false;
+        const gfk = new GFK();
+        const section = gfk.getPTSlabbyID.call(this, sectionid)
+        if (section) {
+            if (section.hasOwnProperty("layers")) {
+                layers = section.layers;
+
+                layers.sort((a, b) => {
+                    if (Number(a.toplayer) >= Number(b.toplayer)) {
+                        return 1;
+                    } else {
+                        return -1
+                    }
+                })
+
+            }
+        }
+        return layers;
+    }
+
+    getPTslabs() {
+        let ptslabs = false;
+        if (this.props.ptslab.hasOwnProperty("length")) {
+            ptslabs = this.props.ptslab;
+        }
+        return ptslabs;
     }
     getcurvebyid(curveid) {
         const gfk = new GFK();
@@ -231,7 +328,7 @@ getsavetime() {
         return myimage;
 
     }
-  
+
     getsieveanalysisbysampleid(sampleid) {
         const gfk = new GFK();
         const sieve = gfk.getsievebysampleid.call(this)
@@ -353,7 +450,7 @@ getsavetime() {
         return projects;
     }
     getprojectbyid(projectid) {
-   
+
         const gfk = new GFK();
         const projects = gfk.getprojects.call(this);
         let project = false;
@@ -362,8 +459,8 @@ getsavetime() {
             projects.map(myproject => {
                 if (myproject.projectid.toString() === projectid.toString()) {
                     project = myproject;
-                   
-                } 
+
+                }
             })
         }
         return project;
@@ -372,10 +469,10 @@ getsavetime() {
     getprojectkeybyid(projectid) {
         const gfk = new GFK();
         const projects = gfk.getprojects.call(this);
-        let key= false;
+        let key = false;
         if (projects) {
             // eslint-disable-next-line
-            projects.map((myproject,i) => {
+            projects.map((myproject, i) => {
                 if (myproject.projectid === projectid) {
                     key = i;
 
@@ -503,10 +600,10 @@ getsavetime() {
         const gfk = new GFK();
         const mylabor = gfk.getactuallabor.call(this);
         let key = false;
-        if(mylabor) {
+        if (mylabor) {
             // eslint-disable-next-line
-            mylabor.map((labor,i)=> {
-                if(labor.laborid === laborid) {
+            mylabor.map((labor, i) => {
+                if (labor.laborid === laborid) {
                     key = i;
                 }
             })
@@ -517,26 +614,26 @@ getsavetime() {
         const gfk = new GFK();
         const mylabor = gfk.getactuallabor.call(this);
         let getlabor = false;
-        if(mylabor) {
+        if (mylabor) {
             // eslint-disable-next-line
-            mylabor.map(labor=> {
-                if(labor.laborid === laborid) {
+            mylabor.map(labor => {
+                if (labor.laborid === laborid) {
                     getlabor = labor;
                 }
             })
         }
         return getlabor;
     }
-      getactuallabor() {
+    getactuallabor() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this)
         let labor = false;
-        if(myuser.hasOwnProperty("actuallabor")) {
+        if (myuser.hasOwnProperty("actuallabor")) {
             labor = myuser.actuallabor.mylabor;
-           
+
 
         }
-        
+
         return labor;
     }
 
@@ -544,17 +641,17 @@ getsavetime() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this)
         let labor = [];
-        if(myuser.hasOwnProperty("actuallabor")) {
+        if (myuser.hasOwnProperty("actuallabor")) {
             // eslint-disable-next-line
-            myuser.actuallabor.mylabor.map(mylabor=> {
-                if(mylabor.projectid === projectid) {
+            myuser.actuallabor.mylabor.map(mylabor => {
+                if (mylabor.projectid === projectid) {
                     labor.push(mylabor)
                 }
             })
-           
+
 
         }
-        
+
         return labor;
     }
     getsievekeybysampleid(sampleid) {
@@ -750,7 +847,7 @@ getsavetime() {
         return key;
     }
 
-    
+
     getunconfinedtestbyid(sampleid) {
         const gfk = new GFK();
         const tests = gfk.getunconfinedtests.call(this);
@@ -789,7 +886,7 @@ getsavetime() {
                 let engineerid = this.props.match.params.engineerid;
                 let projectid = this.props.match.params.projectid;
                 let borings = gfk.getboringparams.call(this)
-                console.log(borings)
+
                 let response = await SaveBorings(engineerid, projectid, borings)
                 console.log(response)
                 if (response.hasOwnProperty("message")) {
@@ -833,7 +930,7 @@ getsavetime() {
 
                     })
                 }
-             
+
                 this.props.reduxUser(myuser)
 
                 if (response.hasOwnProperty("borings")) {

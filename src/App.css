@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap');
 .goToIcon-1{fill:#190db7;stroke:#050505;stroke-miterlimit:10;stroke-width:2px;}
 .opendatemenu-1 {fill: #e6e6e6;stroke: #000; stroke-miterlimit: 10;  stroke-width: 2px;}.opendatemenu-2 { fill: #666;}
+.savesection-1{stroke-width:0px;}.savesection-2{fill:#c4b526;font-family:Roboto-Bold, Roboto;font-size:30px;font-weight:700;stroke:#fff;stroke-miterlimit:10;}.savesection-3{letter-spacing:-.01em;}.savesection-4{letter-spacing:-.04em;}
+.addsection-1{stroke-width:0px;}.addsection-2{letter-spacing:-.07em;}.addsection-3{fill:#c4b526;font-family:Roboto-Bold, Roboto;font-size:30px;font-weight:700;stroke:#fff;stroke-miterlimit:10;}.addsection-4{letter-spacing:0em;}
 .closedatemenu-1 {fill: #e6e6e6;  stroke: #000;}.closedatemenu-1,.closedatemenu-2 {  stroke-miterlimit: 10;  stroke-width: 2px;}.closedatemenu-2 {  fill: #666;  stroke: #666;}
 .dateyearup-1 {  fill: #e6e6e6;  stroke: #000;  stroke-miterlimit: 10;  stroke-width: 2px;}.dateyearup-2 {  fill: #666;}
 .dateyeardown-1 {  fill: #e6e6e6;  stroke: #000;  stroke-miterlimit: 10;  stroke-width: 2px;}.dateyeardown-2 {  fill: #666;}.datemonthdown-1 {  fill: #e6e6e6;  stroke: #000;  stroke-miterlimit: 10;  stroke-width: 2px;}
