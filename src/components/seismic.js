@@ -1189,7 +1189,7 @@ class Seismic extends Component {
 
     getSafetyFactor() {
         let fs = 0;
-        const driving = Number(this.getDepthReductionFactor())
+        const driving = Number(this.getDrivingCSR())
         const allowable = Number(this.getAllowableCSR())
         fs = allowable/driving
         return Number(fs).toFixed(2)
