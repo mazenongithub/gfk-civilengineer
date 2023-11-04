@@ -2,6 +2,22 @@ export function PTSlabLayer(layerid,layername,toplayer,bottomlayer,ll,pi,fines,m
     return({layerid,layername,toplayer,bottomlayer,ll,pi,fines,micro})
 
 }
+export function newSeismic(projectid,magnitude,siteacceleration) {
+    return({projectid,siteacceleration,magnitude,points:[]})
+
+}
+export function newStrain(strainid,pointid,toplayer,bottomlayer,strainratio) {
+    return({strainid,pointid,toplayer,bottomlayer,strainratio})
+
+}
+export function newSeismicPoint(projectid,siteacceleration,magnitude,pointid,depth,pi,fines,spt,sampleid) {
+    return({projectid,siteacceleration,magnitude, points:[{pointid,depth,pi,fines,spt,sampleid,strain:[]}]})
+
+}
+export function SeismicPoint(pointid,depth,pi,fines,spt,sampleid) {
+    return({pointid,depth,pi,fines,spt,sampleid,strain:[]})
+
+}
 export function PTSlabSection(projectid,sectionid,sectionname) {
     return{projectid,sectionid,sectionname,layers:[]}
 }

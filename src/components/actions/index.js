@@ -1,4 +1,4 @@
-import { MYUSER, ZONECHARTS, PTSLAB } from './types';
+import { MYUSER, ZONECHARTS, PTSLAB, SEISMIC } from './types';
 
 export const reduxUser = (myuser) => async dispatch => {
 
@@ -14,3 +14,9 @@ export const reduxPTSlab = (ptslab) => async dispatch => {
 
     dispatch({ type: PTSLAB, payload: ptslab })
 }
+
+export const reduxSeismic = (seismic) => async dispatch => {
+
+    dispatch({ type: SEISMIC, payload: seismic })
+}
+

@@ -83,6 +83,29 @@ export async function UploadFieldImage(formdata, imageid) {
         })
 }
 
+export async function LoadSeismic() {
+    let APIURL = `http://civilengineer.io/gfk/api/loadseismic.php`
+
+    return fetch(APIURL, { credentials: 'include' }).then(resp => {
+
+        if (!resp.ok) {
+            if (resp.status >= 400 && resp.status < 500) {
+                return resp.json().then(data => {
+
+                    throw data.message;
+                })
+            }
+            else {
+                let err = { errorMessage: 'Please try again later, server is not responding' };
+                throw err;
+            }
+        }
+
+        return resp.json();
+    })
+}
+
+
 export async function LoadPTSlab() {
     let APIURL = `http://civilengineer.io/gfk/api/loadptslab.php`
 

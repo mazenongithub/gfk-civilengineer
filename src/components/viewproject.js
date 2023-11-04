@@ -152,6 +152,19 @@ class ViewProject extends Component {
                         </div>
                     </div>
 
+                    <div style={{...styles.generalFlex, ...styles.bottomMargin15}}>
+                        <div style={{...styles.flex1, ...styles.alignCenter}}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/seismic`}>
+                            /Seismic
+                        </Link>
+                        </div>
+                        <div style={{...styles.flex1, ...styles.alignCenter}}>
+                        &nbsp;
+                        </div>
+                    </div>
+
                     
 
 
