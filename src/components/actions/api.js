@@ -55,8 +55,8 @@ export async function LoginUser(values) {
         })
 }
 
-export async function UploadFieldImage(formdata, imageid) {
-    var APIURL = `${process.env.REACT_APP_SERVER_API}/${imageid}/uploadfieldimage`
+export async function UploadFieldImage(formdata) {
+    var APIURL = `https://civilengineer.io/gfk/api/uploadfieldimage.php`
 
     return fetch(APIURL, {
         method: 'post',
@@ -172,8 +172,8 @@ export async function CheckUserLogin() {
     })
 }
 
-export async function DeletePTSlab(section_id,layer_id) {
-    const values = {section_id,layer_id}
+export async function DeletePTSlab(section_id, layer_id) {
+    const values = { section_id, layer_id }
 
     var APIURL = `http://civilengineer.io/gfk/api/deleteptslab.php`
 
@@ -204,6 +204,40 @@ export async function DeletePTSlab(section_id,layer_id) {
             return resp.json();
         })
 }
+
+export async function HandleSeismic(seismic) {
+
+
+    var APIURL = `http://civilengineer.io/gfk/api/handleseismic.php`
+
+    return fetch(APIURL, {
+        method: 'post',
+        credentials: 'include',
+        headers: new Headers({
+            'Content-Type': 'application/json',
+        }),
+
+        body: JSON.stringify(seismic)
+    })
+        .then(resp => {
+
+            if (!resp.ok) {
+                if (resp.status >= 400 && resp.status < 500) {
+                    return resp.json().then(data => {
+                        let err = { errorMessage: data.message };
+                        throw err;
+                    })
+                }
+                else {
+                    let err = { errorMessage: 'Please try again later, server is not responding' };
+                    throw err;
+                }
+            }
+
+            return resp.json();
+        })
+}
+
 
 export async function HandlePTSlab(ptslab) {
     console.log(ptslab)
@@ -270,8 +304,9 @@ export async function SaveBorings(engineerid, projectid, borings) {
         })
 }
 
-export async function SaveFieldReport(values) {
-    var APIURL = `https://civilengineer.io/gfk/api/savefieldreport.php`
+export async function SaveFieldReport(fieldreport) {
+    const values = { fieldreport }
+    var APIURL = `https://civilengineer.io/gfk/api/handlefieldreport.php`
     return fetch(APIURL, {
         method: 'post',
         credentials: 'include',
@@ -286,12 +321,11 @@ export async function SaveFieldReport(values) {
             if (!resp.ok) {
                 if (resp.status >= 400 && resp.status < 500) {
                     return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
+                        throw data.message
                     })
                 }
                 else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
+                    let err = 'Request failed or Server is not responding';
                     throw err;
                 }
             }

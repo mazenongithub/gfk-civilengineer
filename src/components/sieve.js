@@ -28,382 +28,479 @@ class Sieve extends Component {
     handlewgt34(wgt34) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
+
         if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
-            if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt34 = wgt34;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const wgt38 = this.state.wgt38;
-                const wgt4 = this.state.wgt4;
-                const wgt10 = this.state.wgt10;
-                const wgt30 = this.state.wgt30;
-                const wgt40 = this.state.wgt40;
-                const wgt100 = this.state.wgt100;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt34 = wgt34;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt38 = this.state.wgt38;
+                        const wgt4 = this.state.wgt4;
+                        const wgt10 = this.state.wgt10;
+                        const wgt30 = this.state.wgt30;
+                        const wgt40 = this.state.wgt40;
+                        const wgt100 = this.state.wgt100;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt34: '' })
+
+                    }
+
                 }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt34: '' })
-
             }
-
         }
 
     }
 
     getwgt34() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt34
-        } else {
-            return this.state.wgt34;
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt34 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
+            if (sieve) {
+                wgt34 = sieve.wgt34
+            } else {
+                wgt34 = this.state.wgt34;
+            }
+
         }
+        return wgt34;
     }
 
     handlewgt38(wgt38) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
+
         if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
-            if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt38 = wgt38;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt4 = this.state.wgt4;
-                const wgt10 = this.state.wgt10;
-                const wgt30 = this.state.wgt30;
-                const wgt40 = this.state.wgt40;
-                const wgt100 = this.state.wgt100;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt38 = wgt38;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt4 = this.state.wgt4;
+                        const wgt10 = this.state.wgt10;
+                        const wgt30 = this.state.wgt30;
+                        const wgt40 = this.state.wgt40;
+                        const wgt100 = this.state.wgt100;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt38: '' })
+
+                    }
+
                 }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt38: '' })
-
             }
-
         }
 
     }
 
     getwgt38() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt38
-        } else {
-            return this.state.wgt38;
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt38 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
+            if (sieve) {
+                wgt38 = sieve.wgt38
+            } else {
+                wgt38 = this.state.wgt38;
+            }
+
         }
+        return wgt38;
     }
+
+
 
     handlewgt4(wgt4) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
+
         if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
-            if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt4 = wgt4;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt38 = this.state.wgt38;
-                const wgt10 = this.state.wgt10;
-                const wgt30 = this.state.wgt30;
-                const wgt40 = this.state.wgt40;
-                const wgt100 = this.state.wgt100;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt4 = wgt4;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt38 = this.state.wgt38;
+                        const wgt10 = this.state.wgt10;
+                        const wgt30 = this.state.wgt30;
+                        const wgt40 = this.state.wgt40;
+                        const wgt100 = this.state.wgt100;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt4: '' })
+
+                    }
+
                 }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt4: '' })
-
             }
-
         }
 
     }
+
+
 
     getwgt4() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt4
-        } else {
-            return this.state.wgt4;
-        }
-    }
-    handlewgt10(wgt10) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt4 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
             if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt10 = wgt10;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
+                wgt4 = sieve.wgt4
             } else {
-                const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt38 = this.state.wgt30;
-                const wgt4 = this.state.wgt4;
-                const wgt30 = this.state.wgt30;
-                const wgt40 = this.state.wgt40;
-                const wgt100 = this.state.wgt100;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
-                }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt10: '' })
-
+                wgt4 = this.state.wgt4;
             }
 
         }
+        return wgt4;
+    }
+
+    handlewgt10(wgt10) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+
+
+        if (myuser) {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
+                const sampleid = this.props.match.params.sampleid;
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt10 = wgt10;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt38 = this.state.wgt38;
+                        const wgt4 = this.state.wgt4;
+                        const wgt30 = this.state.wgt30;
+                        const wgt40 = this.state.wgt40;
+                        const wgt100 = this.state.wgt100;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt10: '' })
+
+                    }
+
+                }
+            }
+        }
 
     }
 
+
     getwgt10() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt10
-        } else {
-            return this.state.wgt10;
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt10 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
+            if (sieve) {
+                wgt10 = sieve.wgt10
+            } else {
+                wgt10 = this.state.wgt10;
+            }
+
         }
+        return wgt10;
     }
 
     handlewgt30(wgt30) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
+
         if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
-            if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt30 = wgt30;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt38 = this.state.wgt38;
-                const wgt4 = this.state.wgt4;
-                const wgt10 = this.state.wgt10;
-                const wgt40 = this.state.wgt40;
-                const wgt100 = this.state.wgt100;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt30 = wgt30;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt38 = this.state.wgt38;
+                        const wgt4 = this.state.wgt4;
+                        const wgt10 = this.state.wgt10;
+                        const wgt40 = this.state.wgt40;
+                        const wgt100 = this.state.wgt100;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt30: '' })
+
+                    }
+
                 }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt30: '' })
-
             }
-
         }
 
     }
 
     getwgt30() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt30
-        } else {
-            return this.state.wgt30;
-        }
-    }
-    handlewgt40(wgt40) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt30 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
             if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt40 = wgt40;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
+                wgt30 = sieve.wgt30
             } else {
-                const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt38 = this.state.wgt38;
-                const wgt4 = this.state.wgt4;
-                const wgt10 = this.state.wgt10;
-                const wgt30 = this.state.wgt30;
-                const wgt100 = this.state.wgt100;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
-                }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt40: '' })
-
+                wgt30 = this.state.wgt30;
             }
 
         }
+        return wgt30;
+    }
+
+
+    handlewgt40(wgt40) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+
+
+        if (myuser) {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
+                const sampleid = this.props.match.params.sampleid;
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt40 = wgt40;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt38 = this.state.wgt38;
+                        const wgt4 = this.state.wgt4;
+                        const wgt10 = this.state.wgt10;
+                        const wgt30 = this.state.wgt30;
+                        const wgt100 = this.state.wgt100;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt40: '' })
+
+                    }
+
+                }
+            }
+        }
 
     }
 
+
+
     getwgt40() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt40
-        } else {
-            return this.state.wgt40;
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt40 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
+            if (sieve) {
+                wgt40 = sieve.wgt40
+            } else {
+                wgt40 = this.state.wgt40;
+            }
+
         }
+        return wgt40;
     }
 
     handlewgt100(wgt100) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
+
         if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
-            if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt100 = wgt100;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt38 = this.state.wgt38;
-                const wgt4 = this.state.wgt4;
-                const wgt10 = this.state.wgt10;
-                const wgt30 = this.state.wgt30;
-                const wgt40 = this.state.wgt40;
-                const wgt200 = this.state.wgt200;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt100 = wgt100;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt38 = this.state.wgt38;
+                        const wgt4 = this.state.wgt4;
+                        const wgt10 = this.state.wgt10;
+                        const wgt30 = this.state.wgt30;
+                        const wgt40 = this.state.wgt40;
+                        const wgt200 = this.state.wgt200;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt100: '' })
+
+                    }
+
                 }
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt100: '' })
-
             }
-
         }
 
     }
 
     getwgt100() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt100
-        } else {
-            return this.state.wgt100;
-        }
-    }
-    handlewgt200(wgt200) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid)
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt100 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
             if (sieve) {
-                const i = gfk.getsievekeybysampleid.call(this, this.props.match.params.sampleid)
-                myuser.sieves.sieve[i].wgt200 = wgt200;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
+                wgt100 = sieve.wgt100
             } else {
-                const sampleid = this.props.match.params.sampleid;
-                const wgt34 = this.state.wgt34;
-                const wgt38 = this.state.wgt38;
-                const wgt4 = this.state.wgt4;
-                const wgt10 = this.state.wgt10;
-                const wgt30 = this.state.wgt30;
-                const wgt40 = this.state.wgt40;
-                const wgt100 = this.state.wgt100;
-                const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
-                const sieves = gfk.getsieves.call(this);
-                if (sieves) {
-                    myuser.sieves.sieve.push(newSieve);
-                } else {
-                    myuser.sieves = { sieve: [newSieve] }
-                }
-
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render', wgt200: '' })
-
+                wgt100 = this.state.wgt100;
             }
 
         }
+        return wgt100;
+    }
 
+    handlewgt200(wgt200) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+
+
+        if (myuser) {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
+                const sampleid = this.props.match.params.sampleid;
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    if (sample.hasOwnProperty("sieve")) {
+                        myuser.borings[i].samples[j].sieve.wgt200 = wgt200;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
+                    } else {
+                        const wgt34 = this.state.wgt34;
+                        const wgt38 = this.state.wgt38;
+                        const wgt4 = this.state.wgt4;
+                        const wgt10 = this.state.wgt10;
+                        const wgt30 = this.state.wgt30;
+                        const wgt40 = this.state.wgt40;
+                        const wgt100 = this.state.wgt100;
+                        const newSieve = CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200);
+                        myuser.borings[i].samples[j].sieve = newSieve;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render', wgt200: '' })
+
+                    }
+
+                }
+            }
+        }
     }
 
     getwgt200() {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this, this.props.match.params.sampleid);
-        console.log(sieve)
-        if (sieve) {
-            return sieve.wgt200
-        } else {
-            return this.state.wgt200;
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let wgt200 = "";
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid);
+            if (sieve) {
+                wgt200 = sieve.wgt200
+            } else {
+                wgt200 = this.state.wgt200;
+            }
+
         }
+        return wgt200;
     }
     render() {
         const gfk = new GFK();
         const styles = MyStylesheet();
         const project = gfk.getprojectbyid.call(this, this.props.match.params.projectid)
         const boring = gfk.getboringbyid.call(this, this.props.match.params.boringid)
-        const sample = gfk.getsamplebyid.call(this, this.props.match.params.sampleid)
+        const sample = gfk.getsamplebyid.call(this, this.props.match.params.boringid, this.props.match.params.sampleid)
         const headerFont = gfk.getHeaderFont.call(this)
         const regularFont = gfk.getRegularFont.call(this);
         const boringid = this.props.match.params.boringid;
@@ -448,7 +545,7 @@ class Sieve extends Component {
                                 </Link>
                             </div>
 
-                           
+
                             <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                                 <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} Samples</Link>
                             </div>

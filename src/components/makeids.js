@@ -3,6 +3,131 @@ import { makeID } from './functions'
 
 class MakeID {
 
+    imageID() {
+        const gfk = new GFK();
+        let imageid = false;
+        while(!imageid) {
+            imageid = makeID(16)
+            const fieldreports = gfk.getfieldreports.call(this)
+            if(fieldreports) {
+                 // eslint-disable-next-line
+                fieldreports.map(report=> {
+                    if(report.hasOwnProperty("images")) {
+                         // eslint-disable-next-line
+                        report.images.map(image=> {
+                            if(image.imageid === imageid) {
+                                imageid = false;
+                            }
+                        })
+                    }
+                })
+            }
+        }
+
+        return imageid;
+
+    }
+    
+    fieldID() {
+        
+        const gfk = new GFK();
+        let fieldid = false;
+        while(!fieldid) {
+            fieldid = makeID(16)
+            const fieldreports = gfk.getfieldreports.call(this)
+            if(fieldreports) {
+                 // eslint-disable-next-line
+                fieldreports.map(report=> {
+                    if(report.fieldid === fieldid) {
+                        fieldid = false;
+                    }
+                })
+            }
+
+
+
+        }
+        return fieldid;
+    }
+
+    compactionTest() {
+        const gfk = new GFK();
+        let testid = false;
+        while(!testid) {
+            testid = makeID(16)
+            const fieldreports = gfk.getfieldreports.call(this);
+            if(fieldreports) {
+                 // eslint-disable-next-line
+                fieldreports.map(fieldreport=> {
+                    if(fieldreport.hasOwnProperty("compactiontests")) {
+                         // eslint-disable-next-line
+                        fieldreport.compactiontests.map(test=> {
+                            if(test.testid === testid) {
+                                    testid = false;
+                            }
+                        })
+                    }
+                })
+            }
+        }
+        return testid;
+    }
+
+    unconfinedID() {
+        const gfk = new GFK();
+        let unid = false;
+        while (!unid) {
+           unid = makeID(16)
+            const borings = gfk.getborings.call(this)
+            if (borings) {
+                // eslint-disable-next-line
+                borings.map(boring => {
+                    if (boring.hasOwnProperty("samples")) {
+                        // eslint-disable-next-line
+                        boring.samples.map(sample => {
+                            if (sample.hasOwnProperty("unconfined")) {
+                                // eslint-disable-next-line
+                                sample.unconfined.map(unconfined => {
+                                    if (unconfined.unid === unid) {
+                                        unid = false;
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+
+            }
+
+        }
+        return unid;
+
+
+    }
+
+    sampleID() {
+        let sampleid = false;
+        const gfk = new GFK();
+        const borings = gfk.getborings.call(this)
+        while (!sampleid) {
+            sampleid = makeID(16)
+             // eslint-disable-next-line
+            borings.map(boring => {
+                if (borings.hasOwnProperty("samples")) {
+                     // eslint-disable-next-line
+                    borings.samples.map(sample => {
+                        if (sample.sampleid === sampleid) {
+                            sampleid = false;
+                        }
+                    })
+                }
+            })
+
+
+        }
+        return sampleid;
+    }
+
     seismicstrainid() {
         let strainid = false;
         const gfk = new GFK()
@@ -15,11 +140,11 @@ class MakeID {
                     if (seismic.hasOwnProperty("points")) {
 
 
-                            // eslint-disable-next-line
+                        // eslint-disable-next-line
                         seismic.points.map(point => {
                             if (point.hasOwnProperty("strain")) {
 
- // eslint-disable-next-line
+                                // eslint-disable-next-line
                                 point.strain.map(getstrain => {
 
                                     if (getstrain === strainid) {
@@ -50,17 +175,17 @@ class MakeID {
         const gfk = new GFK();
         const seismics = gfk.getSeismic.call(this)
         let pointid = false;
-        
+
         if (seismics) {
-            
+
             while (!pointid) {
                 pointid = makeID(16)
-                            // eslint-disable-next-line
-                seismics.map(seismic=> {
-                    if(seismic.hasOwnProperty("points")) {
-                         // eslint-disable-next-line
+                // eslint-disable-next-line
+                seismics.map(seismic => {
+                    if (seismic.hasOwnProperty("points")) {
+                        // eslint-disable-next-line
                         seismic.points.map(point => {
-                            if(pointid === point.pointid) {
+                            if (pointid === point.pointid) {
                                 pointid = false;
                             }
                         })
@@ -73,8 +198,8 @@ class MakeID {
         } else {
             pointid = makeID(16)
         }
-   
-       
+
+
         return pointid;
     }
 
@@ -131,7 +256,7 @@ class MakeID {
             projectid = makeID(16)
             if (myuser.hasOwnProperty("projects")) {
                 // eslint-disable-next-line
-                myuser.projects.project.map(project => {
+                myuser.projects.map(project => {
                     if (project.projectid === projectid) {
                         projectid = false;
                     }

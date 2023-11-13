@@ -11,7 +11,7 @@ class ProjectID {
         let projects = [];
         if (myuser.hasOwnProperty("projects")) {
             // eslint-disable-next-line
-            myuser.projects.project.map(project => {
+            myuser.projects.map(project => {
                 if (project.city.toLowerCase().startsWith(this.state.searchcity.toLowerCase())) {
                     projects.push(project)
                 }
@@ -37,7 +37,7 @@ class ProjectID {
         let projects = [];
         if (myuser.hasOwnProperty("projects")) {
             // eslint-disable-next-line
-            myuser.projects.project.map(project => {
+            myuser.projects.map(project => {
                 if (project.projectnumber.startsWith(projectnumber)) {
                     projects.push(project)
                 }

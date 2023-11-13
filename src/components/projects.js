@@ -62,7 +62,7 @@ class Projects extends Component {
             const engineerid = myuser.engineerid;
             if (this.state.activeprojectid) {
                 const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects.project[i].city = city;
+                myuser.projects[i].city = city;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -78,7 +78,7 @@ class Projects extends Component {
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
                 const projects = gfk.getprojects.call(this);
                 if (projects) {
-                    myuser.projects.project.push(newproject)
+                    myuser.projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
                     myuser.projects = project;
@@ -109,7 +109,7 @@ class Projects extends Component {
             const engineerid = myuser.engineerid;
             if (this.state.activeprojectid) {
                 const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects.project[i].address = address;
+                myuser.projects[i].address = address;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -125,7 +125,7 @@ class Projects extends Component {
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
                 const projects = gfk.getprojects.call(this);
                 if (projects) {
-                    myuser.projects.project.push(newproject)
+                    myuser.projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
                     myuser.projects = project;
@@ -141,6 +141,7 @@ class Projects extends Component {
 
         if (this.state.activeprojectid) {
             const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid);
+            console.log(myproject)
             return myproject.title;
         } else {
             return this.state.title;
@@ -155,7 +156,7 @@ class Projects extends Component {
             const engineerid = myuser.engineerid;
             if (this.state.activeprojectid) {
                 const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects.project[i].title = title;
+                myuser.projects[i].title = title;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -171,7 +172,7 @@ class Projects extends Component {
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
                 const projects = gfk.getprojects.call(this);
                 if (projects) {
-                    myuser.projects.project.push(newproject)
+                    myuser.projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
                     myuser.projects = project;
@@ -201,7 +202,7 @@ class Projects extends Component {
             const engineerid = myuser.engineerid;
             if (this.state.activeprojectid) {
                 const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects.project[i].projectnumber = projectnumber;
+                myuser.projects[i].projectnumber = projectnumber;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -217,7 +218,7 @@ class Projects extends Component {
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
                 const projects = gfk.getprojects.call(this);
                 if (projects) {
-                    myuser.projects.project.push(newproject)
+                    myuser.projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
                     myuser.projects = project;
@@ -236,7 +237,7 @@ class Projects extends Component {
             const values = { projects }
             let response = await SaveProjects(values);
             if (response.hasOwnProperty("projects")) {
-                myuser.projects.project = response.projects;
+                myuser.projects = response.projects;
                 this.props.reduxUser(myuser)
             }
             if (this.state.activeprojectid) {

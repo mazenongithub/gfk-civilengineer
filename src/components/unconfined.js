@@ -4,9 +4,10 @@ import { connect } from 'react-redux';
 import GFK from './gfk';
 import { MyStylesheet } from './styles';
 import { minus20, plus20, removeIconSmall } from './svg'
-import { makeID, UnconfinedTest, UnconfinedTestData, sortdisplacement } from './functions';
+import { UnconfinedTestData, sortdisplacement } from './functions';
 import { loadChart } from './functions/loadchart';
 import { Link } from 'react-router-dom';
+import MakeID from './makeids';
 
 class Unconfined extends Component {
     constructor(props) {
@@ -29,16 +30,24 @@ class Unconfined extends Component {
 
     getloadreading() {
         const gfk = new GFK();
-        if (this.state.activeunid) {
-            const sampleid = this.props.match.params.sampleid;
-            const test = gfk.unconfinedtestdatabyid.call(this, sampleid, this.state.activeunid)
-            if (test) {
-                return (test.loadreading)
+        const unconfined = this.getUnconfinedTest();
+        let loadreading = "";
+        if (unconfined) {
+            if (this.state.activeunid) {
+                const boringid = this.props.match.params.boringid;
+                const sampleid = this.props.match.params.sampleid;
+                const unid = this.state.activeunid
+                const test = gfk.unconfinedtestdatabyid.call(this, boringid, sampleid, unid)
+                if (test) {
+                    loadreading = (test.loadreading)
+                }
+
+            } else {
+                loadreading = this.state.loadreading;
             }
 
-        } else {
-            return this.state.loadreading;
         }
+        return loadreading;
 
 
     }
@@ -47,59 +56,116 @@ class Unconfined extends Component {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
         if (myuser) {
-            if (this.state.activeunid) {
-                const unid = this.state.activeunid;
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const i = gfk.getunconfinedtestkeybyid.call(this, sampleid);
-                const j = gfk.unconfinedtestdatakeybyid.call(this, sampleid, unid);
-                myuser.unconfinedtests.unconfined[i].testdata.data[j].loadreading = loadreading;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
+
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+
+                    if (sample.hasOwnProperty("unconfined")) {
+
+                        if (this.state.activeunid) {
+                            const unid = this.state.activeunid;
+                            const k = gfk.unconfinedtestdatakeybyid.call(this, boringid, sampleid, unid);
+                            myuser.borings[i].samples[j].unconfined[k].loadreading = loadreading;
+                            this.props.reduxUser(myuser);
+                            this.setState({ render: 'render' })
 
 
-            } else {
-                this.setState({ loadreading })
+                        } else {
+                            this.setState({ loadreading })
+                        }
+
+
+                    } else {
+
+                        this.setState({ loadreading })
+
+
+                    }
+
+                }
+
+
+
+
+
             }
+
         }
+
     }
+
 
     getdisplacement() {
         const gfk = new GFK();
-        if (this.state.activeunid) {
-            const sampleid = this.props.match.params.sampleid;
-            const test = gfk.unconfinedtestdatabyid.call(this, sampleid, this.state.activeunid)
-            if (test) {
-                return (test.displacement)
+        const unconfined = this.getUnconfinedTest();
+        let displacement = "";
+        if (unconfined) {
+            if (this.state.activeunid) {
+                const boringid = this.props.match.params.boringid;
+                const sampleid = this.props.match.params.sampleid;
+                const unid = this.state.activeunid
+                const test = gfk.unconfinedtestdatabyid.call(this, boringid, sampleid, unid)
+                if (test) {
+                    displacement = (test.displacement)
+                }
+
+            } else {
+                displacement = this.state.displacement;
             }
 
-        } else {
-            return this.state.displacement;
         }
+        return displacement;
 
 
     }
     removetestdata(unid) {
         const gfk = new GFK();
         const sampleid = this.props.match.params.sampleid;
-        const data = gfk.unconfinedtestdatabyid.call(this, sampleid, unid);
-        if (window.confirm(`Are you sure you want to delete Displacement ${data.displacement}?`)) {
-            const myuser = gfk.getuser.call(this);
-            if (myuser) {
-                const i = gfk.getunconfinedtestkeybyid.call(this, sampleid);
-                const j = gfk.unconfinedtestdatakeybyid.call(this, sampleid, unid);
-                myuser.unconfinedtests.unconfined[i].testdata.data.splice(j, 1);
-                if (myuser.unconfinedtests.unconfined[i].testdata.data.length === 0) {
-                    delete myuser.unconfinedtests.unconfined[i].testdata.data;
-                    delete myuser.unconfinedtests.unconfined[i].testdata;
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeunid: false })
-            }
 
+        const myuser = gfk.getuser.call(this);
+        if (myuser) {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid);
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                    if (sample.hasOwnProperty("unconfined")) {
+                        const testdata = gfk.unconfinedtestdatabyid.call(this, boringid, sampleid, unid)
+                        if (testdata) {
+                            if (window.confirm(`Are you sure you want to delete Displacement ${testdata.displacement}?`)) {
+                                const k = gfk.unconfinedtestdatakeybyid.call(this, boringid, sampleid, unid)
+                                myuser.borings[i].samples[j].unconfined.splice(k, 1);
+                                if (myuser.borings[i].samples[j].unconfined.length === 0) {
+                                    delete myuser.borings[i].samples[j].unconfined
+                                }
+                                this.props.reduxUser(myuser)
+                                this.setState({ activeunid: false })
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            }
 
         }
 
+
+
+
     }
+
     maketestidactive(unid) {
         if (this.state.activeunid === unid) {
             this.setState({ activeunid: false })
@@ -125,7 +191,7 @@ class Unconfined extends Component {
         const styles = MyStylesheet();
         const regularFont = gfk.getRegularFont.call(this);
         const removeIcon = gfk.getremoveicon.call(this);
-        const sample = gfk.getsamplebyid.call(this, this.props.match.params.sampleid)
+        const sample = this.getSample();
 
 
         const strain = () => {
@@ -155,25 +221,23 @@ class Unconfined extends Component {
     }
 
     showtestids() {
-        const gfk = new GFK();
-        const sampleid = this.props.match.params.sampleid;
-        const unconfined = gfk.getunconfinedtestbyid.call(this, sampleid);
+        const unconfined = this.getUnconfinedTest();
 
         let ids = [];
         if (unconfined) {
-            if (unconfined.hasOwnProperty("testdata")) {
 
-                const data = unconfined.testdata.data.sort((testa, testb) => {
 
-                    return (sortdisplacement(testa, testb))
-                })
+            const data = unconfined.sort((testa, testb) => {
 
-                // eslint-disable-next-line
-                data.map(testdata => {
+                return (sortdisplacement(testa, testb))
+            })
 
-                    ids.push(this.showtestid(testdata))
-                })
-            }
+            // eslint-disable-next-line
+            data.map(testdata => {
+
+                ids.push(this.showtestid(testdata))
+            })
+
         }
         return ids;
     }
@@ -182,64 +246,96 @@ class Unconfined extends Component {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
         if (myuser) {
-            if (this.state.activeunid) {
-                const unid = this.state.activeunid;
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const i = gfk.getunconfinedtestkeybyid.call(this, sampleid);
-                const j = gfk.unconfinedtestdatakeybyid.call(this, sampleid, unid);
-                myuser.unconfinedtests.unconfined[i].testdata.data[j].displacement = displacement;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
+
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+
+                if (sample) {
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+
+                    if (sample.hasOwnProperty("unconfined")) {
+
+                        if (this.state.activeunid) {
+                            const unid = this.state.activeunid;
+                            const k = gfk.unconfinedtestdatakeybyid.call(this, boringid, sampleid, unid);
+                            myuser.borings[i].samples[j].unconfined[k].displacement = displacement;
+                            this.props.reduxUser(myuser);
+                            this.setState({ render: 'render' })
 
 
-            } else {
-                this.setState({ displacement })
+                        } else {
+                            this.setState({ displacement })
+                        }
+
+
+                    } else {
+
+                        this.setState({ displacement })
+
+
+                    }
+
+                }
+
+
+
+
+
             }
+
         }
+
     }
+
     addtest() {
-        console.log("ADD TEST")
         const gfk = new GFK();
-        const sampleid = this.props.match.params.sampleid;
-        const unconfined = gfk.getunconfinedtestbyid.call(this, sampleid);
+        const makeid = new MakeID();
         const loadreading = this.state.loadreading;
         const displacement = this.state.displacement;
-        const unid = makeID(16)
+        const unid = makeid.unconfinedID.call(this)
         const myuser = gfk.getuser.call(this);
         if (myuser) {
-        
-            if (unconfined) {
-                const i = gfk.getunconfinedtestkeybyid.call(this, sampleid)
-                const newData = UnconfinedTestData(unid, loadreading, displacement)
-                if (unconfined.hasOwnProperty("testdata")) {
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
 
-                    myuser.unconfinedtests.unconfined[i].testdata.data.push(newData)
+            if (boring) {
 
-                } else {
-                    const testdata = { data: [newData] }
-                    myuser.unconfinedtests.unconfined[i].testdata = testdata;
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render', displacement: Number(this.state.displacement) + 20, loadreading: '' })
-                this.loadReading.focus();
-            } else {
+                const i = gfk.getboringkeybyid.call(this, boringid)
                 const sampleid = this.props.match.params.sampleid;
-                const newTest = UnconfinedTest(unid, sampleid, loadreading, displacement)
-                console.log(newTest)
-                const tests = gfk.getunconfinedtests.call(this);
-                if (tests) {
-                    myuser.unconfinedtests.unconfined.push(newTest)
-                } else {
-                    const unconfinedtests = { unconfined: [newTest] }
-                    myuser.unconfinedtests = unconfinedtests;
+
+                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+
+                if (sample) {
+
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
+                    const newData = UnconfinedTestData(unid, loadreading, displacement)
+
+                    if (sample.hasOwnProperty("unconfined")) {
+
+
+                        myuser.borings[i].samples[j].unconfined.push(newData)
+
+                    } else {
+                   
+                        myuser.borings[i].samples[j].unconfined =[newData];
+                    }
+
+                    this.props.reduxUser(myuser)
+                    this.setState({ render: 'render', displacement: Number(this.state.displacement) + 20, loadreading: '' })
+                    this.loadReading.focus();
+
+
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render', displacement: Number(this.state.displacement) + 20, loadreading: '' })
-                this.loadReading.focus();
+
             }
 
         }
     }
+
     handleminus20() {
         if (this.state.displacement) {
             let displacement = Number(this.state.displacement);
@@ -252,10 +348,36 @@ class Unconfined extends Component {
         }
 
     }
-    showunconfinedchart() {
+
+    getUnconfinedTest() {
+        const sample = this.getSample();
+        let unconfined = false;
+        if (sample) {
+            if (sample.hasOwnProperty("unconfined")) {
+
+                unconfined = sample.unconfined;
+            }
+        }
+        return unconfined;
+    }
+
+    getSample() {
         const gfk = new GFK();
-        const unconfined = gfk.getunconfinedtestbyid.call(this, this.props.match.params.sampleid)
-        const sample = gfk.getsamplebyid.call(this, this.props.match.params.sampleid)
+        const boringid = this.props.match.params.boringid;
+        let getsample = false;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        if (boring) {
+            const sampleid = this.props.match.params.sampleid;
+            const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+            if (sample) {
+                getsample = sample;
+            }
+        }
+        return getsample;
+    }
+    showunconfinedchart() {
+        const unconfined = this.getUnconfinedTest();
+        const sample = this.getSample();
         const getmaxstrainunit = (maxstrain) => {
 
             let unit = 0.01
@@ -275,19 +397,19 @@ class Unconfined extends Component {
         }
         const strainunit = () => {
             if (unconfined) {
-                if (unconfined.hasOwnProperty("testdata")) {
-                    const data = unconfined.testdata.data.sort((testa, testb) => {
-                        return (sortdisplacement(testa, testb))
-                    })
+
+                const data = unconfined.sort((testa, testb) => {
+                    return (sortdisplacement(testa, testb))
+                })
 
 
-                    const samplelength = Number(sample.samplelength);
-                    let key = unconfined.testdata.data.length - 1;
-                    let maxstrain = Number(.001 * data[key].displacement) / Number(samplelength);
+                const samplelength = Number(sample.samplelength);
+                let key = unconfined.length - 1;
+                let maxstrain = Number(.001 * data[key].displacement) / Number(samplelength);
 
-                    return getmaxstrainunit(maxstrain)
+                return getmaxstrainunit(maxstrain)
 
-                }
+
             } else {
                 return getmaxstrainunit(0)
             }
@@ -324,10 +446,10 @@ class Unconfined extends Component {
         }
         const stressunit = () => {
             let maxstress = 0;
-            if (unconfined.hasOwnProperty("testdata")) {
+            if (unconfined) {
 
                 // eslint-disable-next-line
-                unconfined.testdata.data.map(testdata => {
+                unconfined.map(testdata => {
                     let calcstress = stress(testdata)
                     if (calcstress > maxstress) {
                         maxstress = calcstress;
@@ -344,25 +466,25 @@ class Unconfined extends Component {
             let points = "0,0 ";
             if (unconfined) {
 
-                if (unconfined.hasOwnProperty("testdata")) {
-                    const data = unconfined.testdata.data.sort((testa, testb) => {
 
-                        return (sortdisplacement(testa, testb))
-                    })
+                const data = unconfined.sort((testa, testb) => {
+
+                    return (sortdisplacement(testa, testb))
+                })
 
 
-                    // eslint-disable-next-line
-                    data.map(testdata => {
+                // eslint-disable-next-line
+                data.map(testdata => {
 
-                        let getstress = stress(testdata);
-                        let getstrain = strain(testdata);
+                    let getstress = stress(testdata);
+                    let getstrain = strain(testdata);
 
-                        let x = (getstrain / strainunit()) * 200;
-                        let y = (getstress / stressunit()) * 200;
+                    let x = (getstrain / strainunit()) * 200;
+                    let y = (getstress / stressunit()) * 200;
 
-                        points += `${x},${y} `
-                    })
-                }
+                    points += `${x},${y} `
+                })
+
             }
             return (<g transform="translate(165,803) scale(1,-1)">
                 <polyline className="unchart-8" points={points} />
@@ -446,7 +568,7 @@ class Unconfined extends Component {
                 return (
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1 }}>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight,...styles.bottomMargin30 }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight, ...styles.bottomMargin30 }}>
                                 <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10 }} onClick={() => { this.addtest() }}>
                                     {plus20()}
                                 </button>
@@ -483,13 +605,13 @@ class Unconfined extends Component {
                 return (
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1 }}>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight,...styles.bottomMargin30}}>
-                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10,...styles.bottomMargin15 }} onClick={() => { this.addtest() }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight, ...styles.bottomMargin30 }}>
+                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10, ...styles.bottomMargin15 }} onClick={() => { this.addtest() }}>
                                     {plus20()}
                                 </button>
                             </div>
-                            <div style={{ ...styles.generalContainer, ...styles.alignRight,...styles.bottomMargin30 }}>
-                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10,...styles.bottomMargin15 }} onClick={() => { this.handleminus20() }}>
+                            <div style={{ ...styles.generalContainer, ...styles.alignRight, ...styles.bottomMargin30 }}>
+                                <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.rightMargin10, ...styles.bottomMargin15 }} onClick={() => { this.handleminus20() }}>
                                     {minus20()}
                                 </button>
                             </div>
@@ -519,8 +641,8 @@ class Unconfined extends Component {
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }}>
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter,...styles.bottomMargin15 }}>
-                                    <button style={{ ...styles.generalButton, ...plusIcon(),...styles.bottomMargin15 }} onClick={() => { this.addtest() }}>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                                    <button style={{ ...styles.generalButton, ...plusIcon(), ...styles.bottomMargin15 }} onClick={() => { this.addtest() }}>
                                         {plus20()}
                                     </button>
                                 </div>
@@ -564,43 +686,43 @@ class Unconfined extends Component {
 
                         <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
                             <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
-                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                <Link
-                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                    to={`/${engineerid}`}>
-                                    /{engineerid}
-                                </Link>
-                            </div>
-                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                <Link
-                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                    to={`/${engineerid}/projects`}>
-                                    /projects
-                                </Link>
-                            </div>
-                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                <Link
-                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                    to={`/${engineerid}/projects/${projectid}`}>
-                                    /{project.projectnumber} - {project.title}
-                                </Link>
-                            </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}`}>
+                                        /{engineerid}
+                                    </Link>
+                                </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}/projects`}>
+                                        /projects
+                                    </Link>
+                                </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}/projects/${projectid}`}>
+                                        /{project.projectnumber} - {project.title}
+                                    </Link>
+                                </div>
 
-                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                <Link
-                                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                    to={`/${engineerid}/projects/${projectid}/borings`}>
-                                    /Borings
-                                </Link>
-                            </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link
+                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                        to={`/${engineerid}/projects/${projectid}/borings`}>
+                                        /Borings
+                                    </Link>
+                                </div>
 
-                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} Samples</Link>
-                            </div>
-                           
-                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples/${sampleid}/unconfined`}>/Depth: {sample.depth}ft  Unconfined </Link> <br />
-                            </div>
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} Samples</Link>
+                                </div>
+
+                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                    <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples/${sampleid}/unconfined`}>/Depth: {sample.depth}ft  Unconfined </Link> <br />
+                                </div>
                             </div>
                         </div>
                         {showForm()}

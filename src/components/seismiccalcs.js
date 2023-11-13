@@ -114,21 +114,21 @@ class SesimicCalcs {
         depth = Number(depth)
         const seismiccalcs = new SesimicCalcs();
 
+        const boring = gfk.getBoringfromSampleID.call(this, sampleid);
+        const boringid =boring.boringid;
+        let gwdepth = 0;
+        if (boring) {
+            gwdepth = Number(boring.gwdepth);
+        
+       
 
-        const getsample = gfk.getsamplebyid.call(this, sampleid)
-        if (getsample) {
 
-            const boringid = getsample.boringid;
-            const boring = gfk.getboringbyid.call(this, boringid);
 
-            let gwdepth = 0;
-            if (boring) {
-                gwdepth = Number(boring.gwdepth);
-            }
+
             const samples = gfk.getsamplesbyboringid.call(this, boringid);
 
             if (samples) {
-
+                // eslint-disable-next-line
                 samples.map((sample, i) => {
 
 
@@ -182,7 +182,9 @@ class SesimicCalcs {
 
                 effective = Math.round(overburden - hydro);
             }
-        }
+        
+
+    }
 
         return { overburden, effective };
     }

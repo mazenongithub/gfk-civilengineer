@@ -163,8 +163,8 @@ export function CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, w
 export function Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks) {
     return ({ sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt,sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks })
 }
-export function CreateImage(imageid, image, caption, fieldid) {
-    return ({ imageid, image, caption, fieldid })
+export function CreateImage(imageid, image, caption) {
+    return ({ imageid, image, caption })
 
 }
 export function Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter) {
@@ -1360,8 +1360,8 @@ export function makeDatefromObj(datein) {
 
     return (`${year}-${month}-${date}`)
 }
-export function fieldReport(fieldid, projectid, datereport, content) {
-    return ({ fieldid, projectid, datereport, content })
+export function fieldReport(fieldid, projectid, datereport, content, engineerid) {
+    return ({ fieldid, projectid, datereport, content, engineerid })
 }
 export function UnconfinedTestData(unid, loadreading, displacement) {
     return ({

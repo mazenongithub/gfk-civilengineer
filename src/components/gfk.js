@@ -2,7 +2,7 @@ import React from 'react';
 import { saveBoringIcon } from './svg'
 import { MyStylesheet } from './styles';
 import { SaveBorings } from './actions/api'
-import { inputUTCStringForLaborID, Boring, Sample, CreateSieve, UnconfinedTestData } from './functions'
+import { inputUTCStringForLaborID } from './functions'
 class GFK {
 
     remarksWidth() {
@@ -50,17 +50,17 @@ class GFK {
         }
         return myuser;
     }
-    getPointIDfromStrainID(projectid,strainid) {
+    getPointIDfromStrainID(projectid, strainid) {
         const gfk = new GFK();
         let pointid = false;
-        const points = gfk.getPointsByProjectID.call(this,projectid)
-        if(points) {
-             // eslint-disable-next-line
-            points.map(point=> {
-                if(point.hasOwnProperty("strain")) {
-                     // eslint-disable-next-line
-                    point.strain.map(strain=> {
-                        if(strain.strainid ===strainid) {
+        const points = gfk.getPointsByProjectID.call(this, projectid)
+        if (points) {
+            // eslint-disable-next-line
+            points.map(point => {
+                if (point.hasOwnProperty("strain")) {
+                    // eslint-disable-next-line
+                    point.strain.map(strain => {
+                        if (strain.strainid === strainid) {
                             pointid = point.pointid;
                         }
                     })
@@ -69,7 +69,7 @@ class GFK {
 
         }
         return pointid;
-        
+
     }
 
     getStrainbyID(projectid, strainid) {
@@ -261,11 +261,12 @@ class GFK {
     getfieldreports() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
         let fieldreport = false;
         if (myuser) {
             if (myuser.hasOwnProperty("fieldreports")) {
                 // eslint-disable-next-line
-                fieldreport = myuser.fieldreports.fieldreport;
+                fieldreport = myuser.fieldreports;
             }
         }
 
@@ -362,48 +363,60 @@ class GFK {
     }
     getcurvebyid(curveid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let curves = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("compactioncurves")) {
-                // eslint-disable-next-line
-                myuser.compactioncurves.compactioncurve.map(curve => {
-                    if (curve.curveid === curveid) {
-                        curves = curve;
-                    }
-                })
-            }
-        }
-        return curves;
-    }
-    getcompactiontests() {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let tests = false;
-        if (myuser.hasOwnProperty("compactiontests")) {
-            tests = myuser.compactiontests.compactiontest;
-        }
-        return tests;
-    }
-    getcompactiontestbyid(testid) {
-        const gfk = new GFK();
-        let tests = false;
-        const compactiontests = gfk.getcompactiontests.call(this)
-        if (compactiontests.hasOwnProperty("length")) {
+        const curves = gfk.getcurves.call(this)
+        let getcurve = false;
+
+        if (curves) {
             // eslint-disable-next-line
-            compactiontests.map(test => {
-                if (test.testid === testid) {
-                    tests = test;
+            curves.map(curve => {
+                if (curve.curveid === curveid) {
+                    getcurve = curve;
                 }
             })
         }
+
+        return getcurve;
+    }
+    getcompactiontests(fieldid) {
+        const gfk = new GFK();
+        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        let tests = false;
+        if (fieldreport) {
+            if (fieldreport.hasOwnProperty("compactiontests")) {
+                tests = fieldreport.compactiontests;
+            }
+
+        }
         return tests;
     }
-    getcompactiontestkeybyid(testid) {
+    getcompactiontestbyid(fieldid, testid) {
+        const gfk = new GFK();
+        let tests = false;
+        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        if (fieldreport) {
+        
+
+            if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                // eslint-disable-next-line
+                fieldreport.compactiontests.map(test => {
+                    if (test.testid === testid) {
+                        tests = test;
+                    }
+                })
+
+            }
+
+        }
+     
+        return tests;
+    }
+
+    getcompactiontestkeybyid(fieldid, testid) {
         const gfk = new GFK();
         let key = false;
-        const compactiontests = gfk.getcompactiontests.call(this)
-        if (compactiontests.hasOwnProperty("length")) {
+        const compactiontests = gfk.getcompactiontests.call(this, fieldid)
+        if (compactiontests) {
             // eslint-disable-next-line
             compactiontests.map((test, i) => {
                 if (test.testid === testid) {
@@ -427,7 +440,7 @@ class GFK {
         const gfk = new GFK();
         const reports = gfk.getfieldreports.call(this);
         let myreports = [];
-        if (reports.length > 0) {
+        if (reports) {
             // eslint-disable-next-line
             reports.map(report => {
                 if (report.projectid === projectid) {
@@ -439,11 +452,11 @@ class GFK {
     }
     getfieldimagesbyid(fieldid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
         let images = [];
-        if (myuser.hasOwnProperty("images")) {
+        if (fieldreport.hasOwnProperty("images")) {
             // eslint-disable-next-line
-            myuser.images.image.map(image => {
+            fieldreport.images.map(image => {
                 if (image.fieldid === fieldid) {
                     images.push(image)
                 }
@@ -469,20 +482,20 @@ class GFK {
             return ({ width: '155px', height: '134px' })
         }
     }
-    getimages() {
+    getimagesbyfieldid(fieldid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
         let images = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("images")) {
-                images = myuser.images.image;
-            }
+
+        if (fieldreport.hasOwnProperty("images")) {
+            images = fieldreport.images;
         }
+
         return images;
     }
-    getimagekeybyid(imageid) {
+    getimagekeybyid(fieldid, imageid) {
         const gfk = new GFK();
-        const images = gfk.getimages.call(this)
+        const images = gfk.getimagesbyfieldid.call(this, fieldid)
         let key = false;
         if (images) {
             // eslint-disable-next-line
@@ -496,9 +509,9 @@ class GFK {
         return key;
 
     }
-    getimagebyid(imageid) {
+    getimagebyid(fieldid, imageid) {
         const gfk = new GFK();
-        const images = gfk.getimages.call(this)
+        const images = gfk.getimagesbyfieldid.call(this, fieldid)
         let myimage = false;
         if (images) {
             // eslint-disable-next-line
@@ -513,77 +526,87 @@ class GFK {
 
     }
 
-    getsieveanalysisbysampleid(sampleid) {
+    getsieveanalysisbysampleid(projectid, boringid, sampleid) {
         const gfk = new GFK();
-        const sieve = gfk.getsievebysampleid.call(this)
+        let sieve = false;
+        const sample = gfk.getsamplebyid.call(this, projectid, boringid, sampleid)
+        if (sample) {
+            sieve = sample.sieve;
+        }
+
         return sieve;
     }
     getcompactiontestsbyfieldid(fieldid) {
+        console.log(fieldid)
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let compactiontests = [];
-        if (myuser) {
-            if (myuser.hasOwnProperty("compactiontests")) {
+        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+
+        let compactiontests = false;
+        if (fieldreport) {
+            if (fieldreport.hasOwnProperty("compactiontests")) {
+                compactiontests = [];
+
                 // eslint-disable-next-line
-                myuser.compactiontests.compactiontest.map(test => {
-                    if (test.fieldid === fieldid) {
-                        const testid = test.testid;
-                        const testnum = test.testnum;
-                        const elevation = test.elevation;
-                        const location = test.location;
-                        const wetpcf = test.wetpcf;
-                        const moistpcf = test.moistpcf;
-                        const timetest = test.timetest;
+                fieldreport.compactiontests.map(test => {
 
 
-                        const curve = gfk.getcurvebyid.call(this, test.curveid);
-                        const dryden = () => {
+                    const testid = test.testid;
+                    const testnum = test.testnum;
+                    const elevation = test.elevation;
+                    const location = test.location;
+                    const wetpcf = test.wetpcf;
+                    const moistpcf = test.moistpcf;
+                    const timetest = test.timetest;
 
-                            if (wetpcf && moistpcf) {
-                                return (Number(Number(wetpcf) - Number(moistpcf)).toFixed(1));
-                            } else {
-                                return 0;
-                            }
+
+                    const curve = gfk.getcurvebyid.call(this, test.curveid);
+                    const dryden = () => {
+
+                        if (wetpcf && moistpcf) {
+                            return (Number(Number(wetpcf) - Number(moistpcf)).toFixed(1));
+                        } else {
+                            return 0;
                         }
-                        const moist = () => {
+                    }
+                    const moist = () => {
 
-                            if (test.moistpcf && test.wetpcf) {
-                                let dryden = Number(test.wetpcf) - Number(test.moistpcf);
+                        if (test.moistpcf && test.wetpcf) {
+                            let dryden = Number(test.wetpcf) - Number(test.moistpcf);
 
-                                return (Number((Number(test.moistpcf) / Number(dryden)) * 100).toFixed(1));
-                            } else {
-                                return 0;
-                            }
+                            return (Number((Number(test.moistpcf) / Number(dryden)) * 100).toFixed(1));
+                        } else {
+                            return 0;
                         }
-                        const maxden = () => {
-                            if (curve.maxden) {
-                                return (Number(curve.maxden));
-                            } else {
-                                return (0)
-                            }
+                    }
+                    const maxden = () => {
+                        if (curve.maxden) {
+                            return (Number(curve.maxden));
+                        } else {
+                            return (0)
                         }
+                    }
 
-                        const relative = () => {
+                    const relative = () => {
 
 
-                            if (curve.maxden && test.wetpcf && test.moistpcf) {
-                                let maxden = Number(curve.maxden)
-                                let dryden = Number(test.wetpcf) - Number(test.moistpcf);
+                        if (curve.maxden && test.wetpcf && test.moistpcf) {
+                            let maxden = Number(curve.maxden)
+                            let dryden = Number(test.wetpcf) - Number(test.moistpcf);
 
-                                return (Math.round((dryden / maxden) * 100))
-                            } else {
-                                return 0;
-                            }
-
+                            return (Math.round((dryden / maxden) * 100))
+                        } else {
+                            return 0;
                         }
-                        const calcrelative = relative();
-                        const calcdryden = dryden();
-                        const calcmoist = moist()
-                        const calcmaxden = maxden();
-                        const curveid = curve.curveid;
-                        compactiontests.push({ testid, testnum, timetest, elevation, location, wetpcf, moistpcf, dryden: calcdryden, moist: calcmoist, maxden: calcmaxden, relative: calcrelative, curveid })
 
                     }
+                    const calcrelative = relative();
+                    const calcdryden = dryden();
+                    const calcmoist = moist()
+                    const calcmaxden = maxden();
+                    const curveid = curve.curveid;
+                    compactiontests.push({ testid, testnum, timetest, elevation, location, wetpcf, moistpcf, dryden: calcdryden, moist: calcmoist, maxden: calcmaxden, relative: calcrelative, curveid })
+
+
                 })
 
             }
@@ -594,42 +617,43 @@ class GFK {
     }
     getfieldkeybyid(fieldid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+        const fieldreports = gfk.getfieldreports.call(this)
         let key = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("fieldreports")) {
-                // eslint-disable-next-line
-                myuser.fieldreports.fieldreport.map((report, i) => {
-                    if (report.fieldid === fieldid) {
-                        key = i;
-                    }
-                })
-            }
+        if (fieldreports) {
+
+            // eslint-disable-next-line
+            fieldreports.map((report, i) => {
+                if (report.fieldid === fieldid) {
+                    key = i;
+                }
+            })
+
         }
         return key;
     }
     getfieldreportbyid(fieldid) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
         let fieldreport = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("fieldreports")) {
-                // eslint-disable-next-line
-                myuser.fieldreports.fieldreport.map((report) => {
-                    if (report.fieldid === fieldid) {
-                        fieldreport = report;
-                    }
-                })
-            }
+        const gfk = new GFK();
+        const fieldreports = gfk.getfieldreports.call(this)
+        if (fieldreports) {
+            // eslint-disable-next-line
+            fieldreports.map((report) => {
+                if (report.fieldid === fieldid) {
+                    fieldreport = report;
+                }
+            })
+
         }
+
         return fieldreport;
     }
     getprojects() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+
         let projects = false;
         if (myuser.hasOwnProperty("projects")) {
-            projects = myuser.projects.project;
+            projects = myuser.projects;
         }
         return projects;
     }
@@ -641,7 +665,7 @@ class GFK {
         if (projects) {
             // eslint-disable-next-line
             projects.map(myproject => {
-                if (myproject.projectid.toString() === projectid.toString()) {
+                if (myproject.projectid === projectid) {
                     project = myproject;
 
                 }
@@ -672,7 +696,7 @@ class GFK {
         if (myuser) {
             if (myuser.hasOwnProperty("fieldreports")) {
                 // eslint-disable-next-line
-                myuser.fieldreports.fieldreport.map((report, i) => {
+                myuser.fieldreports.map((report, i) => {
                     if (report.fieldid === fieldid) {
                         key = i;
                     }
@@ -687,7 +711,7 @@ class GFK {
         const myuser = gfk.getuser.call(this)
         if (myuser) {
             if (myuser.hasOwnProperty("compactioncurves")) {
-                curves = myuser.compactioncurves.compactioncurve;
+                curves = myuser.compactioncurves;
             }
         }
         return curves;
@@ -720,14 +744,35 @@ class GFK {
         }
 
     }
-    getsamplebyid(sampleid) {
+
+    getBoringfromSampleID(sampleid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let samples = false;
-        if (myuser.hasOwnProperty("samples")) {
+        const borings = gfk.getborings.call(this)
+        let getboring = false;
+        if (borings) {
             // eslint-disable-next-line
-            myuser.samples.sample.map(sample => {
-                if (sample.sampleid.toString() === sampleid.toString()) {
+            borings.map(boring => {
+                if (boring.hasOwnProperty("samples")) {
+                     // eslint-disable-next-line
+                    boring.samples.map(sample => {
+                        if (sample.sampleid === sampleid) {
+                            getboring = boring;
+                        }
+                    })
+                }
+            })
+        }
+        return getboring;
+
+    }
+    getsamplebyid(boringid, sampleid) {
+        const gfk = new GFK();
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let samples = false;
+        if (boring.hasOwnProperty("samples")) {
+            // eslint-disable-next-line
+            boring.samples.map(sample => {
+                if (sample.sampleid === sampleid) {
                     samples = sample;
 
                 }
@@ -736,23 +781,23 @@ class GFK {
 
         return samples;
     }
-    getsamplekeybyid(sampleid) {
+    getsamplekeybyid(boringid, sampleid) {
 
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+        const boring = gfk.getboringbyid.call(this, boringid)
         let key = false;
-        if (myuser.hasOwnProperty("samples")) {
+        if (boring.hasOwnProperty("samples")) {
             // eslint-disable-next-line
-            myuser.samples.sample.map((sample, i) => {
+            boring.samples.map((sample, i) => {
                 if (sample.sampleid === sampleid) {
                     key = i;
-
                 }
             })
         }
 
         return key;
     }
+
 
     getsieves() {
         const gfk = new GFK();
@@ -764,18 +809,15 @@ class GFK {
         }
         return sieves;
     }
-    getsievebysampleid(sampleid) {
+    getsievebysampleid(boringid, sampleid) {
         const gfk = new GFK();
-        const sieves = gfk.getsieves.call(this);
+        const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+
 
         let sieve = false;
-        if (sieves.length > 0) {
+        if (sample.hasOwnProperty("sieve")) {
             // eslint-disable-next-line
-            sieves.map(samplesieve => {
-                if (samplesieve.sampleid === sampleid) {
-                    sieve = samplesieve;
-                }
-            })
+            sieve = sample.sieve;
         }
         return sieve;
 
@@ -813,7 +855,7 @@ class GFK {
         const myuser = gfk.getuser.call(this)
         let labor = false;
         if (myuser.hasOwnProperty("actuallabor")) {
-            labor = myuser.actuallabor.mylabor;
+            labor = myuser.actuallabor;
 
 
         }
@@ -827,7 +869,7 @@ class GFK {
         let labor = [];
         if (myuser.hasOwnProperty("actuallabor")) {
             // eslint-disable-next-line
-            myuser.actuallabor.mylabor.map(mylabor => {
+            myuser.actuallabor.map(mylabor => {
                 if (mylabor.projectid === projectid) {
                     labor.push(mylabor)
                 }
@@ -855,25 +897,22 @@ class GFK {
     }
     getsamplesbyboringid(boringid) {
         const gfk = new GFK();
-        const samples = gfk.getsamples.call(this);
-        let boringsamples = [];
-        if (samples.length > 0) {
-            // eslint-disable-next-line
-            samples.map(sample => {
-                if (sample.boringid === boringid) {
-                    boringsamples.push(sample);
-                } else if (Number(sample.boringid) === Number(boringid)) {
-                    boringsamples.push(sample);
+        const boring = gfk.getboringbyid.call(this, boringid)
+        let boringsamples = false
+        if (boring) {
+            if (boring.hasOwnProperty("samples")) {
+                // eslint-disable-next-line
+                boringsamples = boring.samples;
+            }
+            boringsamples.sort((a, b) => {
+                if (Number(a.depth) >= Number(b.depth)) {
+                    return 1;
+                } else {
+                    return -1
                 }
             })
+
         }
-        boringsamples.sort((a, b) => {
-            if (Number(a.depth) >= Number(b.depth)) {
-                return 1;
-            } else {
-                return -1
-            }
-        })
         return boringsamples;
     }
     getborings() {
@@ -881,68 +920,114 @@ class GFK {
         const myuser = gfk.getuser.call(this);
         let borings = false;
         if (myuser.hasOwnProperty("borings")) {
-            borings = myuser.borings.boring;
+            borings = myuser.borings;
         }
         return borings;
     }
-    getsamples() {
+    getallsampleimages() {
+        const gfk = new GFK();
+        let sampleimages = [];
+
+        const newSample = (sampleid, projectnumber, description, graphiclog) => {
+            return ({ sampleid, projectnumber, description, graphiclog })
+        }
+        let projectnumber = ""
+        let sampleid = "";
+        let description = "";
+        let graphiclog = "";
+
+        const borings = gfk.getborings.call(this)
+        if (borings) {
+            // eslint-disable-next-line
+            borings.map(boring => {
+                let projectid = boring.projectid;
+                const project = gfk.getprojectbyid.call(this, projectid);
+                if (project) {
+                    projectnumber = project.projectnumber;
+
+
+                    if (boring.hasOwnProperty("samples")) {
+                         // eslint-disable-next-line
+                        boring.samples.map(sample => {
+                            if (sample.graphiclog) {
+                                graphiclog = sample.graphiclog;
+                                sampleid = sample.sampleid;
+                                description = sample.description;
+                                sampleimages.push(newSample(sampleid,projectnumber,description,graphiclog))
+                            }
+
+
+                        })
+                    }
+
+                }
+            })
+        }
+        return sampleimages;
+    }
+    getsamples(boringid) {
         const gfk = new GFK();
         let samples = false;
-        const myuser = gfk.getuser.call(this);
-        if (myuser.hasOwnProperty("samples")) {
-            samples = myuser.samples.sample;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        if (boring.hasOwnProperty("samples")) {
+            samples = boring.samples;
         }
 
         return samples;
     }
     getboringbyid(boringid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let borings = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("borings")) {
-                // eslint-disable-next-line
-                myuser.borings.boring.map(boring => {
-                    if (boring.boringid.toString() === boringid.toString()) {
-                        borings = boring;
-                    }
-                })
-            }
+        let getboring = false;
+        const borings = gfk.getborings.call(this)
+
+        if (borings) {
+
+            // eslint-disable-next-line
+            borings.map(boring => {
+                if (boring.boringid === boringid) {
+                    getboring = boring;
+                }
+            })
+
         }
-        return borings;
+        return getboring;
 
     }
     getboringkeybyid(boringid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+
         let key = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("borings")) {
-                // eslint-disable-next-line
-                myuser.borings.boring.map((boring, i) => {
-                    if (boring.boringid === boringid) {
-                        key = i;
-                    }
-                })
-            }
+        const borings = gfk.getborings.call(this)
+        if (borings) {
+
+            // eslint-disable-next-line
+            borings.map((boring, i) => {
+                if (boring.boringid === boringid) {
+                    key = i;
+                }
+            })
+
         }
+
+
         return key;
 
     }
     getboringsbyprojectid(projectid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let borings = [];
-        if (myuser.hasOwnProperty("borings")) {
+        const borings = gfk.getborings.call(this);
+        let getborings = [];
+        if (borings) {
             // eslint-disable-next-line
-            myuser.borings.boring.map(boring => {
+            borings.map(boring => {
                 if (boring.projectid === projectid) {
-                    borings.push(boring)
-
+                    getborings.push(boring)
                 }
+
             })
+
         }
-        borings.sort((a, b) => {
+        getborings.sort((a, b) => {
             if (a.boringnumber > b.boringnumber) {
                 return 1
             } else {
@@ -950,46 +1035,29 @@ class GFK {
             }
 
         })
-        return borings;
+        return getborings;
 
     }
-    getboringparams() {
-        const projectid = this.props.match.params.projectid;
+
+    getboringskeybyprojectid(projectid) {
         const gfk = new GFK();
-        const borings = gfk.getboringsbyprojectid.call(this, projectid)
-        if (borings.length > 0) {
-            let myborings = borings;
+        const borings = gfk.getborings.call(this);
+        let key = false;
+        if (borings) {
             // eslint-disable-next-line
             borings.map((boring, i) => {
-
-                const samples = gfk.getsamplesbyboringid.call(this, boring.boringid);
-                if (samples.length > 0) {
-                    myborings[i].samples = { sample: samples }
-                    // eslint-disable-next-line
-                    samples.map((sample, j) => {
-
-                        let sieve = gfk.getsievebysampleid.call(this, sample.sampleid);
-                        let unconfined = gfk.getunconfinedtestbyid.call(this, sample.sampleid)
-                        if (sieve) {
-                            myborings[i].samples.sample[j].sieve = sieve
-                        }
-                        if (unconfined) {
-
-                            myborings[i].samples.sample[j].unconfined = unconfined;
-                        }
-
-                    })
+                if (boring.projectid === projectid) {
+                    key = i;
                 }
-
-
 
             })
 
-            return (myborings)
         }
+        return key;
 
     }
-    getunconfinedtests() {
+
+    getunconfinedtests(projectid, boringid, sampleid) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
         let tests = false;
@@ -998,51 +1066,46 @@ class GFK {
         }
         return tests;
     }
-    unconfinedtestdatabyid(sampleid, unid) {
+    unconfinedtestdatabyid(boringid, sampleid, unid) {
         const gfk = new GFK();
-        const test = gfk.getunconfinedtestbyid.call(this, sampleid)
+        const test = gfk.getunconfinedtestbyid.call(this, boringid, sampleid)
         let mydata = false;
         if (test) {
-            if (test.hasOwnProperty("testdata")) {
-                // eslint-disable-next-line
-                test.testdata.data.map(data => {
-                    if (data.unid === unid) {
-                        mydata = data;
-                    }
-                })
-            }
+            // eslint-disable-next-line
+            test.map(data => {
+                if (data.unid === unid) {
+                    mydata = data;
+                }
+            })
+
         }
         return mydata;
     }
-    unconfinedtestdatakeybyid(sampleid, unid) {
+    unconfinedtestdatakeybyid(boringid, sampleid, unid) {
         const gfk = new GFK();
-        const test = gfk.getunconfinedtestbyid.call(this, sampleid)
+        const test = gfk.getunconfinedtestbyid.call(this, boringid, sampleid)
         let key = false;
         if (test) {
-            if (test.hasOwnProperty("testdata")) {
-                // eslint-disable-next-line
-                test.testdata.data.map((data, i) => {
-                    if (data.unid === unid) {
-                        key = i;
-                    }
-                })
-            }
+
+            // eslint-disable-next-line
+            test.map((data, i) => {
+                if (data.unid === unid) {
+                    key = i;
+                }
+            })
+
         }
         return key;
     }
 
 
-    getunconfinedtestbyid(sampleid) {
+    getunconfinedtestbyid(boringid, sampleid) {
         const gfk = new GFK();
-        const tests = gfk.getunconfinedtests.call(this);
+        const sample = gfk.getsamplebyid.call(this, boringid, sampleid);
         let mytest = false;
-        if (tests) {
+        if (sample.hasOwnProperty("unconfined")) {
             // eslint-disable-next-line
-            tests.map(test => {
-                if (Number(test.sampleid) === Number(sampleid)) {
-                    mytest = test;
-                }
-            })
+            mytest = sample.unconfined;
         }
         return mytest;
 
@@ -1065,100 +1128,63 @@ class GFK {
     async saveallborings() {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const projectid = this.props.match.params.projectid;
         if (myuser) {
-            try {
-                let engineerid = this.props.match.params.engineerid;
-                let projectid = this.props.match.params.projectid;
-                let borings = gfk.getboringparams.call(this)
+            let borings = gfk.getboringsbyprojectid.call(this, projectid)
+            console.log(borings)
 
-                let response = await SaveBorings(engineerid, projectid, borings)
-                console.log(response)
-                if (response.hasOwnProperty("message")) {
-                    let message = `${response.message} last updated ${inputUTCStringForLaborID(response.lastsaved)}`
+            if (borings) {
+                const i = gfk.getboringskeybyprojectid.call(this, projectid)
+
+                try {
+                    let engineerid = this.props.match.params.engineerid;
+                    let projectid = this.props.match.params.projectid;
+
+                    console.log(borings)
+                    let response = await SaveBorings(engineerid, projectid, borings)
+                    console.log(response)
+                    if (response.hasOwnProperty("boringsdb")) {
+                        const getborings = response.boringsdb.borings;
+
+                        const myuser = gfk.getuser.call(this)
+                        // eslint-disable-next-line
+                        myuser.borings[i] = getborings
+
+                        this.props.reduxUser(myuser)
+
+
+                    }
+
+                    let message = '';
+
+                    if (response.hasOwnProperty("message")) {
+                        message = `${response.message} last updated ${inputUTCStringForLaborID(response.lastupdated)}`
+
+                    }
+
                     this.setState({ message })
-                }
-                if (response.hasOwnProperty("boringids")) {
-                    // eslint-disable-next-line
-                    response.boringids.boring.map(boring => {
-                        let i = gfk.getboringkeybyid.call(this, boring.oldboringid)
-                        myuser.borings.boring[i].boringid = boring.boringid;
 
-                        if (boring.oldboringid === this.state.activeboringid && this.state.activeboringid) {
-                            this.setState({ activeboringid: boring.boringid })
-                        }
+                    // this.props.reduxUser(myuser)
 
-                    })
+
+                } catch (err) {
+                    alert(err)
                 }
 
-                if (response.hasOwnProperty("sampleids")) {
-                    // eslint-disable-next-line
-                    response.sampleids.sample.map(sample => {
-                        let j = gfk.getsamplekeybyid.call(this, sample.oldsampleid)
-                        myuser.samples.sample[j].sampleid = sample.sampleid;
-
-                        if (sample.oldsampleid === this.state.activesampleid && this.state.activesampleid) {
-                            this.setState({ activesampleid: sample.sampleid })
-                        }
-                    })
-                }
-
-                if (response.hasOwnProperty("unconfined")) {
-                    // eslint-disable-next-line
-                    response.unconfined.test.map(test => {
-                        // let l = gfk.getunconfinedtestkeybyid.call(this, test.sampleid)
-                        // let k = gfk.unconfinedtestdatabyid.call(this, test.sampleid, test.oldtestid)
-                        //myuser.unconfinedtests.unconfined[l].testdata.data[k].unid = test.unid;
-                        if (test.oldunid === this.state.activeunid && this.state.activeunid) {
-                            this.setState({ activeunid: test.unid })
-                        }
-
-                    })
-                }
-
-                this.props.reduxUser(myuser)
-
-                if (response.hasOwnProperty("borings")) {
-                    // eslint-disable-next-line
-                    response.borings.boring.map(boring => {
-                        let myboring = Boring(boring.boringid, projectid, boring.boringnumber, boring.datedrilled, boring.gwdepth, boring.elevation, boring.drillrig, boring.loggedby, boring.latitude, boring.longitude, boring.diameter)
-                        let k = gfk.getboringkeybyid.call(this, boring.boringid);
-                        myuser.borings.boring[k] = myboring;
-                        if (boring.hasOwnProperty("samples")) {
-                            // eslint-disable-next-line
-                            boring.samples.sample.map(sample => {
-                                let mysample = Sample(sample.sampleid, boring.boringid, sample.sampledepth, sample.depth, sample.samplenumber, sample.sampleset, sample.diameter, sample.samplelength, sample.description, sample.uscs, sample.spt, sample.wetwgt, sample.wetwgt_2, sample.drywgt, sample.tarewgt, sample.tareno, sample.graphiclog, sample.ll, sample.pi)
-                                let l = gfk.getsamplekeybyid.call(this, sample.sampleid)
-
-                                myuser.samples.sample[l] = mysample;
-
-                                if (sample.hasOwnProperty("sieve")) {
-                                    let m = gfk.getsievekeybysampleid.call(this, sample.sampleid);
-                                    let mysieve = CreateSieve(sample.sampleid, sample.sieve.wgt34, sample.sieve.wgt38, sample.sieve.wgt4, sample.sieve.wgt10, sample.sieve.wgt30, sample.sieve.wgt40, sample.sieve.wgt100, sample.sieve.wgt200)
-                                    myuser.sieves.sieve[m] = mysieve
-                                }
-                                if (sample.hasOwnProperty("unconfined")) {
-                                    // eslint-disable-next-line
-                                    sample.unconfined.testdata.data.map(data => {
-                                        let o = gfk.getunconfinedtestkeybyid.call(this, sample.sampleid)
-                                        let n = gfk.unconfinedtestdatakeybyid.call(this, sample.sampleid, data.unid)
-                                        let mydata = UnconfinedTestData(data.unid, data.loadreading, data.displacement)
-                                        myuser.unconfinedtests.unconfined[o].testdata.data[n] = mydata;
-                                    })
-                                }
-                            })
-                        }
-                    })
-                }
-                this.props.reduxUser(myuser)
 
 
-            } catch (err) {
-                alert(err)
+
+
+
             }
 
         }
 
     }
+
+
+
+
     showsaveboring() {
         const styles = MyStylesheet();
         const gfk = new GFK();

@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
-import { LoadSeismic } from './actions/api';
+import { LoadSeismic, HandleSeismic } from './actions/api';
 import { newSeismic, SeismicPoint, newSeismicPoint, newStrain } from './functions';
-import { removeIconSmall } from './svg';
+import { removeIconSmall, saveProjectIcon } from './svg';
 import MakeID from './makeids';
 import SoilClassification from './soilclassification';
 import SesimicCalcs from './seismiccalcs';
@@ -15,7 +15,7 @@ import SesimicCalcs from './seismiccalcs';
 class Seismic extends Component {
     constructor(props) {
         super(props);
-        this.state = { width: 0, height: 0, render: 'render', magnitude: '', activepointid: false, depth: '', spt: '', pi: '', fines: '', sampleid: '', siteacceleration: '' }
+        this.state = { width: 0, height: 0, render: 'render', magnitude: '', activepointid: false, depth: '', spt: '', pi: '', fines: '', sampleid: '', siteacceleration: '', message:'' }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
     componentDidMount() {
@@ -932,7 +932,9 @@ class Seismic extends Component {
         }
 
         const gfk = new GFK();
-        const sample = gfk.getsamplebyid.call(this, sampleid);
+        const boring = gfk.getBoringfromSampleID.call(this,sampleid);
+
+        const sample = gfk.getsamplebyid.call(this, boring.boringid, sampleid);
         let i = false;
         if (sample) {
             depth = Number(sample.depth);
@@ -940,7 +942,7 @@ class Seismic extends Component {
             spt = Number(sample.spt)
             ll = Number(sample.ll)
 
-            const sieve = gfk.getsievebysampleid.call(this, sampleid)
+            const sieve = gfk.getsievebysampleid.call(this, boring.boringid, sampleid)
             const wgt34 = sieve.wgt34;
             const wgt38 = sieve.wgt38;
             const wgt4 = sieve.wgt4;
@@ -1022,7 +1024,7 @@ class Seismic extends Component {
 
     getOverBurden() {
         const gfk = new GFK();
-        const seismiccalcs = new SesimicCalcs
+        const seismiccalcs = new SesimicCalcs()
         let overburden = 0
         const projectid = this.props.match.params.projectid;
         if (this.state.activepointid) {
@@ -1042,7 +1044,7 @@ class Seismic extends Component {
 
     getEffective() {
         const gfk = new GFK();
-        const seismiccalcs = new SesimicCalcs
+        const seismiccalcs = new SesimicCalcs()
         let effective = 0
         const projectid = this.props.match.params.projectid;
         if (this.state.activepointid) {
@@ -1062,7 +1064,7 @@ class Seismic extends Component {
 
     getOverBurdenCorrection() {
         const gfk = new GFK();
-        const seismiccalcs = new SesimicCalcs
+        const seismiccalcs = new SesimicCalcs()
         let correction = 0
         let effective = 0;
         const projectid = this.props.match.params.projectid;
@@ -1134,7 +1136,7 @@ class Seismic extends Component {
         let n60 = 0;
 
         const gfk = new GFK();
-        const seismiccalcs = new SesimicCalcs();
+
         const projectid = this.props.match.params.projectid;
         if (this.state.activepointid) {
             const pointid = this.state.activepointid;
@@ -1195,6 +1197,32 @@ class Seismic extends Component {
         return Number(fs).toFixed(2)
     }
 
+    async handleSaveProject() {
+        
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
+        const seismic = gfk.getSeismicbyProjectID.call(this,projectid)
+        if(seismic) {
+             const i = gfk.getSeismicKeybyProjectID.call(this,projectid)
+             let response = await HandleSeismic({seismic})
+             console.log(response)
+             if(response.hasOwnProperty("seismic")) {
+                let newSeismic = response.seismic.seismic;
+                const seismics = gfk.getSeismic.call(this)
+                seismics[i] = newSeismic;
+                this.props.reduxSeismic(seismics);
+
+             }
+             let message = '';
+             if(response.hasOwnProperty("message")) {
+                message =  response.message
+             }
+             this.setState({message:message})
+        }
+    }
+
+
+
     render() {
         const styles = MyStylesheet()
         const gfk = new GFK();
@@ -1203,6 +1231,7 @@ class Seismic extends Component {
         const projectid = this.props.match.params.projectid;
         const project = gfk.getprojectbyid.call(this, projectid);
         const regularFont = gfk.getRegularFont.call(this)
+        const saveprojecticon = gfk.getsaveprojecticon.call(this)
         if (project) {
             return (<div style={{ ...styles.generalContainer }}>
 
@@ -1366,9 +1395,18 @@ class Seismic extends Component {
                             value={this.getBottomLayer()}
                             onChange={event => { this.handleBottomLayer(event.target.value) }}
                         />
+                        <div style={{...styles.generalContainer, ...styles.alignCenter}}>
+                            <span style={{...regularFont}}>{this.state.message}</span>
+                        </div>
+                        <div style={{...styles.generalContainer, ...styles.bottomMargin15}}>
+                            <button style={{...styles.generalButton, ...saveprojecticon}} onClick={()=>{this.handleSaveProject()}}>{saveProjectIcon()}</button>
+                        </div>
                         {this.getStrainIDs()}
                     </div>
                 </div>
+
+
+
 
 
 

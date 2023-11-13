@@ -903,7 +903,7 @@ class PTSlab extends Component {
             borings.map(boring => {
                 const boringid = boring.boringid;
                 const boringnumber = boring.boringnumber;
-                const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                const samples = gfk.getsamples.call(this, boringid)
                 if (samples) {
                     // eslint-disable-next-line
                     samples.map(sample => {
@@ -918,7 +918,7 @@ class PTSlab extends Component {
 
 
                         }
-                        const sieve = gfk.getsievekeybysampleid.call(this, sample.sampleid)
+                        const sieve = gfk.getsievekeybysampleid.call(this, boringid, sample.sampleid)
                         if (sieve) {
 
                             let check = checksampleid(sampleids, sample.sampleid)
@@ -935,7 +935,7 @@ class PTSlab extends Component {
 
                 // eslint-disable-next-line
                 sampleids.map(id => {
-                    const getsample = gfk.getsamplebyid.call(this, id.sampleid)
+                    const getsample = gfk.getsamplebyid.call(this, boringid, id.sampleid)
                     const label = `${boringnumber}-${getsample.sampleset}(${getsample.samplenumber})${getsample.depth}`
                     showoptions.push(this.showPISamples(id.sampleid, label))
 
@@ -961,11 +961,12 @@ class PTSlab extends Component {
         const gfk = new GFK();
         const sampleid = value;
         if (this.state.activelayerid) {
+            const boring = gfk.getBoringfromSampleID.call(this,sampleid)
 
             let ll = 0
             let pi = 0
             let fines = '';
-            const sample = gfk.getsamplebyid.call(this, sampleid)
+            const sample = gfk.getsamplebyid.call(this, boring.boringid, sampleid)
             if (sample) {
 
                 if (Number(sample.ll) > 0) {
@@ -977,7 +978,7 @@ class PTSlab extends Component {
                     this.handlepi(pi)
                 }
 
-                const sieve = gfk.getsievebysampleid.call(this, sampleid)
+                const sieve = gfk.getsievebysampleid.call(this, boring.boringid, sampleid)
                 if (sieve) {
                     const netwgt = Number(sample.drywgt) - Number(sample.tarewgt)
                     const wgt34 = sieve.wgt34;

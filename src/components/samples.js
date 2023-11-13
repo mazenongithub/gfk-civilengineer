@@ -4,11 +4,12 @@ import { connect } from 'react-redux';
 import GFK from './gfk';
 import { MyStylesheet } from './styles';
 import { removeIconSmall, goToIcon, calculateIcon, remarksIcon, addSieveIcon } from './svg'
-import { makeID, Sample } from './functions';
+import { Sample } from './functions';
 import { Link } from 'react-router-dom';
 import GraphicLog from './graphiclog'
 import SoilClassification from './soilclassification';
 import UnconfinedCalcs from './unconfinedcalcs';
+import MakeID from './makeids';
 
 class Samples extends Component {
     constructor(props) {
@@ -63,17 +64,26 @@ class Samples extends Component {
             const gfk = new GFK();
             const myuser = gfk.getuser.call(this);
             if (myuser) {
-                const validate = this.validateremovesample(sample);
+                const boringid = this.props.match.params.boringid;
+                const boring = gfk.getboringbyid.call(this, boringid)
+                if (boring) {
+                    const i = gfk.getboringkeybyid.call(this, boringid)
+                    const validate = this.validateremovesample(sample);
 
-                if (validate.validate) {
-                    const i = gfk.getsamplekeybyid.call(this, sample.sampleid);
-                    myuser.samples.sample.splice(i, 1);
-                    this.props.reduxUser(myuser);
-                    this.setState({ activesampleid: false })
+                    if (validate.validate) {
+                        const getsample = gfk.getsamplebyid.call(this, boringid, sample.sampleid)
+                        if (getsample) {
+                            const j = gfk.getsamplekeybyid.call(this, boringid, sample.sampleid);
+                            myuser.borings[i].samples.splice(j, 1);
+                            this.props.reduxUser(myuser);
+                            this.setState({ activesampleid: false })
+                        }
 
 
-                } else {
-                    this.setState({ message: validate.message })
+                    } else {
+                        this.setState({ message: validate.message })
+                    }
+
                 }
 
 
@@ -252,44 +262,58 @@ class Samples extends Component {
     handlesampleset(sampleset) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].sampleset = sampleset;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const sampledepth = this.state.sampledepth;
-                const depth = this.state.depth;
-                const samplenumber = this.state.samplenumber;
-                const diameter = this.state.diameter;
-                const samplelength = this.state.samplelength;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const remarks = this.state.remarks;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const tareno = this.state.tareno;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+
+                if (this.state.activesampleid) {
+                    let sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const sampleid = this.state.activesampleid;
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].sampleset = sampleset;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
 
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);
+                    const boringid = this.props.match.params.boringid;
+                    const sampledepth = this.state.sampledepth;
+                    const depth = this.state.depth;
+                    const samplenumber = this.state.samplenumber;
+                    const diameter = this.state.diameter;
+                    const samplelength = this.state.samplelength;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const remarks = this.state.remarks;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const tareno = this.state.tareno;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, sampleset: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, sampleset: '' })
 
             }
         }
@@ -298,56 +322,82 @@ class Samples extends Component {
     }
     getsampleset() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let sampleset = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.sampleset;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    sampleset = sample.sampleset;
+                }
+
+            } else {
+                sampleset = this.state.sampleset;
+            }
+
+
         } else {
-            return this.state.sampleset;
+            sampleset = this.state.sampleset;
         }
+
+        return sampleset;
     }
 
     handlesamplenumber(samplenumber) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].samplenumber = samplenumber;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const sampledepth = this.state.sampledepth;
-                const depth = this.state.depth;
-                const sampleset = this.state.sampleset;
-                const diameter = this.state.diameter;
-                const samplelength = this.state.samplelength;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const tareno = this.state.tareno;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
 
+                if (this.state.activesampleid) {
+
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].samplenumber = samplenumber;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const sampledepth = this.state.sampledepth;
+                    const depth = this.state.depth;
+                    const sampleset = this.state.sampleset;
+                    const diameter = this.state.diameter;
+                    const samplelength = this.state.samplelength;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const tareno = this.state.tareno;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, samplenumber: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, samplenumber: '' })
-
             }
         }
 
@@ -355,55 +405,79 @@ class Samples extends Component {
     }
     getsamplenumber() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let samplenumber = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.samplenumber;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    samplenumber = sample.samplenumber;
+                }
+
+            } else {
+                samplenumber = this.state.samplenumber;
+            }
+
+
         } else {
-            return this.state.samplenumber;
+            samplenumber = this.state.samplenumber;
         }
+
+        return samplenumber;
     }
     handlesampledepth(sampledepth) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].sampledepth = sampledepth;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const depth = this.state.depth;
-                const sampleset = this.state.sampleset;
-                const diameter = this.state.diameter;
-                const samplelength = this.state.samplelength;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const tareno = this.state.tareno;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].sampledepth = sampledepth;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const depth = this.state.depth;
+                    const sampleset = this.state.sampleset;
+                    const diameter = this.state.diameter;
+                    const samplelength = this.state.samplelength;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const tareno = this.state.tareno;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, sampledepth: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, sampledepth: '' })
-
             }
         }
 
@@ -411,807 +485,1191 @@ class Samples extends Component {
     }
     getsampledepth() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let sampledepth = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.sampledepth;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    sampledepth = sample.sampledepth;
+                }
+
+            } else {
+                sampledepth = this.state.sampledepth;
+            }
+
+
         } else {
-            return this.state.sampledepth;
+            sampledepth = this.state.sampledepth;
         }
+
+        return sampledepth;
     }
+
 
     handledepth(depth) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].depth = depth;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const diameter = this.state.diameter;
-                const samplelength = this.state.samplelength;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const tareno = this.state.tareno;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].depth = depth;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const diameter = this.state.diameter;
+                    const samplelength = this.state.samplelength;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const tareno = this.state.tareno;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, depth: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, depth: '' })
-
             }
         }
 
 
     }
+
     getdepth() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let depth = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.depth;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    depth = sample.depth;
+                }
+
+            } else {
+                depth = this.state.depth;
+            }
+
+
         } else {
-            return this.state.depth;
+            depth = this.state.depth;
         }
+
+        return depth;
     }
+
     handlediameter(diameter) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].diameter = diameter;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const samplelength = this.state.samplelength;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const tareno = this.state.tareno;
-                const graphiclog = this.state.graphiclog;
-                const remarks = this.state.remarks;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].diameter = diameter;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const samplelength = this.state.samplelength;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const tareno = this.state.tareno;
+                    const graphiclog = this.state.graphiclog;
+                    const remarks = this.state.remarks;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, diameter: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, diameter: '' })
-
             }
+
         }
 
 
     }
     getdiameter() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let diameter = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.diameter;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    diameter = sample.diameter;
+                }
+
+            } else {
+                diameter = this.state.diameter;
+            }
+
+
         } else {
-            return this.state.diameter;
+            diameter = this.state.diameter;
         }
+
+        return diameter;
     }
+
     handlelength(samplelength) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].samplelength = samplelength;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const tareno = this.state.tareno;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].samplelength = samplelength;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const tareno = this.state.tareno;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, samplelength: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, samplelength: '' })
-
             }
+
         }
 
 
     }
     getlength() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let samplelength = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.samplelength;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    samplelength = sample.samplelength;
+                }
+
+            } else {
+                samplelength = this.state.samplelength;
+            }
+
+
         } else {
-            return this.state.samplelength;
+            samplelength = this.state.samplelength;
         }
+
+        return samplelength;
     }
 
     handletareno(tareno) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].tareno = tareno;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].tareno = tareno;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, tareno: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, tareno: '' })
-
             }
+
         }
 
 
     }
     gettareno() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let tareno = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.tareno;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    tareno = sample.tareno;
+                }
+
+            } else {
+                tareno = this.state.tareno;
+            }
+
+
         } else {
-            return this.state.tareno;
+            tareno = this.state.tareno;
         }
+
+        return tareno;
     }
+
     handletarewgt(tarewgt) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
             if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].tarewgt = tarewgt;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
                 const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const wetwgt = this.state.wetwgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const remarks = this.state.remarks;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+                const boring = gfk.getboringbyid.call(this, boringid)
+                const i = gfk.getboringkeybyid.call(this, boringid)
+                if (boring) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].tarewgt = tarewgt;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const wetwgt = this.state.wetwgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const remarks = this.state.remarks;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, tarewgt: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, tarewgt: '' })
-
             }
+
         }
 
 
     }
+
     gettarewgt() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let tarewgt = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.tarewgt;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    tarewgt = sample.tarewgt;
+                }
+
+            } else {
+                tarewgt = this.state.tarewgt;
+            }
+
+
         } else {
-            return this.state.tarewgt;
+            tarewgt = this.state.tarewgt;
         }
+
+        return tarewgt;
     }
+
 
     handlewetwgt(wetwgt) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].wetwgt = wetwgt;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt_2 = this.state.wgtwgt_2;
-                const drywgt = this.state.drywgt;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].wetwgt = wetwgt;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt_2 = this.state.wgtwgt_2;
+                    const drywgt = this.state.drywgt;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, wetwgt: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, wetwgt: '' })
-
             }
         }
-
 
     }
     getwetwgt() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let wetwgt = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.wetwgt;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    wetwgt = sample.wetwgt;
+                }
+
+            } else {
+                wetwgt = this.state.wetwgt;
+            }
+
+
         } else {
-            return this.state.wetwgt;
+            wetwgt = this.state.wetwgt;
         }
+
+        return wetwgt;
     }
+
     handlewetwgt_2(wetwgt_2) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].wetwgt_2 = wetwgt_2;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const drywgt = this.state.drywgt;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
+                        myuser.borings[i].samples[j].wetwgt_2 = wetwgt_2;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const drywgt = this.state.drywgt;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, wetwgt_2: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, wetwgt_2: '' })
-
             }
+
         }
 
 
     }
     getwetwgt_2() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let wetwgt_2 = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.wetwgt_2;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    wetwgt_2 = sample.wetwgt_2;
+                }
+
+            } else {
+                wetwgt_2 = this.state.wetwgt_2;
+            }
+
+
         } else {
-            return this.state.wetwgt_2;
+            wetwgt_2 = this.state.wetwgt_2;
         }
+
+        return wetwgt_2;
     }
+
     handledrywgt(drywgt) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].drywgt = drywgt;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].drywgt = drywgt;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, drywgt: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, drywgt: '' })
-
             }
+
         }
 
 
     }
     getdrywgt() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let drywgt = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.drywgt;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    drywgt = sample.drywgt;
+                }
+
+            } else {
+                drywgt = this.state.drywgt;
+            }
+
+
         } else {
-            return this.state.drywgt;
+            drywgt = this.state.drywgt;
         }
+
+        return drywgt;
     }
+
     handleuscs(uscs) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].uscs = uscs;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].uscs = uscs;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, uscs: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, uscs: '' })
-
             }
+
         }
 
 
     }
+
     getuscs() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let uscs = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.uscs;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    uscs = sample.uscs;
+                }
+
+            } else {
+                uscs = this.state.uscs;
+            }
+
+
         } else {
-            return this.state.uscs;
+            uscs = this.state.uscs;
         }
+
+        return uscs;
     }
     handlespt(spt) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].spt = spt;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const sptlength = this.state.sptlength;
-                const graphiclog = this.state.graphiclog;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].spt = spt;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const sptlength = this.state.sptlength;
+                    const graphiclog = this.state.graphiclog;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, spt: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, spt: '' })
-
             }
+
         }
 
 
     }
+
     getspt() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let spt = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.spt;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    spt = sample.spt;
+                }
+
+            } else {
+                spt = this.state.spt;
+            }
+
+
         } else {
-            return this.state.spt;
+            spt = this.state.spt;
         }
+
+        return spt;
     }
+
 
     handlesptlength(sptlength) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].sptlength = sptlength;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const remarks = this.state.remarks;
-                const spt = this.state.spt;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].sptlength = sptlength;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const remarks = this.state.remarks;
+                    const spt = this.state.spt;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, sptlength: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, sptlength: '' })
-
             }
+
         }
 
 
     }
+
     getsptlength() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let sptlength = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.sptlength;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    sptlength = sample.sptlength;
+                }
+
+            } else {
+                sptlength = this.state.sptlength;
+            }
+
+
         } else {
-            return this.state.sptlength;
+            sptlength = this.state.sptlength;
         }
+
+        return sptlength;
     }
 
     handleremarks(remarks) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].remarks = remarks;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const ll = this.state.ll;
-                const pi = this.state.pi;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].remarks = remarks;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const ll = this.state.ll;
+                    const pi = this.state.pi;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, remarks: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, remarks: '' })
-
             }
+
         }
 
 
     }
+
     getremarks() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let remarks = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.remarks;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    remarks = sample.remarks;
+                }
+
+            } else {
+                remarks = this.state.remarks;
+            }
+
+
         } else {
-            return this.state.remarks;
+            remarks = this.state.remarks;
         }
+
+        return remarks;
     }
+
 
     handlell(ll) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].ll = ll;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const pi = this.state.pi;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].ll = ll;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const pi = this.state.pi;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, ll: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, ll: '' })
-
             }
+
         }
 
 
     }
+
     getll() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let ll = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.ll;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    ll = sample.ll;
+                }
+
+            } else {
+                ll = this.state.ll;
+            }
+
+
         } else {
-            return this.state.ll;
+            ll = this.state.ll;
         }
+
+        return ll;
     }
+
     handlepi(pi) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].pi = pi;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const description = this.state.description;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const spt = this.state.spt;
-                const sptlength = this.state.sptlength;
-                const ll = this.state.ll;
-                const remarks = this.state.remarks;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                    if (sample) {
+                        const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                        myuser.borings[i].samples[j].pi = pi;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
+                    }
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const description = this.state.description;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const spt = this.state.spt;
+                    const sptlength = this.state.sptlength;
+                    const ll = this.state.ll;
+                    const remarks = this.state.remarks;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, pi: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, pi: '' })
-
             }
+
         }
 
 
     }
+
     getpi() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let pi = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.pi;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    pi = sample.pi;
+                }
+
+            } else {
+                pi = this.state.pi;
+            }
+
+
         } else {
-            return this.state.pi;
+            pi = this.state.pi;
         }
+
+        return pi;
     }
+
     calcUSCS() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this,boringid)
+        if(boring) {
         const sampleid = this.state.activesampleid;
-        const sample = gfk.getsamplebyid.call(this, sampleid);
+        const sample = gfk.getsamplebyid.call(this, boringid, sampleid);
         let uscs = ''
         if (sample) {
             const ll = Number(sample.ll);
@@ -1219,7 +1677,7 @@ class Samples extends Component {
             if (!ll || !pi) {
                 alert(`No LL or PI found`)
             } else {
-                const sieve = gfk.getsievebysampleid.call(this, sampleid)
+                const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid)
                 if (!sieve) {
 
                     alert(`No Sieve Found`)
@@ -1254,149 +1712,204 @@ class Samples extends Component {
         } else {
             alert(`Sample Not Found`)
         }
-       
+
+    }
+
     }
     handledescription(description) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].description = description;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const pi = this.state.pi;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const graphiclog = this.state.graphiclog;
-                const spt = this.state.spt;
-                const ll = this.state.ll;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                    myuser.borings[i].samples[j].description = description;
+                    this.props.reduxUser(myuser)
+                    this.setState({ render: 'render' })
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const pi = this.state.pi;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const graphiclog = this.state.graphiclog;
+                    const spt = this.state.spt;
+                    const ll = this.state.ll;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, description: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, description: '' })
-
             }
+
         }
 
 
     }
+
     getdescription() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let description = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.description;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    description = sample.description;
+                }
+
+            } else {
+                description = this.state.description;
+            }
+
+
         } else {
-            return this.state.description;
+            description = this.state.description;
         }
+
+        return description;
     }
     handlegraphiclog(graphiclog) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].graphiclog = graphiclog;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            } else {
-                const sampleid = makeID(16);
-                const boringid = this.props.match.params.boringid;
-                const samplenumber = this.state.samplenumber;
-                const sampledepth = this.state.sampledepth;
-                const sampleset = this.state.sampleset;
-                const depth = this.state.depth;
-                const diameter = this.state.diameter;
-                const pi = this.state.pi;
-                const uscs = this.state.uscs;
-                const drywgt = this.state.drywgt;
-                const tarewgt = this.state.tarewgt;
-                const wetwgt = this.state.wgtwgt;
-                const wetwgt_2 = this.state.wetwgt_2;
-                const tareno = this.state.tareno;
-                const samplelength = this.state.samplelength;
-                const description = this.state.description;
-                const spt = this.state.spt;
-                const ll = this.state.ll;
-                const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
-                const samples = gfk.getsamples.call(this)
-                if (samples) {
-                    myuser.samples.sample.push(newSample)
-
+            const boringid = this.props.match.params.boringid;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            const i = gfk.getboringkeybyid.call(this, boringid)
+            if (boring) {
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);;
+                    myuser.borings[i].samples[j].graphiclog = graphiclog;
+                    this.props.reduxUser(myuser)
+                    this.setState({ render: 'render' })
                 } else {
-                    myuser.samples = { sample: [newSample] }
+                    const sampleid = makeid.sampleID.call(this, 16);;
+                    const boringid = this.props.match.params.boringid;
+                    const samplenumber = this.state.samplenumber;
+                    const sampledepth = this.state.sampledepth;
+                    const sampleset = this.state.sampleset;
+                    const depth = this.state.depth;
+                    const diameter = this.state.diameter;
+                    const pi = this.state.pi;
+                    const uscs = this.state.uscs;
+                    const drywgt = this.state.drywgt;
+                    const tarewgt = this.state.tarewgt;
+                    const wetwgt = this.state.wgtwgt;
+                    const wetwgt_2 = this.state.wetwgt_2;
+                    const tareno = this.state.tareno;
+                    const samplelength = this.state.samplelength;
+                    const description = this.state.description;
+                    const spt = this.state.spt;
+                    const ll = this.state.ll;
+                    const newSample = Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi)
+                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    if (samples) {
+                        myuser.borings[i].samples.push(newSample)
+
+                    } else {
+                        myuser.borings[i].samples = { sample: [newSample] }
+
+                    }
+                    this.props.reduxUser(myuser)
+                    this.setState({ activesampleid: sampleid, graphiclog: '' })
 
                 }
-                this.props.reduxUser(myuser)
-                this.setState({ activesampleid: sampleid, graphiclog: '' })
-
             }
+
         }
 
 
     }
     getgraphiclog() {
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        let graphiclog = "";
         if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid);
-            return sample.graphiclog;
+            const boring = gfk.getboringbyid.call(this, boringid)
+            if (boring) {
+                const sample = gfk.getsamplebyid.call(this, boringid, this.state.activesampleid);
+                if (sample) {
+                    graphiclog = sample.graphiclog;
+                }
+
+            } else {
+                graphiclog = this.state.graphiclog;
+            }
+
+
         } else {
-            return this.state.graphiclog;
+            graphiclog = this.state.graphiclog;
         }
+
+        return graphiclog;
     }
+
     generateRemarks() {
         let remarks = '';
         const gfk = new GFK();
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this)
+        if (boring) {
+            
+            if (this.state.activesampleid) {
+                let sampleid = this.state.activesampleid;
+                let sample = gfk.getsamplebyid.call(this, boringid,sampleid)
 
-        if (this.state.activesampleid) {
-            let sampleid = this.state.activesampleid;
-            let sample = gfk.getsamplebyid.call(this, sampleid)
+                let ll = Number(sample.ll)
+                let pi = Number(sample.pi)
 
-            let ll = Number(sample.ll)
-            let pi = Number(sample.pi)
+                if (ll && pi) {
+                    remarks += `LL=${ll}% PI=${pi}`
+                }
 
-            if (ll && pi) {
-                remarks += `LL=${ll}% PI=${pi}`
+
+                const unconfined = gfk.getunconfinedtestbyid.call(this, boringid, sampleid)
+                console.log(unconfined)
+                if (unconfined) {
+                
+
+                    const unconfinedcalcs = new UnconfinedCalcs()
+                    const maxstress = unconfinedcalcs.getMaxStress.call(this, boringid, sampleid);
+                    const maxstrain = unconfinedcalcs.getMaxStrain.call(this, boringid, sampleid)
+
+                    remarks += `Unconfined Strength=${maxstress}psf Strain=${maxstrain}%`
+
+                }
+
+
+
             }
 
-
-            const unconfined = gfk.getunconfinedtestbyid.call(this, sampleid)
-            if (unconfined) {
-
-                const unconfinedcalcs = new UnconfinedCalcs()
-                const maxstress = unconfinedcalcs.getMaxStress.call(this, sampleid);
-                const maxstrain = unconfinedcalcs.getMaxStrain.call(this, sampleid)
-
-                remarks += `Unconfined Strength=${maxstress}psf Strain=${maxstrain}%`
-
+            if (remarks) {
+                this.handleremarks(remarks)
             }
 
-
-
-        }
-
-        if (remarks) {
-            this.handleremarks(remarks)
         }
     }
 
@@ -1413,7 +1926,7 @@ class Samples extends Component {
             const pi = Number(sample.pi);
             const sieve = gfk.getsievebysampleid.call(this, sampleid)
             if (sieve) {
-                description +=` (`
+                description += ` (`
                 const wgt34 = Number(sieve.wgt34)
                 const wgt38 = Number(sieve.wgt38)
                 const wgt4 = Number(sieve.wgt4)
@@ -1436,7 +1949,7 @@ class Samples extends Component {
                     description += ` Fines ${fines}%`
                 }
 
-                description +=` )`
+                description += ` )`
             }
 
             if (description) {

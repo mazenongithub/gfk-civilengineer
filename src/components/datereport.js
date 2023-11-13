@@ -39,7 +39,7 @@ class DateReport {
 
             let newtimein = inputSecOutDateString(dateencoded)
           
-            myuser.fieldreports.fieldreport[i].datereport = newtimein;
+            myuser.fieldreports[i].datereport = newtimein;
             this.props.reduxUser(myuser)
             this.setState({ render: 'render' })
 
@@ -639,7 +639,7 @@ class DateReport {
                 let i = gfk.getfieldreportkeybyid.call(this, fieldid);
 
                 let newtimein = value
-                myuser.fieldreports.fieldreport[i].datereport = newtimein;
+                myuser.fieldreports[i].datereport = newtimein;
                 this.props.reduxUser(myuser)
                 this.setState({ render: 'render' })
 
@@ -675,7 +675,7 @@ class DateReport {
                 let newtime = decreaseCalendarDaybyOneYear(timein);
                 let i = gfk.getfieldreportkeybyid.call(this, fieldid);
 
-                myuser.fieldreports.fieldreport[i].datereport = newtime;
+                myuser.fieldreports[i].datereport = newtime;
                 this.props.reduxUser(myuser)
                 this.setState({ render: 'render' })
             }
@@ -699,7 +699,7 @@ class DateReport {
             let newtimein = increaseCalendarDaybyOneYear(timein);
             let i = gfk.getfieldreportkeybyid.call(this, fieldid);
 
-            myuser.fieldreports.fieldreport[i].datereport = newtimein;
+            myuser.fieldreports[i].datereport = newtimein;
             this.props.reduxUser(myuser);
             this.setState({ render: 'render' })
 
@@ -720,7 +720,7 @@ class DateReport {
             let newtimein = increaseCalendarDayOneMonth(timein);
             let i = gfk.getfieldreportkeybyid.call(this, fieldid);
 
-            myuser.fieldreports.fieldreport[i].datereport = newtimein;
+            myuser.fieldreports[i].datereport = newtimein;
 
             this.props.reduxUser(myuser)
             this.setState({ render: 'render' })
@@ -741,7 +741,7 @@ class DateReport {
             let timein = fieldreport.datereport;
             let i = gfk.getfieldreportkeybyid.call(this, fieldid);
             let newtimein = decreaseCalendarDaybyOneMonth(timein);
-            myuser.fieldreports.fieldreport[i].datereport = newtimein;
+            myuser.fieldreports[i].datereport = newtimein;
             this.props.reduxUser(myuser)
             this.setState({ render: 'render' })
 

@@ -68,7 +68,7 @@ class Borings extends Component {
             const validate = this.validateremoveboring(boring);
             if (validate.validate) {
                 const i = gfk.getboringkeybyid.call(this, boring.boringid);
-                myuser.borings.boring.splice(i, 1);
+                myuser.borings.splice(i, 1);
                 this.props.reduxUser(myuser);
                 this.setState({ activeboringid: false })
 
@@ -106,6 +106,7 @@ class Borings extends Component {
     }
     getboringnumber() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
             const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.boringnumber;
@@ -116,12 +117,13 @@ class Borings extends Component {
     }
     handleboringnumber(boringnumber) {
         const gfk = new GFK();
+        
         let myuser = gfk.getuser.call(this)
         if (myuser) {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].boringnumber = boringnumber;
+                myuser.borings[i].boringnumber = boringnumber;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -139,9 +141,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, boringnumber: '' })
@@ -152,8 +154,9 @@ class Borings extends Component {
 
     getdiameter() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
+            const boring =gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.diameter;
         } else {
             return this.state.diameter;
@@ -167,7 +170,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].diameter = diameter;
+                myuser.borings[i].diameter = diameter;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -185,9 +188,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, diameter: '' })
@@ -198,13 +201,16 @@ class Borings extends Component {
 
     getgwdepth() {
         const gfk = new GFK();
+        
+            let gwdepth = "";
         if (this.state.activeboringid) {
             const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.gwdepth;
+            gwdepth = boring.gwdepth;
         } else {
-            return this.state.gwdepth;
+            gwdepth =  this.state.gwdepth;
 
         }
+        return gwdepth;
     }
     handlegwdepth(gwdepth) {
         const gfk = new GFK();
@@ -213,7 +219,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].gwdepth = gwdepth;
+                myuser.borings[i].gwdepth = gwdepth;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -231,9 +237,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, gwdepth: '' })
@@ -244,6 +250,7 @@ class Borings extends Component {
 
     getelevation() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
             const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.elevation;
@@ -259,7 +266,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].elevation = elevation;
+                myuser.borings[i].elevation = elevation;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -277,9 +284,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, elevation: '' })
@@ -290,6 +297,7 @@ class Borings extends Component {
 
     getdrillrig() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
             const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.drillrig;
@@ -305,7 +313,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].drillrig = drillrig;
+                myuser.borings[i].drillrig = drillrig;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -323,9 +331,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, drillrig: '' })
@@ -335,6 +343,7 @@ class Borings extends Component {
     }
     getloggedby() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
             const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.loggedby;
@@ -350,7 +359,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].loggedby = loggedby;
+                myuser.borings[i].loggedby = loggedby;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -368,9 +377,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, loggedby: '' })
@@ -380,6 +389,7 @@ class Borings extends Component {
     }
     getlatitude() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
             const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.latitude;
@@ -395,7 +405,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].latitude = latitude;
+                myuser.borings[i].latitude = latitude;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -413,9 +423,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, latitude: '' })
@@ -425,8 +435,9 @@ class Borings extends Component {
     }
     getlongitude() {
         const gfk = new GFK();
+        
         if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
+            const boring =gfk.getboringbyid.call(this, this.state.activeboringid)
             return boring.longitude;
         } else {
             return this.state.longitude;
@@ -440,7 +451,7 @@ class Borings extends Component {
 
             if (this.state.activeboringid) {
                 const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings.boring[i].longitude = longitude;
+                myuser.borings[i].longitude = longitude;
                 this.props.reduxUser(myuser);
                 this.setState({ render: 'render' })
 
@@ -458,9 +469,9 @@ class Borings extends Component {
                 const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
                 const borings = gfk.getborings.call(this)
                 if (borings) {
-                    myuser.borings.boring.push(newBoring)
+                    myuser.borings.push(newBoring)
                 } else {
-                    myuser.borings = { boring: [newBoring] }
+                    myuser.borings = { borings: [newBoring] }
                 }
                 this.props.reduxUser(myuser)
                 this.setState({ activeboringid: boringid, longitude: '' })
@@ -478,7 +489,7 @@ class Borings extends Component {
             if (this.state.activeboringid) {
                 const projectid = this.props.match.params.projectid;
                 const boringid = this.state.activeboringid;
-                const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
+                const boring =gfk.getboringbyid.call(this, this.state.activeboringid)
 
                 return (<Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
                     to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>

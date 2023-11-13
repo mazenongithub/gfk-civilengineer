@@ -22,21 +22,30 @@ class ViewFieldReport extends Component {
     updateWindowDimensions() {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
+    getFieldReport() {
+        const gfk = new GFK();
+        const fieldid = this.props.match.params.fieldid;
+
+        let getfieldreport = false;
+        const fieldreport = gfk.getfieldreportbyid.call(this,fieldid)
+        if(fieldreport) {
+            getfieldreport = fieldreport;
+        }
+        return getfieldreport;
+
+
+    }
 
     compactionReport() {
         let compactionreport = false;
         const gfk = new GFK();
-        const compactiontests = gfk.getcompactiontests.call(this)
         const fieldid = this.props.match.params.fieldid;
-        if (compactiontests) {
-            // eslint-disable-next-line
-            compactiontests.map(test => {
-                if (test.fieldid === fieldid) {
-                    compactionreport = true;
-                }
-            })
+        const fieldreport = gfk.getfieldreportbyid.call(this,fieldid)
+        if(fieldreport.hasOwnProperty("compactiontests")) {
+            compactionreport = true;
         }
         return compactionreport;
+       
     }
 
     showcompactioncurves() {
@@ -140,10 +149,15 @@ class ViewFieldReport extends Component {
         return curves;
     }
 
+
+
     getCompactionTests() {
         const gfk = new GFK();
         const fieldid = this.props.match.params.fieldid;
+    
         const compactiontests = gfk.getcompactiontestsbyfieldid.call(this,fieldid)
+        console.log(compactiontests)
+        if(compactiontests) {
         compactiontests.sort((a, b) => {
             if (Number(a.testnum) >= Number(b.testnum)) {
                 return 1;
@@ -151,6 +165,8 @@ class ViewFieldReport extends Component {
                 return -1
             }
         })
+
+    }
     
        return compactiontests;
     }
@@ -270,7 +286,7 @@ class ViewFieldReport extends Component {
     getfieldimages() {
         const fieldid = this.props.match.params.fieldid;
         const gfk = new GFK();
-        const fieldimages = gfk.getfieldimagesbyid.call(this,fieldid);
+        const fieldimages = gfk.getimagesbyfieldid.call(this,fieldid);
        
         return fieldimages;
 
@@ -314,7 +330,7 @@ class ViewFieldReport extends Component {
         const headerFont = gfk.getHeaderFont.call(this)
         const regularFont = gfk.getRegularFont.call(this);
         const fieldid = this.props.match.params.fieldid;
-        const report = this.getReport();
+        const report = this.getFieldReport();
 
         if (project) {
 

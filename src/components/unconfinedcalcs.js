@@ -28,12 +28,12 @@ class UnconfinedCalcs {
         return (Math.round((144 * lbs) / area))
     }
 
-    getStressCurve(sampleid) {
+    getStressCurve(boringid,sampleid) {
 
         const gfk = new GFK();
         const unconfinedcalcs = new UnconfinedCalcs();
-        const unconfinedtest = gfk.getunconfinedtestbyid.call(this,sampleid)
-        const sample = gfk.getsamplebyid.call(this,sampleid)
+        const unconfinedtest = gfk.getunconfinedtestbyid.call(this,boringid,sampleid)
+        const sample = gfk.getsamplebyid.call(this,boringid,sampleid)
         let stresscurve = [];
         if(sample) {
         const samplelength = Number(sample.samplelength);
@@ -41,7 +41,7 @@ class UnconfinedCalcs {
        
         if(unconfinedtest) {
             // eslint-disable-next-line
-            unconfinedtest.testdata.data.map(data=> {
+            unconfinedtest.map(data=> {
                 const lbs = unconfinedcalcs.loadlbs.call(this,data.loadreading);
                 const strain = unconfinedcalcs.calcstrain.call(this,data.displacement,samplelength)
                 const area = unconfinedcalcs.calcarea.call(this,diameter,strain)
@@ -60,9 +60,9 @@ class UnconfinedCalcs {
 
  
 
-    getMaxStress(sampleid) {
+    getMaxStress(boringid,sampleid) {
         const unconfinedcalcs = new UnconfinedCalcs();
-        const stresscurve = unconfinedcalcs.getStressCurve.call(this,sampleid)
+        const stresscurve = unconfinedcalcs.getStressCurve.call(this,boringid,sampleid)
         let maxstress = 0;
         if(stresscurve.length>0) {
             // eslint-disable-next-line
@@ -79,10 +79,10 @@ class UnconfinedCalcs {
         return maxstress;
     }
 
-    getMaxStrain(sampleid) {
+    getMaxStrain(boringid, sampleid) {
         const unconfinedcalcs = new UnconfinedCalcs();
-        const maxstress = unconfinedcalcs.getMaxStress.call(this,sampleid)
-        const stresscurve = unconfinedcalcs.getStressCurve.call(this,sampleid)
+        const maxstress = unconfinedcalcs.getMaxStress.call(this,boringid,sampleid)
+        const stresscurve = unconfinedcalcs.getStressCurve.call(this,boringid, sampleid)
         let maxstrain = 0;
         if(maxstress > 0 && stresscurve.length > 0) {
             // eslint-disable-next-line

@@ -6,9 +6,10 @@ import GFK from './gfk';
 import DateReport from './datereport';
 import CurveID from './curveid';
 import { removeIconSmall, saveReport, uploadImage, goToIcon } from './svg';
-import { fieldReport, makeID, makeDatefromObj, makeUTCStringCurrentTime, compactionTest, milestoneformatdatestring, inputUTCStringForLaborID, sorttimesdesc, CreateImage } from './functions';
+import { fieldReport, makeDatefromObj, makeUTCStringCurrentTime, compactionTest, milestoneformatdatestring, inputUTCStringForLaborID, sorttimesdesc, CreateImage } from './functions';
 import { SaveFieldReport, UploadFieldImage } from './actions/api'
 import { Link } from 'react-router-dom';
+import MakeID from './makeids';
 
 class FieldReports extends Component {
     constructor(props) {
@@ -39,54 +40,84 @@ class FieldReports extends Component {
         }
 
     }
-    gettestnum() {
-        const gfk = new GFK();
 
-        if (this.state.activetestid) {
-            const testid = this.state.activetestid;
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            return (test.testnum);
-        } else {
-            return this.state.testnum;
-        }
+    getFieldReport() {
+        const gfk = new GFK();
+        const fieldid = this.state.activefieldid
+        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        return fieldreport;
 
     }
+    gettestnum() {
+        const gfk = new GFK();
+        let testnum = "";
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+
+            if (fieldreport) {
+
+                if (this.state.activetestid) {
+
+                    const testid = this.state.activetestid;
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+
+                    testnum = (test.testnum);
+                } else {
+                    testnum = this.state.testnum;
+                }
+
+            }
+
+        }
+        return testnum;
+
+
+    }
+
     handletestnum(testnum) {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const makeid = new MakeID()
         if (myuser) {
             if (this.state.activefieldid) {
                 const fieldid = this.state.activefieldid;
-
-                if (this.state.activetestid) {
-                    const testid = this.state.activetestid;
-                    const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                    myuser.compactiontests.compactiontest[i].testnum = testnum;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
-                } else {
-                    let testid = makeID(16);
-                    let timetest = makeUTCStringCurrentTime();
-                    let elevation = this.state.elevation;
-                    let location = this.state.location;
-                    let wetpcf = this.state.wetpcf;
-                    let moistpcf = this.state.moistpcf;
-                    let curveid = this.state.curveid;
-                    let letterid = "";
-                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
-                    const compactiontests = gfk.getcompactiontests.call(this)
-
-                    if (compactiontests) {
-
-                        myuser.compactiontests.compactiontest.push(newTest);
-
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    if (this.state.activetestid) {
+                        const testid = this.state.activetestid;
+                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+                        myuser.fieldreports[i].compactiontests[j].testnum = testnum;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
                     } else {
-                        let compactiontests = { compactiontest: [newTest] }
-                        myuser.compactiontests = compactiontests;
-                    }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activetestid: testid })
 
+                        let testid = makeid.compactionTest.call(this)
+                        let timetest = makeUTCStringCurrentTime();
+                        let elevation = this.state.elevation;
+                        let location = this.state.location;
+                        let wetpcf = this.state.wetpcf;
+                        let moistpcf = this.state.moistpcf;
+                        let curveid = this.state.curveid;
+                        let letterid = "";
+                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+
+
+                        if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                            myuser.fieldreports[i].compactiontests.push(newTest);
+
+                        } else {
+
+                            myuser.fieldreports[i].compactiontests = [newTest];
+                        }
+
+                        this.props.reduxUser(myuser)
+                        this.setState({ activetestid: testid })
+
+
+                    }
 
                 }
 
@@ -96,49 +127,74 @@ class FieldReports extends Component {
     }
     getelevation() {
         const gfk = new GFK();
+        let elevation = "";
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
 
-        if (this.state.activetestid) {
-            const testid = this.state.activetestid;
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            return (test.elevation);
-        } else {
-            return this.state.elevation;
+            if (fieldreport) {
+
+                if (this.state.activetestid) {
+
+                    const testid = this.state.activetestid;
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+
+                    elevation = (test.elevation);
+                } else {
+                    elevation = this.state.elevation;
+                }
+
+            }
+
         }
+        return elevation;
+
 
     }
+
     handleelevation(elevation) {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const makeid = new MakeID()
         if (myuser) {
             if (this.state.activefieldid) {
                 const fieldid = this.state.activefieldid;
-                if (this.state.activetestid) {
-                    const testid = this.state.activetestid;
-                    const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                    myuser.compactiontests.compactiontest[i].elevation = elevation;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
-                } else {
-                    let testid = makeID(16);
-                    let timetest = makeUTCStringCurrentTime();
-                    let testnum = this.state.testnum;
-                    let location = this.state.location;
-                    let wetpcf = this.state.wetpcf;
-                    let moistpcf = this.state.moistpcf;
-                    let curveid = this.state.curveid;
-                    let letterid = "";
-                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
-                    const compactiontests = gfk.getcompactiontests.call(this)
-                    if (compactiontests) {
-                        myuser.compactiontests.compactiontest.push(newTest);
-
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    if (this.state.activetestid) {
+                        const testid = this.state.activetestid;
+                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+                        myuser.fieldreports[i].compactiontests[j].elevation = elevation;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
                     } else {
-                        let compactiontests = { compactiontest: [newTest] }
-                        myuser.compactiontests = compactiontests;
-                    }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activetestid: testid })
 
+                        let testid = makeid.compactionTest.call(this)
+                        let timetest = makeUTCStringCurrentTime();
+                        let location = this.state.location;
+                        let testnum = this.state.testnum
+                        let wetpcf = this.state.wetpcf;
+                        let moistpcf = this.state.moistpcf;
+                        let curveid = this.state.curveid;
+                        let letterid = "";
+                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+
+
+                        if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                            myuser.fieldreports[i].compactiontests.push(newTest);
+
+                        } else {
+
+                            myuser.fieldreports[i].compactiontests = [newTest];
+                        }
+
+                        this.props.reduxUser(myuser)
+                        this.setState({ activetestid: testid })
+
+
+                    }
 
                 }
 
@@ -146,52 +202,80 @@ class FieldReports extends Component {
         }
 
     }
+
+
+
+
     getlocation() {
         const gfk = new GFK();
+        let location = "";
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
 
-        if (this.state.activetestid) {
-            const testid = this.state.activetestid;
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            return (test.location);
-        } else {
-            return this.state.location;
+            if (fieldreport) {
+
+                if (this.state.activetestid) {
+
+                    const testid = this.state.activetestid;
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+
+                    location = (test.location);
+                } else {
+                    location = this.state.location;
+                }
+
+            }
+
         }
+        return location;
+
 
     }
+
     handlelocation(location) {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const makeid = new MakeID()
         if (myuser) {
             if (this.state.activefieldid) {
                 const fieldid = this.state.activefieldid;
-                if (this.state.activetestid) {
-                    const testid = this.state.activetestid;
-                    const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                    myuser.compactiontests.compactiontest[i].location = location;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
-                } else {
-                    let testid = makeID(16);
-                    let timetest = makeUTCStringCurrentTime();
-                    let testnum = this.state.testnum;
-                    let elevation = this.state.elevation;
-                    let wetpcf = this.state.wetpcf;
-                    let moistpcf = this.state.moistpcf;
-                    let curveid = this.state.curveid;
-                    let letterid = "";
-                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
-                    console.log(newTest)
-                    const compactiontests = gfk.getcompactiontests.call(this)
-                    if (compactiontests) {
-                        myuser.compactiontests.compactiontest.push(newTest);
-
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    if (this.state.activetestid) {
+                        const testid = this.state.activetestid;
+                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+                        myuser.fieldreports[i].compactiontests[j].location = location;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
                     } else {
-                        let compactiontests = { compactiontest: [newTest] }
-                        myuser.compactiontests = compactiontests;
-                    }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activetestid: testid })
 
+                        let testid = makeid.compactionTest.call(this)
+                        let timetest = makeUTCStringCurrentTime();
+                        let elevation = this.state.elevation;
+                        let testnum = this.state.testnum
+                        let wetpcf = this.state.wetpcf;
+                        let moistpcf = this.state.moistpcf;
+                        let curveid = this.state.curveid;
+                        let letterid = "";
+                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+
+
+                        if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                            myuser.fieldreports[i].compactiontests.push(newTest);
+
+                        } else {
+
+                            myuser.fieldreports[i].compactiontests = [newTest];
+                        }
+
+                        this.props.reduxUser(myuser)
+                        this.setState({ activetestid: testid })
+
+
+                    }
 
                 }
 
@@ -199,51 +283,78 @@ class FieldReports extends Component {
         }
 
     }
-    getwetpcf() {
-        const gfk = new GFK();
 
-        if (this.state.activetestid) {
-            const testid = this.state.activetestid;
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            return (test.wetpcf);
-        } else {
-            return this.state.wetpcf;
+    getwetpcf() {
+
+        const gfk = new GFK();
+        let wetpcf = "";
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+
+            if (fieldreport) {
+
+                if (this.state.activetestid) {
+
+                    const testid = this.state.activetestid;
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+
+                    wetpcf = (test.wetpcf);
+                } else {
+                    wetpcf = this.state.wetpcf;
+                }
+
+            }
+
         }
+        return wetpcf;
+
 
     }
+
     handlewetpcf(wetpcf) {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const makeid = new MakeID()
         if (myuser) {
             if (this.state.activefieldid) {
                 const fieldid = this.state.activefieldid;
-                if (this.state.activetestid) {
-                    const testid = this.state.activetestid;
-                    const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                    myuser.compactiontests.compactiontest[i].wetpcf = wetpcf;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
-                } else {
-                    let testid = makeID(16);
-                    let timetest = makeUTCStringCurrentTime();
-                    let testnum = this.state.testnum;
-                    let elevation = this.state.elevation;
-                    let location = this.state.location;
-                    let moistpcf = this.state.moistpcf;
-                    let curveid = this.state.curveid;
-                    let letterid = "";
-                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
-                    const compactiontests = gfk.getcompactiontests.call(this)
-                    if (compactiontests) {
-                        myuser.compactiontests.compactiontest.push(newTest);
-
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    if (this.state.activetestid) {
+                        const testid = this.state.activetestid;
+                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+                        myuser.fieldreports[i].compactiontests[j].wetpcf = wetpcf;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
                     } else {
-                        let compactiontests = { compactiontest: [newTest] }
-                        myuser.compactiontests = compactiontests;
-                    }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activetestid: testid })
 
+                        let testid = makeid.compactionTest.call(this)
+                        let timetest = makeUTCStringCurrentTime();
+                        let location = this.state.location;
+                        let testnum = this.state.testnum
+                        let elevation = this.state.elevation;
+                        let moistpcf = this.state.moistpcf;
+                        let curveid = this.state.curveid;
+                        let letterid = "";
+                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+
+
+                        if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                            myuser.fieldreports[i].compactiontests.push(newTest);
+
+                        } else {
+
+                            myuser.fieldreports[i].compactiontests = [newTest];
+                        }
+
+                        this.props.reduxUser(myuser)
+                        this.setState({ activetestid: testid })
+
+
+                    }
 
                 }
 
@@ -254,102 +365,155 @@ class FieldReports extends Component {
 
     getmoistpcf() {
         const gfk = new GFK();
+        let moistpcf = "";
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
 
-        if (this.state.activetestid) {
-            const testid = this.state.activetestid;
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            return (test.moistpcf);
-        } else {
-            return this.state.moistpcf;
+            if (fieldreport) {
+
+                if (this.state.activetestid) {
+
+                    const testid = this.state.activetestid;
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+
+                    moistpcf = (test.moistpcf);
+                } else {
+                    moistpcf = this.state.moistpcf;
+                }
+
+            }
+
         }
+        return moistpcf;
+
 
     }
+
+
     handlemoistpcf(moistpcf) {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const makeid = new MakeID()
         if (myuser) {
             if (this.state.activefieldid) {
                 const fieldid = this.state.activefieldid;
-                if (this.state.activetestid) {
-                    const testid = this.state.activetestid;
-                    const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                    myuser.compactiontests.compactiontest[i].moistpcf = moistpcf;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
-                } else {
-                    let testid = makeID(16);
-                    let timetest = makeUTCStringCurrentTime();
-                    let testnum = this.state.testnum;
-                    let elevation = this.state.elevation;
-                    let location = this.state.location;
-                    let curveid = this.state.curveid;
-                    let wetpcf = this.state.wetpcf;
-                    let letterid = "";
-                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
-                    const compactiontests = gfk.getcompactiontests.call(this)
-                    if (compactiontests) {
-                        myuser.compactiontests.compactiontest.push(newTest);
-
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    if (this.state.activetestid) {
+                        const testid = this.state.activetestid;
+                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+                        myuser.fieldreports[i].compactiontests[j].moistpcf = moistpcf;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
                     } else {
-                        let compactiontests = { compactiontest: [newTest] }
-                        myuser.compactiontests = compactiontests;
-                    }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activetestid: testid })
 
+                        let testid = makeid.compactionTest.call(this)
+                        let timetest = makeUTCStringCurrentTime();
+                        let location = this.state.location;
+                        let testnum = this.state.testnum
+                        let elevation = this.state.elevation;
+                        let wetpcf = this.state.wetpcf;
+                        let curveid = this.state.curveid;
+                        let letterid = "";
+                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+
+
+                        if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                            myuser.fieldreports[i].compactiontests.push(newTest);
+
+                        } else {
+
+                            myuser.fieldreports[i].compactiontests = [newTest];
+                        }
+
+                        this.props.reduxUser(myuser)
+                        this.setState({ activetestid: testid })
+
+
+                    }
 
                 }
 
             }
         }
-
     }
+
+
+
     getcurveid() {
         const gfk = new GFK();
+        let curveid = "";
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
 
-        if (this.state.activetestid) {
-            const testid = this.state.activetestid;
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            return (test.curveid);
-        } else {
-            return this.state.curveid;
+            if (fieldreport) {
+
+                if (this.state.activetestid) {
+
+                    const testid = this.state.activetestid;
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+
+                    curveid = (test.curveid);
+                } else {
+                    curveid = this.state.curveid;
+                }
+
+            }
+
         }
+        return curveid;
+
 
     }
+
 
     handlecurveid(curveid) {
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this)
+        const makeid = new MakeID()
         if (myuser) {
             if (this.state.activefieldid) {
                 const fieldid = this.state.activefieldid;
-                if (this.state.activetestid) {
-                    const testid = this.state.activetestid;
-                    const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                    myuser.compactiontests.compactiontest[i].curveid = curveid;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
-                } else {
-                    let testid = makeID(16);
-                    let timetest = makeUTCStringCurrentTime();
-                    let testnum = this.state.testnum;
-                    let elevation = this.state.elevation;
-                    let location = this.state.location;
-                    let moistpcf = this.state.moistpcf;
-                    let wetpcf = this.state.wetpcf;
-                    let letterid = "";
-                    let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
-                    const compactiontests = gfk.getcompactiontests.call(this)
-                    if (compactiontests) {
-                        myuser.compactiontests.compactiontest.push(newTest);
-
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    if (this.state.activetestid) {
+                        const testid = this.state.activetestid;
+                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+                        myuser.fieldreports[i].compactiontests[j].curveid = curveid;
+                        this.props.reduxUser(myuser)
+                        this.setState({ render: 'render' })
                     } else {
-                        let compactiontests = { compactiontest: [newTest] }
-                        myuser.compactiontests = compactiontests;
-                    }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activetestid: testid })
 
+                        let testid = makeid.compactionTest.call(this)
+                        let timetest = makeUTCStringCurrentTime();
+                        let location = this.state.location;
+                        let testnum = this.state.testnum
+                        let elevation = this.state.elevation;
+                        let wetpcf = this.state.wetpcf;
+                        let moistpcf = this.state.moistpcf;
+                        let letterid = "";
+                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+
+
+                        if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                            myuser.fieldreports[i].compactiontests.push(newTest);
+
+                        } else {
+
+                            myuser.fieldreports[i].compactiontests = [newTest];
+                        }
+
+                        this.props.reduxUser(myuser)
+                        this.setState({ activetestid: testid })
+
+
+                    }
 
                 }
 
@@ -357,6 +521,7 @@ class FieldReports extends Component {
         }
 
     }
+
     compactiontestinput() {
         const styles = MyStylesheet();
         const gfk = new GFK();
@@ -533,8 +698,8 @@ class FieldReports extends Component {
             }
         }
         return (
-            <div style={{ ...styles.generalContainer,...styles.bottomMargin15, }}>
-                <div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont,  ...activebackground() }} key={report.fieldid}>
+            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, }}>
+                <div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont, ...activebackground() }} key={report.fieldid}>
                     <div style={{ ...styles.flex5 }} onClick={() => { this.makereportactive(report.fieldid) }}>
                         {milestoneformatdatestring(report.datereport)}
                     </div>
@@ -545,14 +710,14 @@ class FieldReports extends Component {
                     </div>
                 </div>
                 <div style={{ ...styles.generalContainer }}>
-                        <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                            to={`/${engineerid}/projects/${projectid}/fieldreports/${report.fieldid}`}>
-                            <button style={{ ...styles.generalButton, ...goIconWidth }}>
-                                {goToIcon()} 
-                            </button>
-                            <span style={{...styles.generalFont, ...regularFont}}>View Report</span>
-                        </Link>
-                    </div>
+                    <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                        to={`/${engineerid}/projects/${projectid}/fieldreports/${report.fieldid}`}>
+                        <button style={{ ...styles.generalButton, ...goIconWidth }}>
+                            {goToIcon()}
+                        </button>
+                        <span style={{ ...styles.generalFont, ...regularFont }}>View Report</span>
+                    </Link>
+                </div>
 
             </div>)
     }
@@ -590,23 +755,24 @@ class FieldReports extends Component {
     handlecontent(content) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
             if (this.state.activefieldid) {
                 const i = gfk.getfieldkeybyid.call(this, this.state.activefieldid);
-                myuser.fieldreports.fieldreport[i].content = content;
+                myuser.fieldreports[i].content = content;
                 this.setState({ render: 'render' })
             } else {
-                let fieldid = makeID(6);
+                let fieldid = makeid.fieldID.call(this)
                 let datereport = makeDatefromObj(this.state.datereport);
-
+                let engineerid = myuser.engineerid;
                 const projectid = this.props.match.params.projectid;
-                let fieldreport = fieldReport(fieldid, projectid, datereport, content);
+                let fieldreport = fieldReport(fieldid, projectid, datereport, content, engineerid);
 
                 let fieldreports = gfk.getfieldreports.call(this);
                 if (fieldreports) {
-                    myuser.fieldreports.fieldreport.push(fieldreport)
+                    myuser.fieldreports.push(fieldreport)
                 } else {
-                    myuser.fieldreports = { fieldreport: [fieldreport] }
+                    myuser.fieldreports = [fieldreport]
                 }
                 this.props.reduxUser(myuser);
                 this.setState({ activefieldid: fieldid })
@@ -621,20 +787,36 @@ class FieldReports extends Component {
             this.setState({ activetestid: testid })
         }
     }
+
     removetest(testid) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
         if (myuser) {
-            const test = gfk.getcompactiontestbyid.call(this, testid)
-            if (window.confirm(`Are you sure you want to delete test number ${test.testnum}?`)) {
-                const i = gfk.getcompactiontestkeybyid.call(this, testid)
-                myuser.compactiontests.compactiontest.splice(i, 1);
-                if (myuser.compactiontests.compactiontest.length === 0) {
-                    delete myuser.compactiontests.compactiontest;
-                    delete myuser.compactiontests;
+            if (this.state.activefieldid) {
+                const fieldid = this.state.activefieldid;
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
+                    if (test) {
+                        if (window.confirm(`Are you sure you want to delete test number ${test.testnum}?`)) {
+
+
+                            const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
+
+                            myuser.fieldreports[i].compactiontests.splice(j, 1);
+                            if (myuser.fieldreports[i].compactiontests.length === 0) {
+                                delete myuser.fieldreports[i].compactiontests
+
+                            }
+                            this.props.reduxUser(myuser);
+                            this.setState({ activetestid: false })
+
+                        }
+
+                    }
+
                 }
-                this.props.reduxUser(myuser);
-                this.setState({ activetestid: false })
 
             }
 
@@ -672,15 +854,22 @@ class FieldReports extends Component {
         let compactiontest = [];
         if (this.state.activefieldid) {
             let fieldid = this.state.activefieldid;
-            const compactiontests = gfk.getcompactiontestsbyfieldid.call(this, fieldid);
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+            if (fieldreport) {
 
-            if (compactiontests.hasOwnProperty("length")) {
-                // eslint-disable-next-line
-                compactiontests.map(test => {
-                    compactiontest.push(this.showtest(test))
-                })
+                if (fieldreport.hasOwnProperty("compactiontests")) {
+
+                    // eslint-disable-next-line
+                    fieldreport.compactiontests.map(test => {
+                        compactiontest.push(this.showtest(test))
+                    })
+
+
+                }
             }
+
         }
+
         return compactiontest;
     }
     handleactiveids(response) {
@@ -741,116 +930,34 @@ class FieldReports extends Component {
 
         const gfk = new GFK();
         let myuser = gfk.getuser.call(this);
-        const projectid = this.props.match.params.projectid;
-        let params = {};
-        const fieldreports = gfk.getfieldreportbyprojectid.call(this, this.props.match.params.projectid);
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid;
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+            if (fieldreport) {
 
-        if (fieldreports.length > 0) {
-            params.fieldreports = {};
-            params.fieldreports.fieldreport = [];
-            // eslint-disable-next-line
-            fieldreports.map((report, i) => {
-                params.fieldreports.fieldreport.push(report)
-                let fieldimages = gfk.getfieldimagesbyid.call(this, report.fieldid);
-                if (fieldimages) {
-                    let images = { image: fieldimages }
-                    params.fieldreports.fieldreport[i].images = images;
+                try {
+                    console.log(fieldreport)
+                    let response = await SaveFieldReport(fieldreport);
+                    console.log(response)
+                    if (response.hasOwnProperty("fieldreportdb")) {
+                        const i = gfk.getfieldkeybyid.call(this, fieldid)
+                        myuser.fieldreports[i] = response.fieldreportdb
+                    }
+                    this.props.reduxUser(myuser)
+                    let message = "";
+                    if (response.hasOwnProperty("message")) {
+                        message = response.message;
+                    }
+                    this.setState({ message: message })
+
+                } catch (err) {
+                    alert(err)
                 }
 
-                let mycompactiontests = gfk.getcompactiontestsbyfieldid.call(this, report.fieldid)
-
-                if (mycompactiontests) {
-                    let compactiontests = { compactiontest: mycompactiontests }
-                    params.fieldreports.fieldreport[i].compactiontests = compactiontests;
-                }
-
-                let images = gfk.getfieldimagesbyid.call(this, report.fieldid)
-                if (images) {
-
-                    let myimages = { image: images }
-                    params.fieldreports.fieldreport[i].images = myimages;
-                }
-            })
+            }
 
         }
 
-        let values = { engineerid: myuser.engineerid, projectid, fieldreports: params.fieldreports }
-
-        console.log(values)
-        let response = await SaveFieldReport(values);
-        console.log(response)
-        if (response.hasOwnProperty("reports")) {
-
-            // eslint-disable-next-line
-            response.reports.fieldreport.map(fieldreport => {
-
-                let oldfieldid = fieldreport.oldfieldid;
-                let fieldid = fieldreport.fieldid;
-                // eslint-disable-next-line
-                const i = gfk.getfieldkeybyid.call(this, oldfieldid)
-                myuser.fieldreports.fieldreport[i].fieldid = fieldid;
-
-            })
-
-        }
-
-        if (response.hasOwnProperty("compactiontests")) {
-            // eslint-disable-next-line
-            response.compactiontests.compactiontest.map(test => {
-                //console.log(test.oldtestid, test.testid)
-                if (myuser.hasOwnProperty("compactiontests")) {
-                    // eslint-disable-next-line
-                    myuser.compactiontests.compactiontest.map((mytest, i) => {
-                        if (mytest.testid === test.oldtestid) {
-                            myuser.compactiontests.compactiontest[i].testid = test.testid;
-
-                        }
-                    })
-                }
-
-            })
-
-        }
-        if (response.hasOwnProperty("images")) {
-            // eslint-disable-next-line
-            response.images.image.map(image => {
-                let oldimageid = image.oldimageid;
-                let imageid = image.imageid;
-                let n = gfk.getimagekeybyid.call(this, oldimageid);
-                myuser.images.image[n].imageid = imageid;
-            })
-        }
-
-        if (response.hasOwnProperty("fieldreports")) {
-            // eslint-disable-next-line
-            response.fieldreports.fieldreport.map(report => {
-                let newreport = fieldReport(report.fieldid, projectid, report.datereport, report.content)
-                let k = gfk.getfieldkeybyid.call(this, report.fieldid);
-                myuser.fieldreports.fieldreport[k] = newreport;
-
-                if (report.hasOwnProperty("compactiontests")) {
-                    // eslint-disable-next-line
-                    report.compactiontests.compactiontest.map(test => {
-                        let newtest = compactionTest(test.testid, test.timetest, test.testnum, test.elevation, test.location, test.wetpcf, test.moistpcf, test.curveid, test.fieldid, test.letterid)
-                        let l = gfk.getcompactiontestkeybyid.call(this, test.testid)
-                        myuser.compactiontests.compactiontest[l] = newtest;
-                    })
-
-                }
-                if (report.hasOwnProperty("images")) {
-                    // eslint-disable-next-line
-                    report.images.image.map(image => {
-                        let newImage = CreateImage(image.imageid, image.image, image.caption, report.fieldid);
-                        let m = gfk.getimagekeybyid.call(this, image.imageid)
-                        myuser.images.image[m] = newImage;
-                    })
-                }
-
-            })
-        }
-
-        this.props.reduxUser(myuser)
-        this.handleactiveids(response)
 
     }
     makeimageactive(imageid) {
@@ -863,85 +970,156 @@ class FieldReports extends Component {
     handlecaption(caption) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
+        const makeid = new MakeID();
         if (myuser) {
             if (this.state.activefieldid) {
+                const fieldid = this.state.activefieldid;
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
 
-                if (this.state.activeimageid) {
-                    const i = gfk.getimagekeybyid.call(this, this.state.activeimageid);
-                    myuser.images.image[i].caption = caption;
-                    this.props.reduxUser(myuser);
-                    this.setState({ render: 'render' })
+                    const images = gfk.getimagesbyfieldid.call(this, fieldid);
 
-                } else {
-                    let imageid = makeID(16);
-                    let image = this.state.image;
-                    let fieldid = this.state.activefieldid;
-                    let newImage = CreateImage(imageid, image, caption, fieldid)
-                    const images = gfk.getimages.call(this);
-                    if (images) {
-                        myuser.images.image.push(newImage)
+
+                    if (this.state.activeimageid) {
+                        const imageid = this.state.activeimageid;
+                        const j = gfk.getimagekeybyid.call(this, fieldid, imageid)
+
+                        myuser.fieldreports[i].images[j].caption = caption;
+                        this.props.reduxUser(myuser);
+                        this.setState({ render: 'render' })
+
                     } else {
-                        const myimage = { image: [newImage] }
-                        myuser.images = myimage;
+
+                        let imageid = makeid.imageID.call(this)
+                        let image = this.state.image;
+                        let newImage = CreateImage(imageid, image, caption)
+
+                        if (images) {
+
+                            myuser.fieldreports[i].images.push(newImage)
+                        } else {
+
+                            myuser.fieldreports[i].images = [newImage];
+
+                        }
+                        this.props.reduxUser(myuser)
+                        this.setState({ activeimageid: imageid })
 
                     }
-                    this.props.reduxUser(myuser)
-                    this.setState({ activeimageid: imageid })
                 }
             }
         }
+
     }
+
     getcaption() {
         const gfk = new GFK();
-        if (this.state.activeimageid) {
-            const activeimage = gfk.getimagebyid.call(this, this.state.activeimageid)
-            return activeimage.caption;
+        if (this.state.activefieldid) {
+            const fieldid = this.state.activefieldid;
+            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+            if (fieldreport) {
 
-        } else {
-            return (this.state.caption);
+                if (this.state.activeimageid) {
+                    const imageid = this.state.activeimageid;
+                    const activeimage = gfk.getimagebyid.call(this, fieldid, imageid)
+                    return activeimage.caption;
+
+                } else {
+                    return (this.state.caption);
+                }
+
+            }
+
         }
     }
+
+    removeimage(imageid) {
+        const gfk = new GFK();
+        const myuser = gfk.getuser.call(this);
+        if (myuser) {
+            if (this.state.activefieldid) {
+                const fieldid = this.state.activefieldid;
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+                    const image = gfk.getimagebyid.call(this, fieldid, imageid)
+                    if (image) {
+                        if (window.confirm(`Are you sure you want to delete image  ${image.image}?`)) {
+
+
+                            const j = gfk.getimagesbyfieldid.call(this, fieldid, imageid)
+
+                            myuser.fieldreports[i].images.splice(j, 1);
+                            if (myuser.fieldreports[i].images.length === 0) {
+                                delete myuser.fieldreports[i].images
+
+                            }
+                            this.props.reduxUser(myuser);
+                            this.setState({ activeimageid: false })
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+        }
+    }
+
     async uploadimage() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this)
-        if (this.state.activefieldid) {
-            let fieldid = this.state.activefieldid;
+        if (myuser) {
 
-            if (myuser) {
-                let myfile = document.getElementById("field-image");
-                let formdata = new FormData();
-                formdata.append("profilephoto", myfile.files[0]);
-                try {
-                    let imageid = makeID(16)
+            if (this.state.activefieldid) {
+                let fieldid = this.state.activefieldid;
+
+                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+                if (fieldreport) {
+                    const i = gfk.getfieldkeybyid.call(this, fieldid)
                     if (this.state.activeimageid) {
-                        imageid = this.state.activeimageid;
+                        const imageid = this.state.activeimageid;
+                        const image = gfk.getimagebyid.call(this, fieldid, imageid)
+                        if (image) {
+                            const j = gfk.getimagekeybyid.call(this,fieldid,imageid)
+                            
+                            image.fieldid = fieldid;
+                            console.log(image)
+                            let formdata = new FormData();
+                            let myfile = document.getElementById("field-image");
+                            formdata.append("fieldimage", myfile.files[0]);
+                            formdata.append("image",  JSON.stringify(image))
+                            try {
+                      
+                                let response = await UploadFieldImage(formdata);
+                                console.log(response)
+                                                 
+                                 if (response.hasOwnProperty("imagedb")) {
+                              
+                                        myuser.fieldreports[i].images[j] = response.imagedb;
+                                        this.props.reduxUser(myuser)
+                                        this.setState({ render: 'render' })
+                                   
+                                 }
+                                 let message = "";
+                                 if(response.hasOwnProperty("message")) {
+                                     message = response.message;
+                                 }
+
+                                 this.setState({message})
+                            } catch (err) {
+                                alert(err)
+                            }
+
+                        }
 
                     }
-                    let response = await UploadFieldImage(formdata, imageid);
-                    if (response.hasOwnProperty("image")) {
-                        if (this.state.activeimageid) {
-                            const i = gfk.getimagekeybyid.call(this, this.state.activeimageid);
-                            myuser.images.image[i].image = response.image;
-                            this.props.reduxUser(myuser)
-                            this.setState({ render: 'render' })
-                        } else {
-                            let imageid = makeID(16);
-                            let image = response.image;
-                            let caption = this.state.caption;
-                            let newImage = CreateImage(imageid, image, caption, fieldid)
-                            const images = gfk.getimages.call(this)
-                            if (images) {
-                                myuser.images.image.push(newImage)
-                            } else {
-                                myuser.images = { image: [newImage] }
-                            }
-                            this.props.reduxUser(myuser)
-                            this.setState({ activeimageid: imageid })
-                        }
-                    }
-                } catch (err) {
-                    alert(err)
                 }
+
             }
         }
     }
@@ -951,6 +1129,7 @@ class FieldReports extends Component {
         const uploadbutton = gfk.getuploadbutton.call(this)
         const regularFont = gfk.getRegularFont.call(this);
         const thumbphoto = gfk.getthumbimage.call(this)
+        const removeIcon = gfk.getremoveicon.call(this)
         const imagecontainer = () => {
             if (this.state.width > 800) {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
@@ -998,13 +1177,15 @@ class FieldReports extends Component {
             }
         }
         const showimage = (image) => {
-            return (<div style={{ ...styles.generalFlex }}>
+            return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }} onClick={() => { this.makeimageactive(image.imageid) }}>
                 <div style={{ ...styles.flex1 }}>
-                    <div style={{ ...styles.generalContainer, ...styles.marginAuto, ...thumbphoto, ...styles.showBorder }} onClick={() => { this.makeimageactive(image.imageid) }}>
+                    <div style={{ ...styles.generalContainer, ...styles.marginAuto, ...thumbphoto, ...styles.showBorder }}
+
+                    >
                         <img src={image.image} alt={image.caption} style={{ ...thumbphoto }} />
                     </div>
                 </div>
-                <div style={{ ...styles.flex1 }}>
+                <div style={{ ...styles.flex3 }}>
                     <div style={{ ...styles.generalContainer, ...activebackground(image.imageid) }}>
                         {image.image}
                     </div>
@@ -1012,14 +1193,20 @@ class FieldReports extends Component {
                         {image.caption}
                     </div>
                 </div>
+                <div style={{ ...styles.flex1 }}>
+                    <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeimage(image.imageid) }}>
+                        {removeIconSmall()}
+                    </button>
+
+                </div>
             </div>)
 
         }
         const imageids = () => {
             let myimages = [];
             if (this.state.activefieldid) {
-                let images = gfk.getfieldimagesbyid.call(this, this.state.activefieldid)
-                if (images.hasOwnProperty("length")) {
+                let images = gfk.getimagesbyfieldid.call(this, this.state.activefieldid)
+                if (images) {
                     // eslint-disable-next-line
                     images.map(image => {
                         myimages.push(showimage(image))

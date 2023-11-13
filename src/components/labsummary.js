@@ -73,17 +73,17 @@ class LabSummary extends Component {
                                 pi = '';
                             }
 
-                            const unconfined = gfk.getunconfinedtestbyid.call(this, sampleid);
+                            const unconfined = gfk.getunconfinedtestbyid.call(this,boringid, sampleid);
                             if (unconfined) {
-                                maxstress = unconfinedcalcs.getMaxStress.call(this, sampleid)
-                                maxstrain = unconfinedcalcs.getMaxStrain.call(this, sampleid)
+                                maxstress = unconfinedcalcs.getMaxStress.call(this, boringid, sampleid)
+                                maxstrain = unconfinedcalcs.getMaxStrain.call(this, boringid, sampleid)
 
                             } else {
                                 maxstress = '';
                                 maxstrain = '';
                             }
 
-                            const sieve = gfk.getsievebysampleid.call(this, sampleid)
+                            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid)
 
                             if (sieve) {
                                 const netwgt = Number(sample.drywgt) - Number(sample.tarewgt);

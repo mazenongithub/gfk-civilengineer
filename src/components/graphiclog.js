@@ -12,12 +12,12 @@ class GraphicLog {
     updateactiveimage(graphiclog) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
-        if(myuser) {
-            if(this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this,this.state.activesampleid);
+        if (myuser) {
+            if (this.state.activesampleid) {
+                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
                 myuser.samples.sample[i].graphiclog = graphiclog;
                 this.props.reduxUser(myuser);
-                this.setState({render:'render'})
+                this.setState({ render: 'render' })
             }
         }
     }
@@ -28,6 +28,7 @@ class GraphicLog {
         const styles = MyStylesheet();
         const regularFont = gfk.getRegularFont.call(this);
         const graphiclog = new GraphicLog();
+
         let myimages = [];
         const imageContainer = () => {
             if (this.state.width > 1200) {
@@ -40,7 +41,7 @@ class GraphicLog {
         }
         const showimage = (image) => {
             if (this.state.width > 1200) {
-                return (<div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}} key={image.imageid}>
+                return (<div style={{ ...styles.generalFlex }} onClick={() => { graphiclog.updateactiveimage.call(this, image.graphiclog) }} key={image.sampleid}>
                     <div style={{ ...styles.flex1 }}>
                         <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
                             <img src={image.graphiclog} alt={image.description} />
@@ -59,7 +60,7 @@ class GraphicLog {
             } else if (this.state.width > 800) {
 
                 return (
-                    <div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}}>
+                    <div style={{ ...styles.generalFlex }} onClick={() => { graphiclog.updateactiveimage.call(this, image.graphiclog) }}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
                                 <img src={image.graphiclog} alt={image.description} />
@@ -78,7 +79,7 @@ class GraphicLog {
             } else {
 
                 return (
-                    <div style={{ ...styles.generalFlex }} onClick={()=>{graphiclog.updateactiveimage.call(this,image.graphiclog)}}>
+                    <div style={{ ...styles.generalFlex }} onClick={() => { graphiclog.updateactiveimage.call(this, image.graphiclog) }} key={image.sampleid}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...imageContainer(), ...styles.alignRight }}>
                                 <img src={image.graphiclog} alt={image.description} />
@@ -113,26 +114,20 @@ class GraphicLog {
         }
         if (myuser) {
             let images = [];
-            const samples = gfk.getsamples.call(this)
+            const samples = gfk.getallsampleimages.call(this)
             if (samples) {
                 // eslint-disable-next-line
                 samples.map(sample => {
-                    if (sample.hasOwnProperty("graphiclog")) {
-                        if (sample.graphiclog) {
-                            let boring = gfk.getboringbyid.call(this, sample.boringid);
-                            const projectid = boring.projectid;
-                            const project = gfk.getprojectbyid.call(this, projectid)
-                            let projectnumber = project.projectnumber;
-                            let graphiclog = sample.graphiclog;
-                            let description = sample.description;
-                            let newImage = { projectnumber, project, graphiclog, description }
-                            let validate = validatenewimage(images, newImage)
-                            if (validate) {
-                                images.push(newImage)
-                            }
 
-                        }
+
+
+                    let validate = validatenewimage(images, sample)
+                    if (validate) {
+                        images.push(sample)
                     }
+
+
+
 
                 })
             }
@@ -149,23 +144,31 @@ class GraphicLog {
     async uploadnewimage() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this)
-        if (this.state.activesampleid) {
-            const sample = gfk.getsamplebyid.call(this, this.state.activesampleid)
-            console.log(sample)
-            let formData = new FormData();
-            let myfile = document.getElementById("graphic-log");
-            formData.append("graphiclog", myfile.files[0]);
-            formData.append("sample", JSON.stringify(sample))
-            let response = await UploadGraphicLog(formData);
-            if(response.hasOwnProperty("sample")) {
-                const sample = response.sample[0];
-                const sampleid = sample.sampleid;
-                const i = gfk.getsamplekeybyid.call(this,sampleid)
-                myuser.samples.sample[i] = sample;
-                this.props.reduxUser(myuser)
-                this.setState({render:'render'})
-                
+        const boringid = this.props.match.params.boringid;
+        const boring = gfk.getboringbyid.call(this, boringid)
+        if (boring) {
+            const i = gfk.getboringkeybyid.call(this,boringid)
+
+            if (this.state.activesampleid) {
+                const sampleid = this.state.activesampleid;
+                const sample = gfk.getsamplebyid.call(this, boringid,sampleid)
+                console.log(sample)
+                let formData = new FormData();
+                let myfile = document.getElementById("graphic-log");
+                formData.append("graphiclog", myfile.files[0]);
+                formData.append("sample", JSON.stringify(sample))
+                let response = await UploadGraphicLog(formData);
+                if (response.hasOwnProperty("sample")) {
+                    const sample = response.sample;
+                    const sampleid = sample.sampleid;
+                    const j = gfk.getsamplekeybyid.call(this, boringid,sampleid)
+                    myuser.borings[i].samples[j] = sample;
+                    this.props.reduxUser(myuser)
+                    this.setState({ render: 'render' })
+
+                }
             }
+
         }
     }
 
