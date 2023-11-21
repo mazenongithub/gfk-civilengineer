@@ -5,6 +5,17 @@ import { SaveBorings } from './actions/api'
 import { inputUTCStringForLaborID } from './functions'
 class GFK {
 
+    getLayerArrow() {
+        if (this.state.width > 1200) {
+            return ({ width: '53px', height: 'auto' })
+        } else if (this.state.width > 800) {
+            return ({ width: '43px', height: 'auto' })
+        } else {
+            return ({ width: '33px', height: 'auto' })
+        }
+    }
+
+
     remarksWidth() {
         if (this.state.width > 1200) {
             return ({ width: '240px', height: 'auto' })
@@ -49,6 +60,201 @@ class GFK {
 
         }
         return myuser;
+    }
+
+    getSlices(projectid,sectionid)  {
+        const gfk = new GFK();
+        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid)
+        let slices = false;
+        if(section.hasOwnProperty("slices")) {
+            slices = section.slices;
+        }
+        return slices;
+    }
+
+    getFailureSurface(projectid,sectionid) {
+        const gfk = new GFK();
+        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid)
+        let failuresurface = false;
+        if(section) {
+            if(section.hasOwnProperty("layers")) {
+                 // eslint-disable-next-line
+                section.layers.map(layer=> {
+                    if(layer.hasOwnProperty("failuresurface")) {
+                        failuresurface = layer.failuresurface;
+                    }
+                })
+            }
+
+        }
+        return failuresurface;
+    }
+
+   getTopSurface(projectid,sectionid) {
+    const gfk = new GFK();
+    const subsurfaces = gfk.getSubsurfaces.call(this,projectid,sectionid)
+    let subsurface = false;
+    if(subsurfaces) {
+        subsurface = subsurfaces[0]
+    }
+    return subsurface;
+   }
+
+    getSubsurfaces(projectid,sectionid) {
+        const gfk = new GFK();
+        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid);
+        let subsurface = false
+    
+        if(section) {
+            
+               
+                if(section.hasOwnProperty("layers")) {
+                    subsurface = [];
+                     // eslint-disable-next-line
+                    section.layers.map(layer=> {
+                        if(layer.hasOwnProperty("subsurface")) {
+                            subsurface.push(layer)
+                        }
+                    })
+
+                }
+          
+        }
+        return subsurface;
+
+    }
+
+    getSlopeKeybySectionID(projectid, sectionid) {
+
+        const gfk = new GFK();
+        const sections = gfk.getSlopebyProjectID.call(this,projectid)
+
+        let key = false;
+        if(sections) {
+             // eslint-disable-next-line
+            sections.map((section,i)=> {
+                if(section.sectionid === sectionid) {
+                    key = i;
+                }
+            })
+        }
+        return key;
+
+    }
+
+    getSlopeLayerKeyByID(projectid,sectionid,layerid) {
+        const gfk = new GFK();
+        let key = false;
+        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid);
+        if(section) {
+            if(section.hasOwnProperty("layers")) {
+                // eslint-disable-next-line
+                section.layers.map((layer,i)=> {
+                    if(layer.layerid === layerid) {
+                        key = i
+                    }
+                })
+
+            }
+        }
+        return key
+    }
+
+    getSlopePointKeyByID(projectid,sectionid,layerid,pointid) {
+        const gfk = new GFK();
+        let key = false;
+        const layer = gfk.getSlopeLayerByID.call(this,projectid,sectionid,layerid)
+        if(layer) {
+            if(layer.hasOwnProperty("points")) {
+                // eslint-disable-next-line
+                layer.points.map((point,i)=> {
+                    if(point.pointid === pointid) {
+                        key = i;
+                    }
+                })
+            }
+        }
+        return key;
+    }
+
+    getSlopePointByID(projectid,sectionid,layerid,pointid) {
+        const gfk = new GFK();
+        let getpoint = false;
+        const layer = gfk.getSlopeLayerByID.call(this,projectid,sectionid,layerid)
+        if(layer) {
+            if(layer.hasOwnProperty("points")) {
+                // eslint-disable-next-line
+                layer.points.map(point=> {
+                    if(point.pointid === pointid) {
+                        getpoint = point;
+                    }
+                })
+            }
+        }
+        return getpoint;
+    }
+
+    getSlopeLayerByID(projectid,sectionid,layerid) {
+        const gfk = new GFK();
+        let getlayer = false;
+        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid);
+        if(section) {
+            if(section.hasOwnProperty("layers")) {
+                // eslint-disable-next-line
+                section.layers.map(layer=> {
+              
+                    if(layer.layerid === layerid) {
+                        getlayer = layer;
+                    }
+                })
+
+            }
+        }
+        return getlayer;
+    }
+
+
+    getSlopebySectionID(projectid, sectionid) {
+
+        const gfk = new GFK();
+        const sections = gfk.getSlopebyProjectID.call(this,projectid)
+
+        let getsection = false;
+        if(sections) {
+             // eslint-disable-next-line
+            sections.map(section=> {
+                if(section.sectionid === sectionid) {
+                    getsection = section;
+                }
+            })
+        }
+        return getsection;
+
+    }
+
+    getSlopebyProjectID(projectid) {
+        const gfk = new GFK();
+        const slopestability = gfk.getSlopeStability.call(this);
+
+        let getslope = [];
+        if(slopestability) {
+            // eslint-disable-next-line
+            slopestability.map(section=> {
+                if(section.projectid === projectid) {
+                    getslope.push(section)
+
+                }
+            })
+        }
+        return getslope;
+    }
+
+    getSlopeStability() {
+        let slopestability = false;
+        if(this.props.slopestability.hasOwnProperty("length")) {
+            slopestability = this.props.slopestability;
+        }
+        return slopestability;
     }
     getPointIDfromStrainID(projectid, strainid) {
         const gfk = new GFK();

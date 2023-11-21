@@ -161,7 +161,11 @@ class ViewProject extends Component {
                         </Link>
                         </div>
                         <div style={{...styles.flex1, ...styles.alignCenter}}>
-                        &nbsp;
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/slopestability`}>
+                            /Slope Stability
+                        </Link>
                         </div>
                     </div>
 

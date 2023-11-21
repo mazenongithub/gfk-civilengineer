@@ -41,6 +41,15 @@ export function ActualDateArrowDown() {
 export function savetimeicon() {
     return(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 366 89"><defs><style></style></defs><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect className="savetime-1" x="1" y="1" width="364" height="87" rx="10.92"/><text className="savetime-2" transform="translate(45.92 56)">S<tspan className="savetime-3" x="35.79" y="0">a</tspan><tspan className="savetime-4" x="66.94" y="0">v</tspan><tspan className="savetime-5" x="96.48" y="0">e</tspan><tspan className="savetime-6" x="128.26" y="0"> </tspan><tspan x="142.71" y="0">Time</tspan></text></g></g></svg>)
 }
+export function layerDown() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 51"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="layerarrow-2" x=".5" y=".5" width="53" height="50" rx="4.92" ry="4.92"/><polygon className="layerarrow-1" points="15 25.45 20 25.45 20 4.8 32 4.8 32 25.45 37 25.45 26 44.5 15 25.45"/></g></svg>)
+}
+
+export function layerUp() {
+    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 51"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="layerarrow-2" x=".5" y=".5" width="53" height="50" rx="4.92" ry="4.92"/><polygon className="layerarrow-1" points="37 23.85 32 23.85 32 44.5 20 44.5 20 23.85 15 23.85 26 4.8 37 23.85"/></g></svg>)
+}
 export function saveProjectIcon() {
     return(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 328.78 76.75"><defs><style></style></defs><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="saveprojects-1" x="0.5" y="0.5" width="327.78" height="75.75" rx="12.05"/><text className="saveprojects-2" transform="translate(31.22 51.33) scale(0.98 1)">S<tspan className="saveprojects-3" x="26.7" y="0">a</tspan><tspan className="saveprojects-4" x="50.84" y="0">v</tspan><tspan x="72.36" y="0">e P</tspan><tspan className="saveprojects-5" x="135.73" y="0">r</tspan><tspan x="150.51" y="0">ojects</tspan></text></g></g></g></svg>)
 }

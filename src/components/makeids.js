@@ -2,6 +2,79 @@ import GFK from './gfk'
 import { makeID } from './functions'
 
 class MakeID {
+    
+    pointID() {
+        const gfk = new GFK();
+        let pointid= false;
+        while(!pointid) {
+            pointid = makeID(16)
+            const slopestability = gfk.getSlopeStability.call(this)
+            if(slopestability) {
+                // eslint-disable-next-line
+                slopestability.map(section=> {
+                    if(section.hasOwnProperty("layers")) {
+                        // eslint-disable-next-line
+                        section.layers.map(layer=> {
+                            if(layer.hasOwnProperty("points")) {
+                        // eslint-disable-next-line
+                                layer.points.map(point=> {
+                                    if(point.pointid === pointid) {
+                                        pointid = false;
+                                    }
+                                })
+
+                            }
+                        })
+                    }
+                })
+            }
+        }
+        return pointid;
+
+    }
+
+    layerID() {
+        const gfk = new GFK();
+        let layerid = false;
+        while(!layerid) {
+            layerid = makeID(16)
+            const slopestability = gfk.getSlopeStability.call(this)
+            if(slopestability) {
+                // eslint-disable-next-line
+                slopestability.map(section=> {
+                    if(section.hasOwnProperty("layers")) {
+                        // eslint-disable-next-line
+                        section.layers.map(layer=> {
+                            if(layer.layerid === layerid) {
+                                layerid = false;
+                            }
+                        })
+                    }
+                })
+            }
+        }
+        return layerid;
+
+    }
+
+    sectionID() {
+        const gfk = new GFK();
+        let sectionid = false;
+        while(!sectionid) {
+            sectionid = makeID(16)
+            const sections = gfk.getSlopeStability.call(this)
+            if(sections) {
+                // eslint-disable-next-line
+                sections.map(section=> {
+                    if(section.sectionid === sectionid) {
+                        sectionid = false;
+                    }
+                })
+            }
+        }
+        return sectionid;
+
+    }
 
     imageID() {
         const gfk = new GFK();

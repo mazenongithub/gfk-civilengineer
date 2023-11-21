@@ -1360,6 +1360,23 @@ export function makeDatefromObj(datein) {
 
     return (`${year}-${month}-${date}`)
 }
+export function newPoint(pointid,xcoord,ycoord) {
+    return({pointid,xcoord,ycoord})
+}
+export function subSurface(gamma,cohesion,friction) {
+    return({gamma,cohesion,friction,points:[]})
+}
+export function failureSurface(cx,cy,rx,ry) {
+    return({cx,cy,rx,ry})
+}
+
+export function newSection(sectionid,projectid,section,slices) {
+    return({sectionid,projectid,section,slices, layers:[]})
+
+}
+export function newLayer(layerid,layer,layertype) {
+    return({layerid,layer,layertype})
+}
 export function fieldReport(fieldid, projectid, datereport, content, engineerid) {
     return ({ fieldid, projectid, datereport, content, engineerid })
 }

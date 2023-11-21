@@ -20,6 +20,8 @@ import LogDraft from './components/logdraft'
 import LabSummary from './components/labsummary';
 import PTSlab from './components/ptslab';
 import Seismic from './components/seismic'
+import SlopeStability from './components/slopestabilty'
+
 class App extends Component {
 
   constructor(props) {
@@ -76,6 +78,7 @@ updateWindowDimensions() {
           <Route exact path="/:engineerid/projects/:projectid/labsummary" component={LabSummary} />
           <Route exact path="/:engineerid/projects/:projectid/ptslab" component={PTSlab} />
           <Route exact path="/:engineerid/projects/:projectid/seismic" component={Seismic} />
+          <Route exact path="/:engineerid/projects/:projectid/slopestability" component={SlopeStability} />
           <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/logdraft" component={LogDraft} />
           <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples" component={Samples} />
           <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />
