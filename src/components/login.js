@@ -49,8 +49,9 @@ class Login extends Component {
                 return ({ width: '111px', height: '41px' })
             }
         }
+
         const password = () => {
-            if (this.state.width > 1200) {
+      
                 return (
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter }}>
@@ -64,35 +65,10 @@ class Login extends Component {
                     </div>
                 )
 
-            } else if (this.state.width > 800) {
-                return (<div style={{ ...styles.generalFlex }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
-                        Password
-                </div>
-                    <div style={{ ...styles.flex3 }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
-                            value={this.state.pass}
-                            onChange={event => { this.setState({ pass: event.target.value }) }}
-                        />
-                    </div>
-                </div>)
-
-            } else {
-                return (<div style={{ ...styles.generalFlex }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
-                        Password
-                    </div>
-                    <div style={{ ...styles.flex2 }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
-                            value={this.state.pass}
-                            onChange={event => { this.setState({ pass: event.target.value }) }}
-                        />
-                    </div>
-                </div>)
-            }
+            
         }
         const email = () => {
-            if (this.state.width > 1200) {
+        
                 return (
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter }}>
@@ -107,30 +83,7 @@ class Login extends Component {
                     </div>
                 )
 
-            } else if (this.state.width > 800) {
-                return (<div style={{ ...styles.generalFlex }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
-                        Email
-                </div>
-                    <div style={{ ...styles.flex3 }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
-                            value={this.state.emailaddress}
-                            onChange={event => { this.setState({ emailaddress: event.target.value }) }} />
-                    </div>
-                </div>)
-
-            } else {
-                return (<div style={{ ...styles.generalFlex }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
-                        Email
-                    </div>
-                    <div style={{ ...styles.flex2 }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
-                            value={this.state.emailaddress}
-                            onChange={event => { this.setState({ emailaddress: event.target.value }) }} />
-                    </div>
-                </div>)
-            }
+            
         }
         return (
             <div style={{ ...styles.generalFlex }}>
@@ -151,6 +104,8 @@ class Login extends Component {
                             <button style={{ ...styles.generalButton, ...loginButton() }} onClick={() => { this.loginuser() }}>{gfkLogin()}</button>
                         </div>
                     </div>
+
+                 
 
                     <div style={{ ...styles.generalFlex }}>
                         <div style={{ ...styles.flex1, ...styles.generalFont, ...styles.alignCenter }}>

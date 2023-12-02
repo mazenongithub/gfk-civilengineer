@@ -1303,6 +1303,26 @@ export function sortdisplacementdesc(testb, testa) {
         return 0;
     }
 }
+
+export function trailingZeros(num) {
+
+    if (num.toString().length === 1) {
+
+
+        if (Number(num) < 10) {
+
+            return (`0${num}`);
+        } else {
+            return num;
+        }
+
+    } else {
+        return num;
+    }
+
+}
+
+
 export function sortdisplacementagain(testb, testa) {
     if (Number(testa.displacement) > Number(testb.displacement)) {
         console.log("sorting")

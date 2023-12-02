@@ -3,7 +3,7 @@ export async function LogoutUser(values) {
     var APIURL = `https://civilengineer.io/gfk/api/logout.php`
 
     return fetch(APIURL, {
-        credentials: 'include'
+        credentials: "include"
     })
         .then(resp => {
 
@@ -29,7 +29,7 @@ export async function LoginUser(values) {
 
     return fetch(APIURL, {
         method: 'post',
-        credentials: 'include',
+        credentials: "include",
         headers: new Headers({
             'Content-Type': 'application/json',
         }),
@@ -221,6 +221,38 @@ export async function DeletePTSlab(section_id, layer_id) {
                 }
                 else {
                     let err = { errorMessage: 'Please try again later, server is not responding' };
+                    throw err;
+                }
+            }
+
+            return resp.json();
+        })
+}
+
+export async function HandleSlopeStability(projectid, sections) {
+    const values = { projectid, sections }
+
+    var APIURL = `http://civilengineer.io/gfk/api/handleslopestability.php`
+
+    return fetch(APIURL, {
+        method: 'post',
+        credentials: 'include',
+        headers: new Headers({
+            'Content-Type': 'application/json',
+        }),
+
+        body: JSON.stringify(values)
+    })
+        .then(resp => {
+
+            if (!resp.ok) {
+                if (resp.status >= 400 && resp.status < 500) {
+                    return resp.json().then(data => {
+                        throw data;
+                    })
+                }
+                else {
+                    let err = ' Error Making Request'
                     throw err;
                 }
             }

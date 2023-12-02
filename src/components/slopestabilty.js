@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
-import { LoadSlopeStability } from './actions/api';
+import { LoadSlopeStability, HandleSlopeStability } from './actions/api';
 import SlopeStabilityCalcs from './slopestabilitycalcs';
 import { removeIconSmall, layerDown, layerUp, saveProjectIcon } from './svg';
-import { newSection, newLayer, subSurface, failureSurface, newPoint } from './functions';
+import { newSection, newLayer, subSurface, failureSurface, newPoint, inputUTCStringForLaborID } from './functions';
 import MakeID from './makeids';
 
 class SlopeStability extends Component {
@@ -46,8 +46,30 @@ class SlopeStability extends Component {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
 
-    saveSlopeStability() {
-        console.log("save")
+    async saveSlopeStability() {
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
+        const sections = gfk.getSlopebyProjectID.call(this, projectid)
+        if (sections) {
+            try {
+                let response = await HandleSlopeStability(projectid, sections)
+                console.log(response)
+                if (response.hasOwnProperty("sectionsdb")) {
+                    this.props.reduxSlopeStability(response.sectionsdb)
+                }
+                let message = "";
+                if (response.hasOwnProperty("lastupdated")) {
+                    message += `Last Saved ${inputUTCStringForLaborID(response.lastupdated)} `
+                }
+                if (response.hasOwnProperty("message")) {
+                    message += `${response.message}`;
+                }
+                this.setState({ message })
+            } catch (err) {
+                alert(err)
+            }
+        }
+
     }
 
     getFactorofSafety() {
@@ -79,13 +101,17 @@ class SlopeStability extends Component {
                     // eslint-disable-next-line
                     subsurfaces.map((subsurface, i) => {
 
-                        subsurface.points.sort((a, b) => {
-                            if (Number(a.xcoord) >= Number(b.xcoord)) {
-                                return 1;
-                            } else {
-                                return -1
-                            }
-                        })
+                        if (subsurface.hasOwnProperty("points")) {
+
+                            subsurface.points.sort((a, b) => {
+                                if (Number(a.xcoord) >= Number(b.xcoord)) {
+                                    return 1;
+                                } else {
+                                    return -1
+                                }
+                            })
+
+                        }
 
 
                         let cohesion = subsurface.subsurface.cohesion;
@@ -213,13 +239,17 @@ class SlopeStability extends Component {
                     // eslint-disable-next-line
                     subsurfaces.map((subsurface, i) => {
 
-                        subsurface.points.sort((a, b) => {
-                            if (Number(a.xcoord) >= Number(b.xcoord)) {
-                                return 1;
-                            } else {
-                                return -1
-                            }
-                        })
+                        if (subsurface.hasOwnProperty("points")) {
+
+                            subsurface.points.sort((a, b) => {
+                                if (Number(a.xcoord) >= Number(b.xcoord)) {
+                                    return 1;
+                                } else {
+                                    return -1
+                                }
+                            })
+
+                        }
 
                         let surfacey = calcs.getYsurface.call(this, subsurface.points, x)
                         let surfacedeltay = calcs.getYsurface.call(this, subsurface.points, x + deltax)
@@ -1847,8 +1877,8 @@ class SlopeStability extends Component {
                     <button style={{ ...styles.generalButton, ...saveprojecticon }} onClick={() => { this.saveSlopeStability() }}>{saveProjectIcon()}</button>
                 </div>
 
-                <div style={{...styles.generalContainer, ...styles.generalFont, ...styles.alignCenter, ...styles.bottomMargin15}}>
-                    <span style={{...styles.regularFont}}>{this.state.message}</span>
+                <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                    <span style={{ ...styles.regularFont }}>{this.state.message}</span>
                 </div>
 
                 {this.drawBlock()}
