@@ -12,7 +12,7 @@ import Sieve from './components/sieve';
 import Unconfined from './components/unconfined';
 import Login from './components/login';
 import Timesheet from './components/timesheet'
-import { CheckUserLogin } from './components/actions/api'
+import {LoadProjects } from './components/actions/api'
 import Projects from './components/projects';
 import ViewProject from './components/viewproject';
 import ViewFieldReport from './components/viewfieldreport';
@@ -32,7 +32,7 @@ class App extends Component {
 componentDidMount() {
     window.addEventListener('resize', this.updateWindowDimensions);
     this.updateWindowDimensions();
-    this.checkuser()
+    this.checkUser()
 }
 
 componentWillUnmount() {
@@ -43,17 +43,23 @@ updateWindowDimensions() {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
 }
   
-  async checkuser() {
-    try {
-      let response = await CheckUserLogin();
-      console.log(response)
-      if (response.hasOwnProperty("engineerid")) {
-        this.props.reduxUser(response)
-      }
-    } catch (err) {
-      alert(err)
+async checkUser() {
+  try {
+    const response = await LoadProjects();
+
+    if (response?.projects?.length) {
+      this.props.reduxProjects(response.projects);
+      this.setState({ render: 'render' });
+    } else {
+      console.warn('⚠️ No projects found for this user.');
     }
+
+  } catch (err) {
+    console.error('❌ Error checking user:', err);
+    alert(typeof err === 'string' ? err : err.message || 'Failed to load projects.');
   }
+}
+
   render() {
     const styles = MyStylesheet();
     const profile = new Profile();
@@ -92,7 +98,8 @@ updateWindowDimensions() {
 
 function mapStateToProps(state) {
   return {
-    myuser: state.myuser
+    myuser: state.myuser,
+    projects:state.projects
   }
 }
 

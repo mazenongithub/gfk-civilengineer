@@ -1420,8 +1420,8 @@ export function UnconfinedTest(unid, sampleid, loadreading, displacement) {
         }
     })
 }
-export function CreateProject(projectid,projectnumber,series,title,address,city,proposedproject,projectapn,engineerid,clientid) {
-   return({projectid,projectnumber,series,title,address,city,proposedproject,projectapn,engineerid,clientid})
+export function CreateProject(projectid,projectnumber,series,title,projectaddress,projectcity,proposedproject,projectapn,engineerid,clientid) {
+   return({projectid,projectnumber,series,title,projectaddress,projectcity,proposedproject,projectapn,engineerid,clientid})
 }
 export function inputDateObjOutputAdjString(datein) {
     let offset = new Date().getTimezoneOffset() / 60

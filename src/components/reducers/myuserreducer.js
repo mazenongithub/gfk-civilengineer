@@ -1,6 +1,6 @@
 import { MYUSER } from '../actions/types';
 
-export default function (state = {}, action) {
+export default function myUserReducer (state = {}, action) {
     switch (action.type) {
         case MYUSER:
             return action.payload;

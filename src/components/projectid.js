@@ -5,62 +5,38 @@ import { Link } from 'react-router-dom';
 import { goToIcon } from './svg';
 
 class ProjectID {
-    findprojectbycity() {
+    findProjectByCity() {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let projects = [];
-        if (myuser.hasOwnProperty("projects")) {
-            // eslint-disable-next-line
-            myuser.projects.map(project => {
-                if (project.city.toLowerCase().startsWith(this.state.searchcity.toLowerCase())) {
-                    projects.push(project)
-                }
-            })
+        const projects = gfk.getProjects.call(this);
+        const { searchcity } = this.state;
 
-            if (projects.length > 0) {
-                projects.sort((a, b) => {
+        if (!Array.isArray(projects) || !searchcity) return [];
 
-                    if (Number(a.projectnumber) > Number(b.projectnumber)) {
-                        return -1;
-                    } else {
-                        return 1;
-                    }
+        const cityQuery = searchcity.toLowerCase();
 
-                })
-            }
-        }
-        return projects;
+        const filteredProjects = projects
+            .filter(project => project.projectcity?.toLowerCase().includes(cityQuery))
+            .sort((a, b) => Number(b.projectnumber) - Number(a.projectnumber));
+
+        return filteredProjects;
     }
-    findprojectsbynumber(projectnumber) {
+
+    findProjectByNumber() {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        let projects = [];
-        if (myuser.hasOwnProperty("projects")) {
-            // eslint-disable-next-line
-            myuser.projects.map(project => {
-                if (project.projectnumber.startsWith(projectnumber)) {
-                    projects.push(project)
-                }
-            })
+        const projects = gfk.getProjects.call(this);
+        const { searchprojectnumber } = this.state;
 
-            if (projects.length > 0) {
+        if (!Array.isArray(projects) || !searchprojectnumber) return [];
 
-                projects.sort((a, b) => {
+        const query = searchprojectnumber.toString().toLowerCase();
 
-                    if (Number(a.projectnumber) > Number(b.projectnumber)) {
-                        return -1;
-                    } else {
-                        return 1;
-                    }
+        const filteredProjects = projects
+            .filter(project => project.projectnumber?.toString().toLowerCase().includes(query))
+            .sort((a, b) => Number(b.projectnumber) - Number(a.projectnumber));
 
-                })
-            }
-        }
-
-        return projects
-
-
+        return filteredProjects;
     }
+
     showactiveproject() {
         const styles = MyStylesheet();
         const gfk = new GFK();
@@ -69,52 +45,55 @@ class ProjectID {
         const headerFont = gfk.getHeaderFont.call(this)
         const goIconWidth = gfk.getgotoicon.call(this)
         if (this.state.activeprojectid) {
-            const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid)
+            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid)
 
             return (
                 <div style={{ ...styles.generalContainer }}>
                     <div style={{ ...styles.activefieldreport, ...styles.bottomMargin15, }} onClick={() => { this.makeprojectactive(myproject.projectid) }}>
-                        <span style={{ ...regularFont, ...styles.generalFont }} >Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city} </span>
+                        <span style={{ ...regularFont, ...styles.generalFont }} >Project Number {myproject.projectnumber} {myproject.title} {myproject.projectaddress} {myproject.projectcity} </span>
                     </div>
                     <div style={{ ...styles.generalContainer }}>
                         <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
                             to={`/${engineerid}/projects/${this.state.activeprojectid}`}>
                             <button style={{ ...styles.generalButton, ...goIconWidth }}>
-                                {goToIcon()} 
+                                {goToIcon()}
                             </button>
-                            <span style={{...styles.generalFont, ...regularFont}}>Go to Project</span>
+                            <span style={{ ...styles.generalFont, ...regularFont }}>Go to Project</span>
                         </Link>
                     </div>
 
                 </div>)
         }
     }
-    showsearchprojectid(myproject) {
+    showSearchProjectId(myproject) {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
         return (<div style={{ ...regularFont, ...styles.generalFont, ...styles.bottomMargin15 }} onClick={() => { this.makeprojectactive(myproject.projectid) }}>
-            Project Number {myproject.projectnumber} {myproject.title} {myproject.address} {myproject.city}
+            Project Number {myproject.projectnumber} {myproject.title} {myproject.projectaddress} {myproject.projectcity}
         </div>)
 
     }
-    showsearchresults() {
-        const projectid = new ProjectID();
-        let projects = false;
-        let results = [];
-        if (this.state.searchprojectnumber) {
-            projects = projectid.findprojectsbynumber.call(this, this.state.searchprojectnumber)
-        } else if (this.state.searchcity) {
-            projects = projectid.findprojectbycity.call(this, this.state.searchcity)
-        }
-        if (projects.length > 0) {
-            // eslint-disable-next-line
-            projects.map(project => {
-                results.push(projectid.showsearchprojectid.call(this, project))
-            })
-        }
-        return results;
-    }
+   showSearchResults() {
+  const projectHelper = new ProjectID();
+  const { searchprojectnumber, searchcity } = this.state;
+
+  // Determine which search function to use
+  let projects = [];
+  if (searchprojectnumber) {
+    projects = projectHelper.findProjectByNumber.call(this, searchprojectnumber);
+  } else if (searchcity) {
+    projects = projectHelper.findProjectByCity.call(this, searchcity);
+  }
+
+  if (!Array.isArray(projects) || projects.length === 0) return [];
+
+  // Generate search result elements
+  return projects.map(project =>
+    projectHelper.showSearchProjectId.call(this, project)
+  );
+}
+
 
     showprojectid() {
         const styles = MyStylesheet();
@@ -155,7 +134,7 @@ class ProjectID {
                         </div>
                     </div>
 
-                    {projectid.showsearchresults.call(this)}
+                    {projectid.showSearchResults.call(this)}
 
                 </div>
             </div>

@@ -32,7 +32,7 @@ class Projects extends Component {
     }
     makeprojectactive(projectid) {
         const gfk = new GFK();
-        const myproject = gfk.getprojectbyid.call(this, projectid);
+        const myproject = gfk.getProjectById.call(this, projectid);
         const projectnumber = myproject.projectnumber;
         const city = myproject.city
         if (this.state.activeprojectid === projectid) {
@@ -47,8 +47,8 @@ class Projects extends Component {
         const gfk = new GFK();
 
         if (this.state.activeprojectid) {
-            const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid);
-            return myproject.city;
+            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
+            return myproject.projectcity;
         } else {
             return this.state.city;
         }
@@ -57,13 +57,13 @@ class Projects extends Component {
     handlecity(city) {
         const makeid = new MakeID();
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-            const engineerid = myuser.engineerid;
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
+            const engineerid = ""
             if (this.state.activeprojectid) {
-                const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects[i].city = city;
-                this.props.reduxUser(myuser);
+                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
+                projects[i].projectcity = city;
+                this.props.reduxProjects(projects);
                 this.setState({ render: 'render' })
 
             } else {
@@ -76,14 +76,14 @@ class Projects extends Component {
                 const projectapn = this.state.projectapn;
                 const clientid = this.state.clientid;
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getprojects.call(this);
+                const projects = gfk.getProjects.call(this);
                 if (projects) {
-                    myuser.projects.push(newproject)
+                    projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
-                    myuser.projects = project;
+                    projects = project;
                 }
-                this.props.reduxUser(myuser)
+                this.props.reduxProjects(projects)
                 this.setState({ activeprojectid: projectid })
             }
         }
@@ -94,8 +94,8 @@ class Projects extends Component {
         const gfk = new GFK();
 
         if (this.state.activeprojectid) {
-            const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid);
-            return myproject.address;
+            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
+            return myproject.projectaddress;
         } else {
             return this.state.address;
         }
@@ -104,13 +104,13 @@ class Projects extends Component {
     handleaddress(address) {
         const makeid = new MakeID();
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-            const engineerid = myuser.engineerid;
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
+            const engineerid = ""
             if (this.state.activeprojectid) {
-                const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects[i].address = address;
-                this.props.reduxUser(myuser);
+                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
+                projects[i].projectaddress = address;
+                this.props.reduxProjects(projects);
                 this.setState({ render: 'render' })
 
             } else {
@@ -123,14 +123,14 @@ class Projects extends Component {
                 const projectapn = this.state.projectapn;
                 const clientid = this.state.clientid;
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getprojects.call(this);
+                const projects = gfk.getProjects.call(this);
                 if (projects) {
-                    myuser.projects.push(newproject)
+                    projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
-                    myuser.projects = project;
+                    projects = project;
                 }
-                this.props.reduxUser(myuser)
+                this.props.reduxProjects(projects)
                 this.setState({ activeprojectid: projectid })
             }
         }
@@ -140,7 +140,7 @@ class Projects extends Component {
         const gfk = new GFK();
 
         if (this.state.activeprojectid) {
-            const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid);
+            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
             console.log(myproject)
             return myproject.title;
         } else {
@@ -151,13 +151,13 @@ class Projects extends Component {
     handletitle(title) {
         const makeid = new MakeID();
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-            const engineerid = myuser.engineerid;
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
+            const engineerid = ""
             if (this.state.activeprojectid) {
-                const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects[i].title = title;
-                this.props.reduxUser(myuser);
+                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
+                projects[i].title = title;
+                this.props.reduxProjects(projects);
                 this.setState({ render: 'render' })
 
             } else {
@@ -170,14 +170,14 @@ class Projects extends Component {
                 const projectapn = this.state.projectapn;
                 const clientid = this.state.clientid;
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getprojects.call(this);
+                const projects = gfk.getProjects.call(this);
                 if (projects) {
-                    myuser.projects.push(newproject)
+                    projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
-                    myuser.projects = project;
+                    projects = project;
                 }
-                this.props.reduxUser(myuser)
+                this.props.reduxProjects(projects)
                 this.setState({ activeprojectid: projectid })
             }
         }
@@ -187,7 +187,7 @@ class Projects extends Component {
         const gfk = new GFK();
 
         if (this.state.activeprojectid) {
-            const myproject = gfk.getprojectbyid.call(this, this.state.activeprojectid);
+            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
             return myproject.projectnumber;
         } else {
             return this.state.projectnumber;
@@ -197,13 +197,13 @@ class Projects extends Component {
     handleprojectnumber(projectnumber) {
         const makeid = new MakeID();
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-            const engineerid = myuser.engineerid;
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
+            const engineerid = ""
             if (this.state.activeprojectid) {
-                const i = gfk.getprojectkeybyid.call(this, this.state.activeprojectid)
-                myuser.projects[i].projectnumber = projectnumber;
-                this.props.reduxUser(myuser);
+                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
+                projects[i].projectnumber = projectnumber;
+                this.props.reduxProjects(projects);
                 this.setState({ render: 'render' })
 
             } else {
@@ -216,46 +216,51 @@ class Projects extends Component {
                 const projectapn = this.state.projectapn;
                 const clientid = this.state.clientid;
                 let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getprojects.call(this);
+                const projects = gfk.getProjects.call(this);
                 if (projects) {
-                    myuser.projects.push(newproject)
+                    projects.push(newproject)
                 } else {
                     const project = { project: [newproject] }
-                    myuser.projects = project;
+                    projects = project;
                 }
-                this.props.reduxUser(myuser)
+                this.props.reduxProjects(projects)
                 this.setState({ activeprojectid: projectid })
             }
         }
     }
 
     async saveprojects() {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-            const projects = gfk.getprojects.call(this);
-            const values = { projects }
-            let response = await SaveProjects(values);
-            if (response.hasOwnProperty("projects")) {
-                myuser.projects = response.projects;
-                this.props.reduxUser(myuser)
-            }
-            if (this.state.activeprojectid) {
-                if (response.hasOwnProperty("replaceids")) {
-                    // eslint-disable-next-line
-                    response.replaceids.map(myproject => {
-                        if (myproject.oldprojectid === this.state.activeprojectid) {
-                            this.setState({ activeprojectid: myproject.projectid })
-                        }
+        try {
+            const gfk = new GFK();
+            const projects = gfk.getProjects.call(this);
 
-                    })
-                }
+            if (!projects || !projects.length) {
+                this.setState({ message: "No projects available to save." });
+                return;
             }
-            if (response.hasOwnProperty("message")) {
-                this.setState({ message: response.message })
+
+            const values = {
+                companyid: "gfk",
+                projects,
+            };
+
+            const response = await SaveProjects(values);
+
+            if (response?.projects?.projects) {
+                // extract the actual array from response.projects.projects
+                const updatedProjects = response.projects.projects;
+                this.props.reduxProjects(updatedProjects);
+                this.setState({ message: "Projects saved successfully." });
+            } else if (response?.message) {
+                this.setState({ message: response.message });
             }
+        } catch (err) {
+            console.error("❌ Error saving projects:", err);
+            this.setState({ message: "An error occurred while saving projects." });
         }
     }
+
+
     render() {
         const styles = MyStylesheet();
         const gfk = new GFK();
@@ -417,7 +422,8 @@ class Projects extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser
+        myuser: state.myuser,
+        projects: state.projects
     }
 }
 export default connect(mapStateToProps, actions)(Projects);

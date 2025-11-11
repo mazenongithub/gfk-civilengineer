@@ -1,6 +1,6 @@
 import { SLOPESTABILITY } from '../actions/types';
 
-export default function (state = {}, action) {
+export default function slopeStabilityReducer (state = {}, action) {
     switch (action.type) {
         case SLOPESTABILITY:
             return action.payload;

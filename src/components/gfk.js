@@ -62,25 +62,25 @@ class GFK {
         return myuser;
     }
 
-    getSlices(projectid,sectionid)  {
+    getSlices(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid)
+        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
         let slices = false;
-        if(section.hasOwnProperty("slices")) {
+        if (section.hasOwnProperty("slices")) {
             slices = section.slices;
         }
         return slices;
     }
 
-    getFailureSurface(projectid,sectionid) {
+    getFailureSurface(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid)
+        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
         let failuresurface = false;
-        if(section) {
-            if(section.hasOwnProperty("layers")) {
-                 // eslint-disable-next-line
-                section.layers.map(layer=> {
-                    if(layer.hasOwnProperty("failuresurface")) {
+        if (section) {
+            if (section.hasOwnProperty("layers")) {
+                // eslint-disable-next-line
+                section.layers.map(layer => {
+                    if (layer.hasOwnProperty("failuresurface")) {
                         failuresurface = layer.failuresurface;
                     }
                 })
@@ -90,35 +90,35 @@ class GFK {
         return failuresurface;
     }
 
-   getTopSurface(projectid,sectionid) {
-    const gfk = new GFK();
-    const subsurfaces = gfk.getSubsurfaces.call(this,projectid,sectionid)
-    let subsurface = false;
-    if(subsurfaces) {
-        subsurface = subsurfaces[0]
-    }
-    return subsurface;
-   }
-
-    getSubsurfaces(projectid,sectionid) {
+    getTopSurface(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid);
-        let subsurface = false
-    
-        if(section) {
-            
-               
-                if(section.hasOwnProperty("layers")) {
-                    subsurface = [];
-                     // eslint-disable-next-line
-                    section.layers.map(layer=> {
-                        if(layer.hasOwnProperty("subsurface")) {
-                            subsurface.push(layer)
-                        }
-                    })
+        const subsurfaces = gfk.getSubsurfaces.call(this, projectid, sectionid)
+        let subsurface = false;
+        if (subsurfaces) {
+            subsurface = subsurfaces[0]
+        }
+        return subsurface;
+    }
 
-                }
-          
+    getSubsurfaces(projectid, sectionid) {
+        const gfk = new GFK();
+        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid);
+        let subsurface = false
+
+        if (section) {
+
+
+            if (section.hasOwnProperty("layers")) {
+                subsurface = [];
+                // eslint-disable-next-line
+                section.layers.map(layer => {
+                    if (layer.hasOwnProperty("subsurface")) {
+                        subsurface.push(layer)
+                    }
+                })
+
+            }
+
         }
         return subsurface;
 
@@ -127,13 +127,13 @@ class GFK {
     getSlopeKeybySectionID(projectid, sectionid) {
 
         const gfk = new GFK();
-        const sections = gfk.getSlopebyProjectID.call(this,projectid)
+        const sections = gfk.getSlopebyProjectID.call(this, projectid)
 
         let key = false;
-        if(sections) {
-             // eslint-disable-next-line
-            sections.map((section,i)=> {
-                if(section.sectionid === sectionid) {
+        if (sections) {
+            // eslint-disable-next-line
+            sections.map((section, i) => {
+                if (section.sectionid === sectionid) {
                     key = i;
                 }
             })
@@ -142,15 +142,15 @@ class GFK {
 
     }
 
-    getSlopeLayerKeyByID(projectid,sectionid,layerid) {
+    getSlopeLayerKeyByID(projectid, sectionid, layerid) {
         const gfk = new GFK();
         let key = false;
-        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid);
-        if(section) {
-            if(section.hasOwnProperty("layers")) {
+        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid);
+        if (section) {
+            if (section.hasOwnProperty("layers")) {
                 // eslint-disable-next-line
-                section.layers.map((layer,i)=> {
-                    if(layer.layerid === layerid) {
+                section.layers.map((layer, i) => {
+                    if (layer.layerid === layerid) {
                         key = i
                     }
                 })
@@ -160,15 +160,15 @@ class GFK {
         return key
     }
 
-    getSlopePointKeyByID(projectid,sectionid,layerid,pointid) {
+    getSlopePointKeyByID(projectid, sectionid, layerid, pointid) {
         const gfk = new GFK();
         let key = false;
-        const layer = gfk.getSlopeLayerByID.call(this,projectid,sectionid,layerid)
-        if(layer) {
-            if(layer.hasOwnProperty("points")) {
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
+        if (layer) {
+            if (layer.hasOwnProperty("points")) {
                 // eslint-disable-next-line
-                layer.points.map((point,i)=> {
-                    if(point.pointid === pointid) {
+                layer.points.map((point, i) => {
+                    if (point.pointid === pointid) {
                         key = i;
                     }
                 })
@@ -177,15 +177,15 @@ class GFK {
         return key;
     }
 
-    getSlopePointByID(projectid,sectionid,layerid,pointid) {
+    getSlopePointByID(projectid, sectionid, layerid, pointid) {
         const gfk = new GFK();
         let getpoint = false;
-        const layer = gfk.getSlopeLayerByID.call(this,projectid,sectionid,layerid)
-        if(layer) {
-            if(layer.hasOwnProperty("points")) {
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
+        if (layer) {
+            if (layer.hasOwnProperty("points")) {
                 // eslint-disable-next-line
-                layer.points.map(point=> {
-                    if(point.pointid === pointid) {
+                layer.points.map(point => {
+                    if (point.pointid === pointid) {
                         getpoint = point;
                     }
                 })
@@ -194,16 +194,16 @@ class GFK {
         return getpoint;
     }
 
-    getSlopeLayerByID(projectid,sectionid,layerid) {
+    getSlopeLayerByID(projectid, sectionid, layerid) {
         const gfk = new GFK();
         let getlayer = false;
-        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid);
-        if(section) {
-            if(section.hasOwnProperty("layers")) {
+        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid);
+        if (section) {
+            if (section.hasOwnProperty("layers")) {
                 // eslint-disable-next-line
-                section.layers.map(layer=> {
-              
-                    if(layer.layerid === layerid) {
+                section.layers.map(layer => {
+
+                    if (layer.layerid === layerid) {
                         getlayer = layer;
                     }
                 })
@@ -217,13 +217,13 @@ class GFK {
     getSlopebySectionID(projectid, sectionid) {
 
         const gfk = new GFK();
-        const sections = gfk.getSlopebyProjectID.call(this,projectid)
+        const sections = gfk.getSlopebyProjectID.call(this, projectid)
 
         let getsection = false;
-        if(sections) {
-             // eslint-disable-next-line
-            sections.map(section=> {
-                if(section.sectionid === sectionid) {
+        if (sections) {
+            // eslint-disable-next-line
+            sections.map(section => {
+                if (section.sectionid === sectionid) {
                     getsection = section;
                 }
             })
@@ -237,10 +237,10 @@ class GFK {
         const slopestability = gfk.getSlopeStability.call(this);
 
         let getslope = [];
-        if(slopestability) {
+        if (slopestability) {
             // eslint-disable-next-line
-            slopestability.map(section=> {
-                if(section.projectid === projectid) {
+            slopestability.map(section => {
+                if (section.projectid === projectid) {
                     getslope.push(section)
 
                 }
@@ -251,7 +251,7 @@ class GFK {
 
     getSlopeStability() {
         let slopestability = false;
-        if(this.props.slopestability.hasOwnProperty("length")) {
+        if (this.props.slopestability.hasOwnProperty("length")) {
             slopestability = this.props.slopestability;
         }
         return slopestability;
@@ -600,7 +600,7 @@ class GFK {
         let tests = false;
         const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
         if (fieldreport) {
-        
+
 
             if (fieldreport.hasOwnProperty("compactiontests")) {
 
@@ -614,7 +614,7 @@ class GFK {
             }
 
         }
-     
+
         return tests;
     }
 
@@ -853,48 +853,37 @@ class GFK {
 
         return fieldreport;
     }
-    getprojects() {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
 
-        let projects = false;
-        if (myuser.hasOwnProperty("projects")) {
-            projects = myuser.projects;
+    getProjects() {
+        const { projects } = this.props;
+
+
+        if (Array.isArray(projects) && projects.length > 0) {
+            return projects;
         }
-        return projects;
-    }
-    getprojectbyid(projectid) {
 
-        const gfk = new GFK();
-        const projects = gfk.getprojects.call(this);
-        let project = false;
-        if (projects) {
-            // eslint-disable-next-line
-            projects.map(myproject => {
-                if (myproject.projectid === projectid) {
-                    project = myproject;
-
-                }
-            })
-        }
-        return project;
+        return false;
     }
 
-    getprojectkeybyid(projectid) {
+    getProjectById(projectId) {
         const gfk = new GFK();
-        const projects = gfk.getprojects.call(this);
-        let key = false;
-        if (projects) {
-            // eslint-disable-next-line
-            projects.map((myproject, i) => {
-                if (myproject.projectid === projectid) {
-                    key = i;
+        const projects = gfk.getProjects.call(this);
 
-                }
-            })
-        }
-        return key;
+        if (!Array.isArray(projects)) return false;
+
+        return projects.find(project => project.projectid === projectId) || false;
     }
+
+    getProjectKeyById(projectId) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+
+        if (!Array.isArray(projects)) return false;
+
+        const index = projects.findIndex(project => project.projectid === projectId);
+        return index !== -1 ? index : false;
+    }
+    
     getfieldreportkeybyid(fieldid) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
@@ -959,7 +948,7 @@ class GFK {
             // eslint-disable-next-line
             borings.map(boring => {
                 if (boring.hasOwnProperty("samples")) {
-                     // eslint-disable-next-line
+                    // eslint-disable-next-line
                     boring.samples.map(sample => {
                         if (sample.sampleid === sampleid) {
                             getboring = boring;
@@ -1153,13 +1142,13 @@ class GFK {
 
 
                     if (boring.hasOwnProperty("samples")) {
-                         // eslint-disable-next-line
+                        // eslint-disable-next-line
                         boring.samples.map(sample => {
                             if (sample.graphiclog) {
                                 graphiclog = sample.graphiclog;
                                 sampleid = sample.sampleid;
                                 description = sample.description;
-                                sampleimages.push(newSample(sampleid,projectnumber,description,graphiclog))
+                                sampleimages.push(newSample(sampleid, projectnumber, description, graphiclog))
                             }
 
 

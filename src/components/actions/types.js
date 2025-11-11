@@ -4,3 +4,4 @@ export const ZONECHARTS = 'zonecharts';
 export const PTSLAB = 'ptslab';
 export const SEISMIC = 'seismic'
 export const SLOPESTABILITY = 'slopestability'
+export const PROJECTS = 'projects'
