@@ -24,66 +24,70 @@ class Borings extends Component {
     updateWindowDimensions() {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
-    showboringsbyproject() {
+    showBoringsByProject() {
         const gfk = new GFK();
-        const borings = gfk.getboringsbyprojectid.call(this, this.props.match.params.projectid)
-        let boringids = [];
-        if (borings.length > 0) {
-            // eslint-disable-next-line
-            borings.map(boring => {
-                boringids.push(this.showboringid(boring))
-            })
-        }
-        return boringids;
+        const projectid = this.props.match.params.projectid;
+        const borings = gfk.getBoringsByProjectId.call(this, projectid) || [];
+
+        return borings.map(boring => this.showBoringId(boring));
     }
-    makeboringactive(boringid) {
-        console.log(boringid)
-        if (this.state.activeboringid === boringid) {
-            this.setState({ activeboringid: false })
+
+    makeBoringActive(boringId) {
+        this.setState(prevState => ({
+            activeboringid: prevState.activeboringid === boringId ? false : boringId
+        }));
+    }
+
+    validateRemoveBoring(boring) {
+        if (Array.isArray(boring.samples) && boring.samples.length > 0) {
+            return {
+                valid: false,
+                message: `Cannot delete Boring ${boring.boringnumber}: delete samples first.`
+            };
+        }
+
+        return { valid: true };
+    }
+    removeBoringId(boring) {
+        if (!boring) return;
+
+        const confirmDelete = window.confirm(
+            `Are you sure you want to delete boring number ${boring.boringnumber}?`
+        );
+
+        if (!confirmDelete) return;
+
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
+        const projects = gfk.getProjects.call(this);
+
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        const boringIndex = gfk.getBoringKeyById.call(this, projectid, boring.boringid);
+        if (boringIndex === null) return;
+
+        const validate = this.validateRemoveBoring(boring);
+
+        if (validate.valid) {
+            projects[projectIndex].borings.splice(boringIndex, 1);
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render', activeboringid:false });
         } else {
-            this.setState({ activeboringid: boringid })
+            this.setState({ message: validate.message });
         }
     }
-    validateremoveboring(boring) {
-        const gfk = new GFK();
-        const samples = gfk.getsamples.call(this);
-        let validate = {};
-        validate.validate = true;
-        validate.message = "";
-        if (samples.length > 0) {
-            // eslint-disable-next-line
-            samples.map(sample => {
-                if (sample.boringid === boring.boringid) {
-                    validate.validate = false;
-                    validate.message = `Could not Delete Boring ${boring.boringnumber} Delete Samples First`
-                }
-            })
-        }
-        return validate;
-    }
-    removeboringid(boring) {
-        if (window.confirm(`Are you sure you want to delete boring number ${boring.boringnumber}?`)) {
-            const gfk = new GFK();
-            const myuser = gfk.getuser.call(this)
-            const validate = this.validateremoveboring(boring);
-            if (validate.validate) {
-                const i = gfk.getboringkeybyid.call(this, boring.boringid);
-                myuser.borings.splice(i, 1);
-                this.props.reduxUser(myuser);
-                this.setState({ activeboringid: false })
 
-            } else {
-                this.setState({ message: validate.message })
-            }
-        }
 
-    }
-    showboringid(boring) {
+    showBoringId(boring) {
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this);
         const styles = MyStylesheet();
         const removeIcon = gfk.getremoveicon.call(this)
-   
+
 
         const activebackground = () => {
             if (boring.boringid === this.state.activeboringid) {
@@ -93,403 +97,578 @@ class Borings extends Component {
         return (
             <div style={{ ...styles.generalContainer, ...styles.generalFont }}>
                 <div style={{ ...styles.generalFont, ...styles.generalContainer, ...styles.bottomMargin15 }} key={boring.boringid}>
-                    <span onClick={() => { this.makeboringactive(boring.boringid) }} style={{ ...activebackground(), ...regularFont }}>BoringID: {boring.boringid} DateDrilled:{boring.datedrilled} Number:{boring.boringnumber} Diameter:{boring.diameter} Elevation: {boring.elevation} Drill Rig:{boring.drillrig} LoggedBy: {boring.loggedby} Latitude: {boring.latitude} Longitude: {boring.longitude}</span>
-                    <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeboringid(boring) }}>
+                    <span onClick={() => { this.makeBoringActive(boring.boringid) }} style={{ ...activebackground(), ...regularFont }}>BoringID: {boring.boringid} DateDrilled:{boring.datedrilled} Number:{boring.boringnumber} Diameter:{boring.diameter} Elevation: {boring.elevation} Drill Rig:{boring.drillrig} LoggedBy: {boring.loggedby} Latitude: {boring.latitude} Longitude: {boring.longitude}</span>
+                    <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeBoringId(boring) }}>
                         {removeIconSmall()}
                     </button>
                 </div>
-              
+
 
             </div>
         )
 
     }
-    getboringnumber() {
+
+    getBoringNumber() {
         const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.boringnumber;
+        const { activeboringid, boringnumber } = this.state;
+        const { projectid } = this.props.match.params;
+
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.boringnumber || boringnumber;
+        }
+
+        return boringnumber;
+    }
+
+    handleBoringNumber(boringnumber) {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+        const { activeboringid, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].boringnumber = boringnumber;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.boringnumber;
-
+            projects[projectIndex].borings = [newBoring];
         }
-    }
-    handleboringnumber(boringnumber) {
-        const gfk = new GFK();
-        
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].boringnumber = boringnumber;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const gwdepth = this.state.gwdepth;
-                const elevation = this.state.elevation;
-                const drillrig = this.state.drillrig;
-                const loggedby = this.state.loggedby;
-                const latitude = this.state.latitude;
-                const longitude = this.state.longitude;
-                const diameter = this.state.diameter;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, boringnumber: '' })
-
-            }
-        }
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, boringnumber: '' });
     }
 
-    getdiameter() {
+
+    getDiameter() {
         const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring =gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.diameter;
+        const { activeboringid, diameter } = this.state;
+        const { projectid } = this.props.match.params;
+
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.diameter || diameter;
+        }
+
+        return diameter;
+    }
+
+    handleDiameter(diameter) {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+        const { activeboringid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].diameter = diameter;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.diameter;
-
+            projects[projectIndex].borings = [newBoring];
         }
-    }
-    handlediameter(diameter) {
-        const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].diameter = diameter;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const gwdepth = this.state.gwdepth;
-                const elevation = this.state.elevation;
-                const drillrig = this.state.drillrig;
-                const loggedby = this.state.loggedby;
-                const latitude = this.state.latitude;
-                const longitude = this.state.longitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, diameter: '' })
-
-            }
-        }
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, diameter: '' });
     }
 
-    getgwdepth() {
-        const gfk = new GFK();
-        
-            let gwdepth = "";
-        if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            gwdepth = boring.gwdepth;
-        } else {
-            gwdepth =  this.state.gwdepth;
 
+    getGWDepth() {
+        const gfk = new GFK();
+        const { activeboringid, gwdepth } = this.state;
+        const { projectid } = this.props.match.params;
+
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.gwdepth || gwdepth;
         }
+
         return gwdepth;
     }
-    handlegwdepth(gwdepth) {
+
+    handleGWDepth(gwdepth) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
+        const { projectid } = this.props.match.params;
+        const { activeboringid, boringnumber, datedrilled, diameter, elevation, drillrig, loggedby, latitude, longitude } = this.state;
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].gwdepth = gwdepth;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
 
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const diameter = this.state.diameter;
-                const elevation = this.state.elevation;
-                const drillrig = this.state.drillrig;
-                const loggedby = this.state.loggedby;
-                const latitude = this.state.latitude;
-                const longitude = this.state.longitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, gwdepth: '' })
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-            }
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].gwdepth = gwdepth;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
         }
-    }
 
-    getelevation() {
-        const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.elevation;
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.elevation;
-
+            projects[projectIndex].borings = [newBoring];
         }
-    }
-    handleelevation(elevation) {
-        const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].elevation = elevation;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const diameter = this.state.diameter;
-                const gwdepth = this.state.gwdepth;
-                const drillrig = this.state.drillrig;
-                const loggedby = this.state.loggedby;
-                const latitude = this.state.latitude;
-                const longitude = this.state.longitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, elevation: '' })
-
-            }
-        }
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, gwdepth: '' });
     }
 
-    getdrillrig() {
+
+    getElevation() {
         const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.drillrig;
+        const { activeboringid, elevation } = this.state;
+        const { projectid } = this.props.match.params;
+
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.elevation || elevation;
+        }
+
+        return elevation;
+    }
+
+    handleElevation(elevation) {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+        const { activeboringid, datedrilled, boringnumber, diameter, gwdepth, drillrig, loggedby, latitude, longitude } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].elevation = elevation;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.drillrig;
-
+            projects[projectIndex].borings = [newBoring];
         }
+
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, elevation: '' });
     }
-    handledrillrig(drillrig) {
+
+    getDrillRig() {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
+        const { activeboringid, drillrig } = this.state;
+        const { projectid } = this.props.match.params;
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].drillrig = drillrig;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const diameter = this.state.diameter;
-                const gwdepth = this.state.gwdepth;
-                const elevation = this.state.elevation;
-                const loggedby = this.state.loggedby;
-                const latitude = this.state.latitude;
-                const longitude = this.state.longitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, drillrig: '' })
-
-            }
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.drillrig || drillrig;
         }
+
+        return drillrig;
     }
-    getloggedby() {
+
+    handleDrillRig(drillrig) {
         const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.loggedby;
+        const { projectid } = this.props.match.params;
+        const { activeboringid, boringnumber, datedrilled, diameter, gwdepth, elevation, loggedby, latitude, longitude } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].drillrig = drillrig;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.loggedby;
-
+            projects[projectIndex].borings = [newBoring];
         }
+
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, drillrig: '' });
     }
-    handleloggedby(loggedby) {
+
+     getLoggedBy() {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
+        const { activeboringid, loggedby } = this.state;
+        const { projectid } = this.props.match.params;
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].loggedby = loggedby;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const diameter = this.state.diameter;
-                const gwdepth = this.state.gwdepth;
-                const elevation = this.state.elevation;
-                const drillrig = this.state.drillrig;
-                const latitude = this.state.latitude;
-                const longitude = this.state.longitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, loggedby: '' })
-
-            }
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.loggedby || loggedby;
         }
+
+        return loggedby;
     }
-    getlatitude() {
+
+    handleLoggedBy(loggedby) {
         const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring = gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.latitude;
+        const { projectid } = this.props.match.params;
+        const { activeboringid, boringnumber, datedrilled, diameter, gwdepth, elevation, drillrig, latitude, longitude } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].loggedby = loggedby;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.latitude;
-
+            projects[projectIndex].borings = [newBoring];
         }
+
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, loggedby: '' });
     }
-    handlelatitude(latitude) {
+
+    
+      getLatitude() {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
+        const { activeboringid, latitude } = this.state;
+        const { projectid } = this.props.match.params;
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].latitude = latitude;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const diameter = this.state.diameter;
-                const gwdepth = this.state.gwdepth;
-                const elevation = this.state.elevation;
-                const drillrig = this.state.drillrig;
-                const loggedby = this.state.loggedby;
-                const longitude = this.state.longitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, latitude: '' })
-
-            }
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.latitude || latitude;
         }
+
+        return latitude;
     }
-    getlongitude() {
+
+    handleLatitude(latitude) {
         const gfk = new GFK();
-        
-        if (this.state.activeboringid) {
-            const boring =gfk.getboringbyid.call(this, this.state.activeboringid)
-            return boring.longitude;
+        const { projectid } = this.props.match.params;
+        const { activeboringid, boringnumber, datedrilled, diameter, gwdepth, elevation, drillrig, loggedby, longitude } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].latitude = latitude;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
         } else {
-            return this.state.longitude;
-
+            projects[projectIndex].borings = [newBoring];
         }
+
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, latitude: '' });
     }
-    handlelongitude(longitude) {
+
+      getLongitude() {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        if (myuser) {
+        const { activeboringid, longitude } = this.state;
+        const { projectid } = this.props.match.params;
 
-            if (this.state.activeboringid) {
-                const i = gfk.getboringkeybyid.call(this, this.state.activeboringid);
-                myuser.borings[i].longitude = longitude;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
-
-            } else {
-                const boringid = makeID(8);
-                const datedrilled = makeDatefromObj(this.state.datedrilled);
-                const diameter = this.state.diameter;
-                const gwdepth = this.state.gwdepth;
-                const elevation = this.state.elevation;
-                const drillrig = this.state.drillrig;
-                const loggedby = this.state.loggedby;
-                const latitude = this.state.latitude;
-                const boringnumber = this.state.boringnumber;
-                const projectid = this.props.match.params.projectid;
-                const newBoring = Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter)
-                const borings = gfk.getborings.call(this)
-                if (borings) {
-                    myuser.borings.push(newBoring)
-                } else {
-                    myuser.borings = { borings: [newBoring] }
-                }
-                this.props.reduxUser(myuser)
-                this.setState({ activeboringid: boringid, longitude: '' })
-
-            }
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            return boring?.longitude || longitude;
         }
+
+        return longitude;
     }
+
+    handleLongitude(longitude) {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+        const { activeboringid, boringnumber, datedrilled, diameter, gwdepth, elevation, drillrig, loggedby, latitude } = this.state;
+
+        let projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false || projectIndex === null) return;
+
+        // ✅ Update existing boring
+        if (activeboringid) {
+            const boring = gfk.getBoringById.call(this, projectid, activeboringid);
+            if (!boring) return;
+
+            const boringIndex = gfk.getBoringKeyById.call(this, projectid, activeboringid);
+            if (boringIndex === false || boringIndex === null) return;
+
+            projects[projectIndex].borings[boringIndex].longitude = longitude;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
+            return;
+        }
+
+        // ✅ Create new boring
+        const boringid = makeID(8);
+        const newBoring = Boring(
+            boringid,
+            projectid,
+            boringnumber,
+            makeDatefromObj(datedrilled),
+            gwdepth,
+            elevation,
+            drillrig,
+            loggedby,
+            latitude,
+            longitude,
+            diameter
+        );
+
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (Array.isArray(borings)) {
+            projects[projectIndex].borings.push(newBoring);
+        } else {
+            projects[projectIndex].borings = [newBoring];
+        }
+
+        this.props.reduxProjects(projects);
+        this.setState({ activeboringid: boringid, longitude: '' });
+    }
+
     handlesamplelink() {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
+        const projects = gfk.getProjects.call(this)
         const styles = MyStylesheet();
         const headerFont = gfk.getHeaderFont.call(this)
+        const myuser = { userid: 'mazen', engineerid: 'mazen' }
         if (myuser) {
             const engineerid = myuser.engineerid;
             if (this.state.activeboringid) {
                 const projectid = this.props.match.params.projectid;
                 const boringid = this.state.activeboringid;
-                const boring =gfk.getboringbyid.call(this, this.state.activeboringid)
+                const boring = gfk.getBoringById.call(this, projectid, this.state.activeboringid)
 
                 return (<Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
                     to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>
@@ -507,7 +686,7 @@ class Borings extends Component {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const headerFont = gfk.getHeaderFont.call(this);
-        const project = gfk.getprojectbyid.call(this, this.props.match.params.projectid);
+        const project = gfk.getProjectById.call(this, this.props.match.params.projectid);
         const regularFont = gfk.getRegularFont.call(this)
         const Fields_1 = () => {
             if (this.state.width > 800) {
@@ -515,29 +694,29 @@ class Borings extends Component {
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Boring Number
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getboringnumber()}
-                            onChange={event => { this.handleboringnumber(event.target.value) }}
+                            value={this.getBoringNumber()}
+                            onChange={event => { this.handleBoringNumber(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Boring Diameter
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getdiameter()}
-                            onChange={event => this.handlediameter(event.target.value)}
+                            value={this.getDiameter()}
+                            onChange={event => this.handleDiameter(event.target.value)}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         GW Depth
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getgwdepth()}
-                            onChange={event => { this.handlegwdepth(event.target.value) }}
+                            value={this.getGWDepth()}
+                            onChange={event => { this.handleGWDepth(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Surface Elevation
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getelevation()}
-                            onChange={event => { this.handleelevation(event.target.value) }}
+                            value={this.getElevation()}
+                            onChange={event => { this.handleElevation(event.target.value) }}
                         />
                     </div>
                 </div>)
@@ -551,15 +730,15 @@ class Borings extends Component {
                                 <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                     Boring Number
                                     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                        value={this.getboringnumber()}
-                                        onChange={event => { this.handleboringnumber(event.target.value) }}
+                                        value={this.getBoringNumber()}
+                                        onChange={event => { this.handleBoringNumber(event.target.value) }}
                                     />
                                 </div>
                                 <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                     Boring Diameter
                                     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                        value={this.getdiameter()}
-                                        onChange={event => this.handlediameter(event.target.value)} />
+                                        value={this.getDiameter()}
+                                        onChange={event => this.handleDiameter(event.target.value)} />
                                 </div>
                             </div>
 
@@ -567,14 +746,14 @@ class Borings extends Component {
                                 <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                     GW Depth
                                     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                        value={this.getgwdepth()}
-                                        onChange={event => { this.handlegwdepth(event.target.value) }} />
+                                        value={this.getGWDepth()}
+                                        onChange={event => { this.handleGWDepth(event.target.value) }} />
                                 </div>
                                 <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                     Surface Elevation
                                     <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                        value={this.getelevation()}
-                                        onChange={event => { this.handleelevation(event.target.value) }} />
+                                        value={this.getElevation()}
+                                        onChange={event => { this.handleElevation(event.target.value) }} />
                                 </div>
                             </div>
 
@@ -590,15 +769,15 @@ class Borings extends Component {
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Drill Rig
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getdrillrig()}
-                            onChange={event => { this.handledrillrig(event.target.value) }}
+                            value={this.getDrillRig()}
+                            onChange={event => { this.handleDrillRig(event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Logged By
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getloggedby()}
-                            onChange={event => { this.handleloggedby(event.target.value) }}
+                            value={this.getLoggedBy()}
+                            onChange={event => { this.handleLoggedBy(event.target.value) }}
                         />
                     </div>
 
@@ -611,14 +790,14 @@ class Borings extends Component {
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                 Drill Rig
                                 <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getdrillrig()}
-                                    onChange={event => { this.handledrillrig(event.target.value) }} />
+                                    value={this.getDrillRig()}
+                                    onChange={event => { this.handleDrillRig(event.target.value) }} />
                             </div>
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                 Logged By
                                 <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getloggedby()}
-                                    onChange={event => { this.handleloggedby(event.target.value) }}
+                                    value={this.getLoggedBy()}
+                                    onChange={event => { this.handleLoggedBy(event.target.value) }}
                                 />
                             </div>
                         </div>
@@ -636,14 +815,14 @@ class Borings extends Component {
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Latitude
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getlatitude()}
-                            onChange={event => { this.handlelatitude(event.target.value) }} />
+                            value={this.getLatitude()}
+                            onChange={event => { this.handleLatitude(event.target.value) }} />
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                         Longitude
                         <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                            value={this.getlongitude()}
-                            onChange={event => { this.handlelongitude(event.target.value) }} />
+                            value={this.getLongitude()}
+                            onChange={event => { this.handleLongitude(event.target.value) }} />
                     </div>
 
                 </div>)
@@ -655,14 +834,14 @@ class Borings extends Component {
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                 Latitude
                                 <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getlatitude()}
-                                    onChange={event => { this.handlelatitude(event.target.value) }} />
+                                    value={this.getLatitude()}
+                                    onChange={event => { this.handleLatitude(event.target.value) }} />
                             </div>
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont, ...styles.alignCenter, ...styles.addLeftMargin }}>
                                 Longitude
                                 <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getlongitude()}
-                                    onChange={event => { this.handlelongitude(event.target.value) }}
+                                    value={this.getLongitude()}
+                                    onChange={event => { this.handleLongitude(event.target.value) }}
                                 />
                             </div>
                         </div>
@@ -730,7 +909,7 @@ class Borings extends Component {
 
                     {gfk.showsaveboring.call(this)}
 
-                    {this.showboringsbyproject()}
+                    {this.showBoringsByProject()}
 
 
 
@@ -745,7 +924,8 @@ class Borings extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser
+        myuser: state.myuser,
+        projects: state.projects
     }
 }
 export default connect(mapStateToProps, actions)(Borings);

@@ -84,7 +84,11 @@ class ViewProject extends Component {
             allProjects[index] = {
                 ...allProjects[index],
                 borings: result.borings,
-                fieldreports:result.fieldreports
+                fieldreports:result.fieldreports,
+                compactioncurves:result.compactioncurves,
+                seismic:result.seismic,
+                ptslab:result.ptslab,
+                slope:result.slope
             };
 
             // Update Redux store or local state

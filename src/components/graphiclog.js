@@ -11,13 +11,29 @@ class GraphicLog {
 
     updateactiveimage(graphiclog) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            if (this.state.activesampleid) {
-                const i = gfk.getsamplekeybyid.call(this, this.state.activesampleid);
-                myuser.samples.sample[i].graphiclog = graphiclog;
-                this.props.reduxUser(myuser);
-                this.setState({ render: 'render' })
+        const projects = gfk.getProjects.call(this)
+        const { projectid, boringid } = this.props.match.params;
+        if (projects) {
+            const project = gfk.getProjectById.call(this, projectid, boringid)
+            if (project) {
+                const i = gfk.getProjectKeyById.call(this, projectid)
+
+                const boring = gfk.getBoringById.call(this, projectid, boringid)
+                if (boring) {
+                    const j = gfk.getBoringKeyById.call(this, projectid, boringid)
+                    if (this.state.activesampleid) {
+                        const sample = gfk.getSampleById.call(this, projectid, boringid, this.state.activesampleid)
+                        if (sample) {
+                            const k = gfk.getSampleKeyById.call(this, projectid, boringid, this.state.activesampleid);
+                            projects[i].boring[j].samples[k].graphiclog = graphiclog;
+                            this.props.reduxProjects(projects)
+                            this.setState({ render: 'render' })
+
+                        }
+                    }
+
+                }
+
             }
         }
     }
@@ -114,7 +130,7 @@ class GraphicLog {
         }
         if (myuser) {
             let images = [];
-            const samples = gfk.getallsampleimages.call(this)
+            const samples = gfk.getAllSampleImages.call(this)
             if (samples) {
                 // eslint-disable-next-line
                 samples.map(sample => {
@@ -143,30 +159,36 @@ class GraphicLog {
     }
     async uploadnewimage() {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        const boringid = this.props.match.params.boringid;
-        const boring = gfk.getboringbyid.call(this, boringid)
-        if (boring) {
-            const i = gfk.getboringkeybyid.call(this,boringid)
+        const projects = gfk.getProjects.call(TouchList)
+        const { projectid, boringid } = this.props.match.params
+        const project = gfk.getProjectById.call(this, projectid)
+        if (project) {
+            const i = gfk.getProjectKeyById.call(this, projectid)
+            const boring = gfk.getBoringById.call(this, projectid, boringid)
+            if (boring) {
+                const j = gfk.getBoringKeyById.call(this, projectid, boringid)
 
-            if (this.state.activesampleid) {
-                const sampleid = this.state.activesampleid;
-                const sample = gfk.getsamplebyid.call(this, boringid,sampleid)
-                console.log(sample)
-                let formData = new FormData();
-                let myfile = document.getElementById("graphic-log");
-                formData.append("graphiclog", myfile.files[0]);
-                formData.append("sample", JSON.stringify(sample))
-                let response = await UploadGraphicLog(formData);
-                if (response.hasOwnProperty("sample")) {
-                    const sample = response.sample;
-                    const sampleid = sample.sampleid;
-                    const j = gfk.getsamplekeybyid.call(this, boringid,sampleid)
-                    myuser.borings[i].samples[j] = sample;
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render' })
+                if (this.state.activesampleid) {
+                    const sampleid = this.state.activesampleid;
+                    const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
+                    if (sample) {
+                        const k = gfk.getSampleKeyById.call(this, projectid, boringid, sampleid)
+                        let formData = new FormData();
+                        let myfile = document.getElementById("graphic-log");
+                        formData.append("graphiclog", myfile.files[0]);
+                        formData.append("sample", JSON.stringify(sample))
+                        let response = await UploadGraphicLog(formData);
+                        if (response.hasOwnProperty("sample")) {
+                          
+                            projects[i].borings[j].samples[k] = sample;
+                            this.props.reduxProjects(projects)
+                            this.setState({ render: 'render' })
 
+                        }
+
+                    }
                 }
+
             }
 
         }
@@ -225,8 +247,8 @@ class GraphicLog {
                         <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
                             Graphic Log
                             <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                value={this.getgraphiclog()}
-                                onChange={event => { this.handlegraphiclog(event.target.value) }}
+                                value={this.getGraphicLog()}
+                                onChange={event => { this.handleGraphicLog(event.target.value) }}
                             />
                         </div>
                     </div>

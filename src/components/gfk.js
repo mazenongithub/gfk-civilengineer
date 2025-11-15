@@ -883,7 +883,7 @@ class GFK {
         const index = projects.findIndex(project => project.projectid === projectId);
         return index !== -1 ? index : false;
     }
-    
+
     getfieldreportkeybyid(fieldid) {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);
@@ -960,37 +960,21 @@ class GFK {
         return getboring;
 
     }
-    getsamplebyid(boringid, sampleid) {
+    getSampleById(projectId, boringId, sampleId) {
         const gfk = new GFK();
-        const boring = gfk.getboringbyid.call(this, boringid)
-        let samples = false;
-        if (boring.hasOwnProperty("samples")) {
-            // eslint-disable-next-line
-            boring.samples.map(sample => {
-                if (sample.sampleid === sampleid) {
-                    samples = sample;
+        const boring = gfk.getBoringById.call(this, projectId, boringId);
 
-                }
-            })
-        }
+        if (!Array.isArray(boring?.samples)) return false;
 
-        return samples;
+        return boring.samples.find(s => s.sampleid === sampleId) || false;
     }
-    getsamplekeybyid(boringid, sampleid) {
-
+    getSampleKeyById(projectId, boringId, sampleId) {
         const gfk = new GFK();
-        const boring = gfk.getboringbyid.call(this, boringid)
-        let key = false;
-        if (boring.hasOwnProperty("samples")) {
-            // eslint-disable-next-line
-            boring.samples.map((sample, i) => {
-                if (sample.sampleid === sampleid) {
-                    key = i;
-                }
-            })
-        }
+        const boring = gfk.getBoringById.call(this, projectId, boringId);
 
-        return key;
+        if (!Array.isArray(boring?.samples)) return -1;
+
+        return boring.samples.findIndex(s => s.sampleid === sampleId);
     }
 
 
@@ -1004,18 +988,11 @@ class GFK {
         }
         return sieves;
     }
-    getsievebysampleid(boringid, sampleid) {
+    getSieveBySampleId(projectId, boringId, sampleId) {
         const gfk = new GFK();
-        const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+        const sample = gfk.getSampleById.call(this, projectId, boringId, sampleId);
 
-
-        let sieve = false;
-        if (sample.hasOwnProperty("sieve")) {
-            // eslint-disable-next-line
-            sieve = sample.sieve;
-        }
-        return sieve;
-
+        return sample?.sieve || false;
     }
     getactuallaborkeybyid(laborid) {
         const gfk = new GFK();
@@ -1090,25 +1067,14 @@ class GFK {
         return key;
 
     }
-    getsamplesbyboringid(boringid) {
+    getSamplesByBoringId(projectId, boringId) {
         const gfk = new GFK();
-        const boring = gfk.getboringbyid.call(this, boringid)
-        let boringsamples = false
-        if (boring) {
-            if (boring.hasOwnProperty("samples")) {
-                // eslint-disable-next-line
-                boringsamples = boring.samples;
-            }
-            boringsamples.sort((a, b) => {
-                if (Number(a.depth) >= Number(b.depth)) {
-                    return 1;
-                } else {
-                    return -1
-                }
-            })
+        const boring = gfk.getBoringById.call(this, projectId, boringId);
 
-        }
-        return boringsamples;
+        const samples = Array.isArray(boring?.samples) ? [...boring.samples] : [];
+
+        samples.sort((a, b) => Number(a.depth) - Number(b.depth));
+        return samples;
     }
     getborings() {
         const gfk = new GFK();
@@ -1119,120 +1085,78 @@ class GFK {
         }
         return borings;
     }
-    getallsampleimages() {
-        const gfk = new GFK();
-        let sampleimages = [];
+   getAllSampleImages() {
+    const gfk = new GFK();
+    const sampleImages = [];
 
-        const newSample = (sampleid, projectnumber, description, graphiclog) => {
-            return ({ sampleid, projectnumber, description, graphiclog })
-        }
-        let projectnumber = ""
-        let sampleid = "";
-        let description = "";
-        let graphiclog = "";
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return sampleImages;
 
-        const borings = gfk.getborings.call(this)
-        if (borings) {
-            // eslint-disable-next-line
-            borings.map(boring => {
-                let projectid = boring.projectid;
-                const project = gfk.getprojectbyid.call(this, projectid);
-                if (project) {
-                    projectnumber = project.projectnumber;
+    for (const project of projects) {
+        const projectNumber = project.projectnumber;
+        if (!Array.isArray(project.borings)) continue;
 
+        for (const boring of project.borings) {
+            if (!Array.isArray(boring.samples)) continue;
 
-                    if (boring.hasOwnProperty("samples")) {
-                        // eslint-disable-next-line
-                        boring.samples.map(sample => {
-                            if (sample.graphiclog) {
-                                graphiclog = sample.graphiclog;
-                                sampleid = sample.sampleid;
-                                description = sample.description;
-                                sampleimages.push(newSample(sampleid, projectnumber, description, graphiclog))
-                            }
-
-
-                        })
-                    }
-
+            for (const sample of boring.samples) {
+                if (sample.graphiclog) {
+                    sampleImages.push({
+                        sampleid: sample.sampleid,
+                        projectnumber: projectNumber,
+                        description: sample.description,
+                        graphiclog: sample.graphiclog
+                    });
                 }
-            })
+            }
         }
-        return sampleimages;
     }
+
+    return sampleImages;
+}
+
     getsamples(boringid) {
         const gfk = new GFK();
         let samples = false;
-        const boring = gfk.getboringbyid.call(this, boringid)
+        const boring = gfk.getBoringById.call(this, boringid)
         if (boring.hasOwnProperty("samples")) {
             samples = boring.samples;
         }
 
         return samples;
     }
-    getboringbyid(boringid) {
+    getBoringById(projectid, boringid) {
         const gfk = new GFK();
-        let getboring = false;
-        const borings = gfk.getborings.call(this)
+        const project = gfk.getProjectById.call(this, projectid);
 
-        if (borings) {
+        if (!project || !Array.isArray(project.borings)) return null;
 
-            // eslint-disable-next-line
-            borings.map(boring => {
-                if (boring.boringid === boringid) {
-                    getboring = boring;
-                }
-            })
-
-        }
-        return getboring;
-
+        return project.borings.find(boring => boring.boringid === boringid) || null;
     }
-    getboringkeybyid(boringid) {
+
+
+    getBoringKeyById(projectid, boringid) {
         const gfk = new GFK();
+        const project = gfk.getProjectById.call(this, projectid);
 
-        let key = false;
-        const borings = gfk.getborings.call(this)
-        if (borings) {
+        if (!project || !Array.isArray(project.borings)) return null;
 
-            // eslint-disable-next-line
-            borings.map((boring, i) => {
-                if (boring.boringid === boringid) {
-                    key = i;
-                }
-            })
+        const index = project.borings.findIndex(boring => boring.boringid === boringid);
+        return index !== -1 ? index : null;
+    }
 
+
+    getBoringsByProjectId(projectid) {
+        const gfk = new GFK();
+        const project = gfk.getProjectById.call(this, projectid);
+
+        if (project && Array.isArray(project.borings)) {
+            return project.borings;
         }
 
-
-        return key;
-
+        return [];
     }
-    getboringsbyprojectid(projectid) {
-        const gfk = new GFK();
-        const borings = gfk.getborings.call(this);
-        let getborings = [];
-        if (borings) {
-            // eslint-disable-next-line
-            borings.map(boring => {
-                if (boring.projectid === projectid) {
-                    getborings.push(boring)
-                }
 
-            })
-
-        }
-        getborings.sort((a, b) => {
-            if (a.boringnumber > b.boringnumber) {
-                return 1
-            } else {
-                return -1
-            }
-
-        })
-        return getborings;
-
-    }
 
     getboringskeybyprojectid(projectid) {
         const gfk = new GFK();
@@ -1263,7 +1187,7 @@ class GFK {
     }
     unconfinedtestdatabyid(boringid, sampleid, unid) {
         const gfk = new GFK();
-        const test = gfk.getunconfinedtestbyid.call(this, boringid, sampleid)
+        const test = gfk.getUnconfinedTestById.call(this, boringid, sampleid)
         let mydata = false;
         if (test) {
             // eslint-disable-next-line
@@ -1278,7 +1202,7 @@ class GFK {
     }
     unconfinedtestdatakeybyid(boringid, sampleid, unid) {
         const gfk = new GFK();
-        const test = gfk.getunconfinedtestbyid.call(this, boringid, sampleid)
+        const test = gfk.getUnconfinedTestById.call(this, boringid, sampleid)
         let key = false;
         if (test) {
 
@@ -1294,17 +1218,13 @@ class GFK {
     }
 
 
-    getunconfinedtestbyid(boringid, sampleid) {
+    getUnconfinedTestById(projectId, boringId, sampleId) {
         const gfk = new GFK();
-        const sample = gfk.getsamplebyid.call(this, boringid, sampleid);
-        let mytest = false;
-        if (sample.hasOwnProperty("unconfined")) {
-            // eslint-disable-next-line
-            mytest = sample.unconfined;
-        }
-        return mytest;
+        const sample = gfk.getSampleById.call(this, projectId, boringId, sampleId);
 
+        return sample?.unconfined || false;
     }
+
     getunconfinedtestkeybyid(sampleid) {
         const gfk = new GFK();
         const tests = gfk.getunconfinedtests.call(this);

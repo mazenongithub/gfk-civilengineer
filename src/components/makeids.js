@@ -2,23 +2,23 @@ import GFK from './gfk'
 import { makeID } from './functions'
 
 class MakeID {
-    
+
     pointID() {
         const gfk = new GFK();
-        let pointid= false;
-        while(!pointid) {
+        let pointid = false;
+        while (!pointid) {
             pointid = makeID(16)
             const slopestability = gfk.getSlopeStability.call(this)
-            if(slopestability) {
+            if (slopestability) {
                 // eslint-disable-next-line
-                slopestability.map(section=> {
-                    if(section.hasOwnProperty("layers")) {
+                slopestability.map(section => {
+                    if (section.hasOwnProperty("layers")) {
                         // eslint-disable-next-line
-                        section.layers.map(layer=> {
-                            if(layer.hasOwnProperty("points")) {
-                        // eslint-disable-next-line
-                                layer.points.map(point=> {
-                                    if(point.pointid === pointid) {
+                        section.layers.map(layer => {
+                            if (layer.hasOwnProperty("points")) {
+                                // eslint-disable-next-line
+                                layer.points.map(point => {
+                                    if (point.pointid === pointid) {
                                         pointid = false;
                                     }
                                 })
@@ -36,16 +36,16 @@ class MakeID {
     layerID() {
         const gfk = new GFK();
         let layerid = false;
-        while(!layerid) {
+        while (!layerid) {
             layerid = makeID(16)
             const slopestability = gfk.getSlopeStability.call(this)
-            if(slopestability) {
+            if (slopestability) {
                 // eslint-disable-next-line
-                slopestability.map(section=> {
-                    if(section.hasOwnProperty("layers")) {
+                slopestability.map(section => {
+                    if (section.hasOwnProperty("layers")) {
                         // eslint-disable-next-line
-                        section.layers.map(layer=> {
-                            if(layer.layerid === layerid) {
+                        section.layers.map(layer => {
+                            if (layer.layerid === layerid) {
                                 layerid = false;
                             }
                         })
@@ -60,13 +60,13 @@ class MakeID {
     sectionID() {
         const gfk = new GFK();
         let sectionid = false;
-        while(!sectionid) {
+        while (!sectionid) {
             sectionid = makeID(16)
             const sections = gfk.getSlopeStability.call(this)
-            if(sections) {
+            if (sections) {
                 // eslint-disable-next-line
-                sections.map(section=> {
-                    if(section.sectionid === sectionid) {
+                sections.map(section => {
+                    if (section.sectionid === sectionid) {
                         sectionid = false;
                     }
                 })
@@ -79,16 +79,16 @@ class MakeID {
     imageID() {
         const gfk = new GFK();
         let imageid = false;
-        while(!imageid) {
+        while (!imageid) {
             imageid = makeID(16)
             const fieldreports = gfk.getfieldreports.call(this)
-            if(fieldreports) {
-                 // eslint-disable-next-line
-                fieldreports.map(report=> {
-                    if(report.hasOwnProperty("images")) {
-                         // eslint-disable-next-line
-                        report.images.map(image=> {
-                            if(image.imageid === imageid) {
+            if (fieldreports) {
+                // eslint-disable-next-line
+                fieldreports.map(report => {
+                    if (report.hasOwnProperty("images")) {
+                        // eslint-disable-next-line
+                        report.images.map(image => {
+                            if (image.imageid === imageid) {
                                 imageid = false;
                             }
                         })
@@ -100,18 +100,18 @@ class MakeID {
         return imageid;
 
     }
-    
+
     fieldID() {
-        
+
         const gfk = new GFK();
         let fieldid = false;
-        while(!fieldid) {
+        while (!fieldid) {
             fieldid = makeID(16)
             const fieldreports = gfk.getfieldreports.call(this)
-            if(fieldreports) {
-                 // eslint-disable-next-line
-                fieldreports.map(report=> {
-                    if(report.fieldid === fieldid) {
+            if (fieldreports) {
+                // eslint-disable-next-line
+                fieldreports.map(report => {
+                    if (report.fieldid === fieldid) {
                         fieldid = false;
                     }
                 })
@@ -126,17 +126,17 @@ class MakeID {
     compactionTest() {
         const gfk = new GFK();
         let testid = false;
-        while(!testid) {
+        while (!testid) {
             testid = makeID(16)
             const fieldreports = gfk.getfieldreports.call(this);
-            if(fieldreports) {
-                 // eslint-disable-next-line
-                fieldreports.map(fieldreport=> {
-                    if(fieldreport.hasOwnProperty("compactiontests")) {
-                         // eslint-disable-next-line
-                        fieldreport.compactiontests.map(test=> {
-                            if(test.testid === testid) {
-                                    testid = false;
+            if (fieldreports) {
+                // eslint-disable-next-line
+                fieldreports.map(fieldreport => {
+                    if (fieldreport.hasOwnProperty("compactiontests")) {
+                        // eslint-disable-next-line
+                        fieldreport.compactiontests.map(test => {
+                            if (test.testid === testid) {
+                                testid = false;
                             }
                         })
                     }
@@ -150,7 +150,7 @@ class MakeID {
         const gfk = new GFK();
         let unid = false;
         while (!unid) {
-           unid = makeID(16)
+            unid = makeID(16)
             const borings = gfk.getborings.call(this)
             if (borings) {
                 // eslint-disable-next-line
@@ -179,27 +179,42 @@ class MakeID {
     }
 
     sampleID() {
-        let sampleid = false;
-        const gfk = new GFK();
-        const borings = gfk.getborings.call(this)
-        while (!sampleid) {
-            sampleid = makeID(16)
-             // eslint-disable-next-line
-            borings.map(boring => {
-                if (borings.hasOwnProperty("samples")) {
-                     // eslint-disable-next-line
-                    borings.samples.map(sample => {
-                        if (sample.sampleid === sampleid) {
-                            sampleid = false;
-                        }
-                    })
+    const gfk = new GFK();
+    let sampleid = null;
+
+    const projects = gfk.getProjects.call(this) || [];
+
+    while (!sampleid) {
+        // Generate a candidate ID
+        const candidate = makeID(16);
+        let exists = false;
+
+        // Check if the candidate already exists
+        for (const project of projects) {
+            if (!Array.isArray(project.borings)) continue;
+
+            for (const boring of project.borings) {
+                if (!Array.isArray(boring.samples)) continue;
+
+                for (const sample of boring.samples) {
+                    if (sample.sampleid === candidate) {
+                        exists = true;
+                        break;
+                    }
                 }
-            })
-
-
+                if (exists) break;
+            }
+            if (exists) break;
         }
-        return sampleid;
+
+        // If it doesn’t exist, use it
+        if (!exists) {
+            sampleid = candidate;
+        }
     }
+
+    return sampleid;
+}
 
     seismicstrainid() {
         let strainid = false;
