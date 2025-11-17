@@ -9,25 +9,15 @@ class CurveID {
              </option>
         )
     }
-    showmenu(projectid) {
-        const gfk = new GFK();
-        const curveid = new CurveID();
-        let searchresults = [];
-        searchresults.push(<option value={false}>Select A Curve </option>)
-        const curves = gfk.getcurves.call(this)
+ showmenu(projectid) {
+    const curveid = new CurveID();
+    const curves = new GFK().getcurves.call(this, projectid) || [];
 
-        if (curves) {
-            // eslint-disable-next-line
-            curves.map(curve => {
-
-                if (curve.projectid === projectid) {
-                    searchresults.push(curveid.showsearchresult.call(this, curve))
-                }
-            })
-        }
-
-        return searchresults;
-    }
+    return [
+        <option key="none" value={false}>Select A Curve</option>,
+        ...curves.map(curve => curveid.showsearchresult.call(this, curve))
+    ];
+}
 
     showcurveid(projectid) {
         const gfk = new GFK();

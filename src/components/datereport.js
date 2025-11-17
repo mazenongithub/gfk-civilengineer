@@ -21,7 +21,8 @@ import {
     addoneYearDateObj,
     inputDateObjOutputCalendarDaySeconds,
     makeDatefromObj,
-    inputDateStringOutputSeconds
+    inputDateStringOutputSeconds,
+    formatDateToYMD
 
 
 } from './functions'
@@ -29,38 +30,48 @@ import { MyStylesheet } from './styles';
 import GFK from './gfk';
 class DateReport {
 
-    setDay(dateencoded) {
+   setDay(dateencoded) {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
 
-        const gfk = new GFK();
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid;
-            let myuser = gfk.getuser.call(this)
-            let i = gfk.getfieldreportkeybyid.call(this, fieldid);
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-            let newtimein = inputSecOutDateString(dateencoded)
-          
-            myuser.fieldreports[i].datereport = newtimein;
-            this.props.reduxUser(myuser)
-            this.setState({ render: 'render' })
+    const i = gfk.getProjectKeyById.call(this, projectid);
 
+    // Active field report → update its datereport
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-        }
-        else {
-            let datereport = inputDateObjandSecReturnObj(dateencoded, this.state.datereport);
-            this.setState({ datereport, render: 'render' })
-        }
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+        const newtime = inputSecOutDateString(dateencoded);
 
+        projects[i].fieldreports[j].datereport = newtime;
 
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } else {
+        // No active field → update local state
+        const datereport = inputDateObjandSecReturnObj(dateencoded, this.state.datereport);
+        this.setState({ datereport, render: 'render' });
     }
+}
+
     getactivedate(dateencoded) {
         const gfk = new GFK();
         let activeclass = "";
+        const projectid = this.props.match.params.projectid;
         if (this.state.activefieldid) {
 
 
             const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-            let timein = fieldreport.datereport;
+            const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
+            let timein = formatDateToYMD(fieldreport.datereport);
+            console.log(fieldreport.datereport, timein)
             if (inputDateStringOutputSeconds(timein) === dateencoded) {
                 activeclass = "active-calender"
             }
@@ -587,11 +598,11 @@ class DateReport {
         const gfk = new GFK();
         const Datein = new DateReport();
         let showgrid = [];
-
+const projectid = this.props.match.params.projectid;
         // begin show grid
         if (this.state.activefieldid) {
             const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+            const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
             let timein = fieldreport.datereport;
 
             let datereport = new Date(`${timein.replace(/-/g, '/')} UTC`);
@@ -629,30 +640,36 @@ class DateReport {
         }
 
     }
-    handleChange(value) {
-        const gfk = new GFK();
-        let myuser = this.getuser();
-        if (myuser) {
+   handleChange(value) {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
 
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                let i = gfk.getfieldreportkeybyid.call(this, fieldid);
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
 
-                let newtimein = value
-                myuser.fieldreports[i].datereport = newtimein;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-            }
-            else {
+    const i = gfk.getProjectKeyById.call(this, projectid);
 
-                this.setState({ datereport: inputDatePickerOutputDateObj(value) })
-            }
+    // If a field report is active → update its datereport
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const j = gfk.getfieldreportkeybyid.call(this, projectid, fieldid);
+        if (j === false) return;
 
+        projects[i].fieldreports[j].datereport = value;
 
-        }
-
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } 
+    else {
+        // No active field → update local state only
+        const datereport = inputDatePickerOutputDateObj(value);
+        this.setState({ datereport });
     }
+}
+
 
     showcalendar() {
 
@@ -663,102 +680,141 @@ class DateReport {
         }
     }
 
-    yeardown() {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
+   yeardown() {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
 
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
-                let timein = fieldreport.datereport;
-                let newtime = decreaseCalendarDaybyOneYear(timein);
-                let i = gfk.getfieldreportkeybyid.call(this, fieldid);
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-                myuser.fieldreports[i].datereport = newtime;
-                this.props.reduxUser(myuser)
-                this.setState({ render: 'render' })
-            }
-            else {
-                let newDate = subtractoneYearDateObj(this.state.datereport);
-                this.setState({ datereport: newDate })
-            }
-        }
+    const i = gfk.getProjectKeyById.call(this, projectid);
 
+    // Active field report → update its datereport
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+        const newtime = decreaseCalendarDaybyOneYear(fieldreport.datereport);
+
+        projects[i].fieldreports[j].datereport = newtime;
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } else {
+        // No active field → update local state
+        const newDate = subtractoneYearDateObj(this.state.datereport);
+        this.setState({ datereport: newDate });
     }
-    yearup() {
+}
 
+   yearup() {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
 
-        if (this.state.activefieldid) {
-            const gfk = new GFK();
-            const myuser = gfk.getuser.call(this)
-            const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
-            let timein = fieldreport.datereport;
-            let newtimein = increaseCalendarDaybyOneYear(timein);
-            let i = gfk.getfieldreportkeybyid.call(this, fieldid);
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-            myuser.fieldreports[i].datereport = newtimein;
-            this.props.reduxUser(myuser);
-            this.setState({ render: 'render' })
+    const i = gfk.getProjectKeyById.call(this, projectid);
 
-        }
-        else {
-            let newDate = addoneYearDateObj(this.state.datereport);
-            this.setState({ datereport: newDate })
-        }
+    // Active field report → update its datereport
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+        const newtime = increaseCalendarDaybyOneYear(fieldreport.datereport);
+
+        projects[i].fieldreports[j].datereport = newtime;
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } else {
+        // No active field → update local state
+        const newDate = addoneYearDateObj(this.state.datereport);
+        this.setState({ datereport: newDate });
     }
-    increasemonth(event) {
-        if (this.state.activefieldid) {
-            const gfk = new GFK();
-            const myuser = gfk.getuser.call(this)
-            const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
-            let timein = fieldreport.datereport;
-            let newtimein = increaseCalendarDayOneMonth(timein);
-            let i = gfk.getfieldreportkeybyid.call(this, fieldid);
+}
 
-            myuser.fieldreports[i].datereport = newtimein;
+ increasemonth() {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
 
-            this.props.reduxUser(myuser)
-            this.setState({ render: 'render' })
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-        }
-        else {
-            let newDate = addoneMonthDateObj(this.state.datereport);
-            this.setState({ datereport: newDate })
-        }
+    const i = gfk.getProjectKeyById.call(this, projectid);
 
+    // Active field report → update its datereport
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
+
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+        const newtime = increaseCalendarDayOneMonth(fieldreport.datereport);
+
+        projects[i].fieldreports[j].datereport = newtime;
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } else {
+        // No active field → update local state
+        const newDate = addoneMonthDateObj(this.state.datereport);
+        this.setState({ datereport: newDate });
     }
-    decreasemonth() {
-        if (this.state.activefieldid) {
-            const gfk = new GFK();
-            const myuser = gfk.getuser.call(this)
-            const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
-            let timein = fieldreport.datereport;
-            let i = gfk.getfieldreportkeybyid.call(this, fieldid);
-            let newtimein = decreaseCalendarDaybyOneMonth(timein);
-            myuser.fieldreports[i].datereport = newtimein;
-            this.props.reduxUser(myuser)
-            this.setState({ render: 'render' })
+}
 
-        }
-        else {
-            let newDate = subtractMonthDateObj(this.state.datereport);
-            this.setState({ datereport: newDate })
-        }
+   decreasemonth() {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
+
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
+
+    const i = gfk.getProjectKeyById.call(this, projectid);
+
+    // Active field report → update its datereport
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
+
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+        const newtime = decreaseCalendarDaybyOneMonth(fieldreport.datereport);
+
+        projects[i].fieldreports[j].datereport = newtime;
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } else {
+        // No active field → update local state
+        const newDate = subtractMonthDateObj(this.state.datereport);
+        this.setState({ datereport: newDate });
     }
+}
+
     getvalue() {
         const gfk = new GFK();
         let value = "";
+        const projectid = this.props.match.params.projectid;
         if (this.state.activefieldid) {
             const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+            const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
 
             value = fieldreport.datereport;
+            value = formatDateToYMD(value)
+            
 
 
         }
@@ -772,10 +828,11 @@ class DateReport {
 
     showdateforcalendar() {
         const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
         if (this.state.activefieldid) {
 
             const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+            const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
 
             let timein = fieldreport.datereport;
             let datereport = new Date(`${timein.replace(/-/g, '/')}-00:00`);

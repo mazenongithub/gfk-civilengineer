@@ -464,19 +464,11 @@ class GFK {
             return ({ width: '36px', height: '36px' })
         }
     }
-    getfieldreports() {
+    getfieldreports(projectid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
 
-        let fieldreport = false;
-        if (myuser) {
-            if (myuser.hasOwnProperty("fieldreports")) {
-                // eslint-disable-next-line
-                fieldreport = myuser.fieldreports;
-            }
-        }
-
-        return fieldreport;
+        return project?.fieldreports || false;
     }
 
     getPTSlabkeybyID(sectionid) {
@@ -569,7 +561,8 @@ class GFK {
     }
     getcurvebyid(curveid) {
         const gfk = new GFK();
-        const curves = gfk.getcurves.call(this)
+        const projectid = this.props.match.params.projectid;
+        const curves = gfk.getcurves.call(this, projectid)
         let getcurve = false;
 
         if (curves) {
@@ -583,45 +576,27 @@ class GFK {
 
         return getcurve;
     }
-    getcompactiontests(fieldid) {
+
+    getcompactiontests(projectid, fieldid) {
         const gfk = new GFK();
-        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-        let tests = false;
-        if (fieldreport) {
-            if (fieldreport.hasOwnProperty("compactiontests")) {
-                tests = fieldreport.compactiontests;
-            }
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
 
-        }
-        return tests;
-    }
-    getcompactiontestbyid(fieldid, testid) {
-        const gfk = new GFK();
-        let tests = false;
-        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-        if (fieldreport) {
-
-
-            if (fieldreport.hasOwnProperty("compactiontests")) {
-
-                // eslint-disable-next-line
-                fieldreport.compactiontests.map(test => {
-                    if (test.testid === testid) {
-                        tests = test;
-                    }
-                })
-
-            }
-
-        }
-
-        return tests;
+        return fieldreport?.compactiontests || false;
     }
 
-    getcompactiontestkeybyid(fieldid, testid) {
+    getcompactiontestbyid(projectid, fieldid, testid) {
+        const gfk = new GFK();
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+
+        if (!fieldreport || !fieldreport.compactiontests) return false;
+
+        return fieldreport.compactiontests.find(test => test.testid === testid) || false;
+    }
+
+    getcompactiontestkeybyid(projectid, fieldid, testid) {
         const gfk = new GFK();
         let key = false;
-        const compactiontests = gfk.getcompactiontests.call(this, fieldid)
+        const compactiontests = gfk.getcompactiontests.call(this, projectid, fieldid)
         if (compactiontests) {
             // eslint-disable-next-line
             compactiontests.map((test, i) => {
@@ -644,7 +619,7 @@ class GFK {
     }
     getfieldreportbyprojectid(projectid) {
         const gfk = new GFK();
-        const reports = gfk.getfieldreports.call(this);
+        const reports = gfk.getfieldreports.call(this, projectid);
         let myreports = [];
         if (reports) {
             // eslint-disable-next-line
@@ -688,49 +663,30 @@ class GFK {
             return ({ width: '155px', height: '134px' })
         }
     }
-    getimagesbyfieldid(fieldid) {
+    getimagesbyfieldid(projectid, fieldid) {
         const gfk = new GFK();
-        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-        let images = false;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport || !Array.isArray(fieldreport.images)) return false;
 
-        if (fieldreport.hasOwnProperty("images")) {
-            images = fieldreport.images;
-        }
-
-        return images;
+        return fieldreport.images;
     }
-    getimagekeybyid(fieldid, imageid) {
+    getimagekeybyid(projectid, fieldid, imageid) {
         const gfk = new GFK();
-        const images = gfk.getimagesbyfieldid.call(this, fieldid)
-        let key = false;
-        if (images) {
-            // eslint-disable-next-line
-            images.map((image, i) => {
-                if (image.imageid === imageid) {
-                    key = i;
+        const images = gfk.getimagesbyfieldid.call(this, projectid, fieldid);
+        if (!images) return false;
 
-                }
-            })
-        }
-        return key;
-
+        const key = images.findIndex(image => image.imageid === imageid);
+        return key !== -1 ? key : false;
     }
-    getimagebyid(fieldid, imageid) {
+
+    getimagebyid(projectid, fieldid, imageid) {
         const gfk = new GFK();
-        const images = gfk.getimagesbyfieldid.call(this, fieldid)
-        let myimage = false;
-        if (images) {
-            // eslint-disable-next-line
-            images.map((image) => {
-                if (image.imageid === imageid) {
-                    myimage = image;
+        const images = gfk.getimagesbyfieldid.call(this, projectid, fieldid);
+        if (!images) return false;
 
-                }
-            })
-        }
-        return myimage;
-
+        return images.find(image => image.imageid === imageid) || false;
     }
+
 
     getsieveanalysisbysampleid(projectid, boringid, sampleid) {
         const gfk = new GFK();
@@ -821,38 +777,24 @@ class GFK {
 
         return compactiontests;
     }
-    getfieldkeybyid(fieldid) {
+
+    getfieldkeybyid(projectid, fieldid) {
         const gfk = new GFK();
-        const fieldreports = gfk.getfieldreports.call(this)
-        let key = false;
-        if (fieldreports) {
+        const fieldreports = gfk.getfieldreports.call(this, projectid);
 
-            // eslint-disable-next-line
-            fieldreports.map((report, i) => {
-                if (report.fieldid === fieldid) {
-                    key = i;
-                }
-            })
+        if (!fieldreports) return false;
 
-        }
-        return key;
+        const index = fieldreports.findIndex(report => report.fieldid === fieldid);
+
+        return index >= 0 ? index : false;
     }
-    getfieldreportbyid(fieldid) {
-        let fieldreport = false;
+    getfieldreportbyid(projectid, fieldid) {
         const gfk = new GFK();
-        const fieldreports = gfk.getfieldreports.call(this)
-        if (fieldreports) {
-            // eslint-disable-next-line
-            fieldreports.map((report) => {
-                if (report.fieldid === fieldid) {
-                    fieldreport = report;
-                }
-            })
+        const fieldreports = gfk.getfieldreports.call(this, projectid) || [];
 
-        }
-
-        return fieldreport;
+        return fieldreports.find(report => report.fieldid === fieldid) || false;
     }
+
 
     getProjects() {
         const { projects } = this.props;
@@ -900,16 +842,13 @@ class GFK {
         }
         return key;
     }
-    getcurves() {
+    getcurves(projectid) {
         const gfk = new GFK();
-        let curves = false;
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-            if (myuser.hasOwnProperty("compactioncurves")) {
-                curves = myuser.compactioncurves;
-            }
-        }
-        return curves;
+        const project = gfk.getProjectById.call(this, projectid);
+
+        if (!project) return false;
+
+        return project.compactioncurves || false;
     }
 
     getprojectidfromfieldid(fieldid) {

@@ -32,8 +32,8 @@ class FieldReports extends Component {
     getprojectid() {
         const gfk = new GFK();
         if (this.state.activefieldid) {
-            const report = gfk.getfieldreportbyid.call(this, this.state.activefieldid)
-            const myproject = gfk.getprojectbyid.call(this, report.projectid);
+            const { projectid } = this.props.match.params;
+            const myproject = gfk.getProjectById.call(this, projectid);
             return (`ProjectID ${myproject.projectid} #${myproject.projectnumber} ${myproject.address} ${myproject.city}`)
         } else {
             return;
@@ -44,163 +44,183 @@ class FieldReports extends Component {
     getFieldReport() {
         const gfk = new GFK();
         const fieldid = this.state.activefieldid
-        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
         return fieldreport;
 
     }
     gettestnum() {
         const gfk = new GFK();
-        let testnum = "";
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
 
-            if (fieldreport) {
+        // No active field → no testnum
+        if (!this.state.activefieldid) return "";
 
-                if (this.state.activetestid) {
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, this.state.activefieldid);
+        if (!fieldreport) return "";
 
-                    const testid = this.state.activetestid;
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-
-                    testnum = (test.testnum);
-                } else {
-                    testnum = this.state.testnum;
-                }
-
-            }
-
+        // If a test is active, return its testnum
+        if (this.state.activetestid) {
+            const test = gfk.getcompactiontestbyid.call(
+                this,
+                projectid,
+                this.state.activefieldid,
+                this.state.activetestid
+            );
+            return test?.testnum || "";
         }
-        return testnum;
 
-
+        // Otherwise return locally stored testnum
+        return this.state.testnum || "";
     }
+
 
     handletestnum(testnum) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        const makeid = new MakeID()
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activetestid) {
-                        const testid = this.state.activetestid;
-                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-                        myuser.fieldreports[i].compactiontests[j].testnum = testnum;
-                        this.props.reduxUser(myuser)
-                        this.setState({ render: 'render' })
-                    } else {
+        const makeid = new MakeID();
+        const projects = gfk.getProjects.call(this);
 
-                        let testid = makeid.compactionTest.call(this)
-                        let timetest = makeUTCStringCurrentTime();
-                        let elevation = this.state.elevation;
-                        let location = this.state.location;
-                        let wetpcf = this.state.wetpcf;
-                        let moistpcf = this.state.moistpcf;
-                        let curveid = this.state.curveid;
-                        let letterid = "";
-                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+        if (!projects) return;
 
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                        if (fieldreport.hasOwnProperty("compactiontests")) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                            myuser.fieldreports[i].compactiontests.push(newTest);
+        // Must have an active field
+        if (!this.state.activefieldid) return;
 
-                        } else {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-                            myuser.fieldreports[i].compactiontests = [newTest];
-                        }
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
-                        this.props.reduxUser(myuser)
-                        this.setState({ activetestid: testid })
+        // If a test is active → update it
+        if (this.state.activetestid) {
+            const testid = this.state.activetestid;
+            const k = gfk.getcompactiontestkeybyid.call(this, projectid, fieldid, testid);
 
+            projects[i].fieldreports[j].compactiontests[k].testnum = testnum;
 
-                    }
-
-                }
-
-            }
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
         }
 
+        // Otherwise → create a new test
+        const newTestId = makeid.compactionTest.call(this);
+
+        const newTest = compactionTest(
+            newTestId,
+            makeUTCStringCurrentTime(),
+            testnum,
+            this.state.elevation,
+            this.state.location,
+            this.state.wetpcf,
+            this.state.moistpcf,
+            this.state.curveid,
+            fieldid,
+            "" // letterid
+        );
+
+        if (!fieldreport.compactiontests) {
+            projects[i].fieldreports[j].compactiontests = [];
+        }
+
+        projects[i].fieldreports[j].compactiontests.push(newTest);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activetestid: newTestId });
     }
+
     getelevation() {
         const gfk = new GFK();
-        let elevation = "";
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
 
-            if (fieldreport) {
+        if (!this.state.activefieldid) return "";
 
-                if (this.state.activetestid) {
+        const fieldreport = gfk.getfieldreportbyid.call(
+            this,
+            projectid,
+            this.state.activefieldid
+        );
+        if (!fieldreport) return "";
 
-                    const testid = this.state.activetestid;
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-
-                    elevation = (test.elevation);
-                } else {
-                    elevation = this.state.elevation;
-                }
-
-            }
-
+        // If a test is active → return stored elevation
+        if (this.state.activetestid) {
+            const test = gfk.getcompactiontestbyid.call(
+                this,
+                projectid,
+                this.state.activefieldid,
+                this.state.activetestid
+            );
+            return test?.elevation || "";
         }
-        return elevation;
 
-
+        // No active test → return local elevation state
+        return this.state.elevation || "";
     }
+
 
     handleelevation(elevation) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        const makeid = new MakeID()
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activetestid) {
-                        const testid = this.state.activetestid;
-                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-                        myuser.fieldreports[i].compactiontests[j].elevation = elevation;
-                        this.props.reduxUser(myuser)
-                        this.setState({ render: 'render' })
-                    } else {
+        const makeid = new MakeID();
+        const projects = gfk.getProjects.call(this);
 
-                        let testid = makeid.compactionTest.call(this)
-                        let timetest = makeUTCStringCurrentTime();
-                        let location = this.state.location;
-                        let testnum = this.state.testnum
-                        let wetpcf = this.state.wetpcf;
-                        let moistpcf = this.state.moistpcf;
-                        let curveid = this.state.curveid;
-                        let letterid = "";
-                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+        if (!projects) return;
 
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                        if (fieldreport.hasOwnProperty("compactiontests")) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                            myuser.fieldreports[i].compactiontests.push(newTest);
+        if (!this.state.activefieldid) return;
 
-                        } else {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-                            myuser.fieldreports[i].compactiontests = [newTest];
-                        }
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
-                        this.props.reduxUser(myuser)
-                        this.setState({ activetestid: testid })
+        // --- Update existing test ---
+        if (this.state.activetestid) {
+            const testid = this.state.activetestid;
+            const k = gfk.getcompactiontestkeybyid.call(this, projectid, fieldid, testid);
 
+            projects[i].fieldreports[j].compactiontests[k].elevation = elevation;
 
-                    }
-
-                }
-
-            }
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
         }
 
+        // --- Create new test ---
+        const newTestId = makeid.compactionTest.call(this);
+
+        const newTest = compactionTest(
+            newTestId,
+            makeUTCStringCurrentTime(),
+            this.state.testnum,
+            elevation,
+            this.state.location,
+            this.state.wetpcf,
+            this.state.moistpcf,
+            this.state.curveid,
+            fieldid,
+            "" // letterid
+        );
+
+        if (!fieldreport.compactiontests) {
+            projects[i].fieldreports[j].compactiontests = [];
+        }
+
+        projects[i].fieldreports[j].compactiontests.push(newTest);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activetestid: newTestId });
     }
 
 
@@ -208,319 +228,385 @@ class FieldReports extends Component {
 
     getlocation() {
         const gfk = new GFK();
-        let location = "";
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
 
-            if (fieldreport) {
+        // No active field → no location
+        if (!this.state.activefieldid) return "";
 
-                if (this.state.activetestid) {
+        const fieldreport = gfk.getfieldreportbyid.call(
+            this,
+            projectid,
+            this.state.activefieldid
+        );
+        if (!fieldreport) return "";
 
-                    const testid = this.state.activetestid;
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-
-                    location = (test.location);
-                } else {
-                    location = this.state.location;
-                }
-
-            }
-
+        // If a test is active, return its location
+        if (this.state.activetestid) {
+            const test = gfk.getcompactiontestbyid.call(
+                this,
+                projectid,
+                this.state.activefieldid,
+                this.state.activetestid
+            );
+            return test?.location || "";
         }
-        return location;
 
-
+        // Otherwise return the pending local location
+        return this.state.location || "";
     }
 
     handlelocation(location) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        const makeid = new MakeID()
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activetestid) {
-                        const testid = this.state.activetestid;
-                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-                        myuser.fieldreports[i].compactiontests[j].location = location;
-                        this.props.reduxUser(myuser)
-                        this.setState({ render: 'render' })
-                    } else {
+        const makeid = new MakeID();
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
 
-                        let testid = makeid.compactionTest.call(this)
-                        let timetest = makeUTCStringCurrentTime();
-                        let elevation = this.state.elevation;
-                        let testnum = this.state.testnum
-                        let wetpcf = this.state.wetpcf;
-                        let moistpcf = this.state.moistpcf;
-                        let curveid = this.state.curveid;
-                        let letterid = "";
-                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                        if (fieldreport.hasOwnProperty("compactiontests")) {
+        // Must have an active field
+        if (!this.state.activefieldid) return;
 
-                            myuser.fieldreports[i].compactiontests.push(newTest);
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-                        } else {
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
-                            myuser.fieldreports[i].compactiontests = [newTest];
-                        }
+        // If a test is active → update location
+        if (this.state.activetestid) {
+            const testid = this.state.activetestid;
+            const k = gfk.getcompactiontestkeybyid.call(
+                this,
+                projectid,
+                fieldid,
+                testid
+            );
 
-                        this.props.reduxUser(myuser)
-                        this.setState({ activetestid: testid })
+            projects[i].fieldreports[j].compactiontests[k].location = location;
 
-
-                    }
-
-                }
-
-            }
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
         }
 
+        // Otherwise create a new test
+        const newTestId = makeid.compactionTest.call(this);
+
+        const newTest = compactionTest(
+            newTestId,
+            makeUTCStringCurrentTime(),
+            this.state.testnum,     // testnum
+            this.state.elevation,   // elevation
+            location,               // location (changed)
+            this.state.wetpcf,
+            this.state.moistpcf,
+            this.state.curveid,
+            fieldid,
+            "" // letterid
+        );
+
+        if (!fieldreport.compactiontests) {
+            projects[i].fieldreports[j].compactiontests = [];
+        }
+
+        projects[i].fieldreports[j].compactiontests.push(newTest);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activetestid: newTestId });
     }
+
 
     getwetpcf() {
-
         const gfk = new GFK();
-        let wetpcf = "";
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
 
-            if (fieldreport) {
+        // No active field → no wetpcf
+        if (!this.state.activefieldid) return "";
 
-                if (this.state.activetestid) {
+        const fieldreport = gfk.getfieldreportbyid.call(
+            this,
+            projectid,
+            this.state.activefieldid
+        );
+        if (!fieldreport) return "";
 
-                    const testid = this.state.activetestid;
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-
-                    wetpcf = (test.wetpcf);
-                } else {
-                    wetpcf = this.state.wetpcf;
-                }
-
-            }
-
+        // If a test is active, return its wetpcf
+        if (this.state.activetestid) {
+            const test = gfk.getcompactiontestbyid.call(
+                this,
+                projectid,
+                this.state.activefieldid,
+                this.state.activetestid
+            );
+            return test?.wetpcf || "";
         }
-        return wetpcf;
 
-
+        // Otherwise return pending local wetpcf
+        return this.state.wetpcf || "";
     }
+
 
     handlewetpcf(wetpcf) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        const makeid = new MakeID()
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activetestid) {
-                        const testid = this.state.activetestid;
-                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-                        myuser.fieldreports[i].compactiontests[j].wetpcf = wetpcf;
-                        this.props.reduxUser(myuser)
-                        this.setState({ render: 'render' })
-                    } else {
+        const makeid = new MakeID();
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
 
-                        let testid = makeid.compactionTest.call(this)
-                        let timetest = makeUTCStringCurrentTime();
-                        let location = this.state.location;
-                        let testnum = this.state.testnum
-                        let elevation = this.state.elevation;
-                        let moistpcf = this.state.moistpcf;
-                        let curveid = this.state.curveid;
-                        let letterid = "";
-                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                        if (fieldreport.hasOwnProperty("compactiontests")) {
+        // Must have an active field
+        if (!this.state.activefieldid) return;
 
-                            myuser.fieldreports[i].compactiontests.push(newTest);
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-                        } else {
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
-                            myuser.fieldreports[i].compactiontests = [newTest];
-                        }
+        // If a test is active → update wetpcf
+        if (this.state.activetestid) {
+            const testid = this.state.activetestid;
+            const k = gfk.getcompactiontestkeybyid.call(
+                this,
+                projectid,
+                fieldid,
+                testid
+            );
 
-                        this.props.reduxUser(myuser)
-                        this.setState({ activetestid: testid })
+            projects[i].fieldreports[j].compactiontests[k].wetpcf = wetpcf;
 
-
-                    }
-
-                }
-
-            }
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
         }
 
+        // Otherwise create a new test
+        const newTestId = makeid.compactionTest.call(this);
+
+        const newTest = compactionTest(
+            newTestId,
+            makeUTCStringCurrentTime(),
+            this.state.testnum,
+            this.state.elevation,
+            this.state.location,
+            wetpcf,                 // wetpcf (changed)
+            this.state.moistpcf,
+            this.state.curveid,
+            fieldid,
+            "" // letterid
+        );
+
+        if (!fieldreport.compactiontests) {
+            projects[i].fieldreports[j].compactiontests = [];
+        }
+
+        projects[i].fieldreports[j].compactiontests.push(newTest);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activetestid: newTestId });
     }
+
 
     getmoistpcf() {
         const gfk = new GFK();
-        let moistpcf = "";
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
 
-            if (fieldreport) {
+        // No active field → no moistpcf
+        if (!this.state.activefieldid) return "";
 
-                if (this.state.activetestid) {
+        const fieldreport = gfk.getfieldreportbyid.call(
+            this,
+            projectid,
+            this.state.activefieldid
+        );
+        if (!fieldreport) return "";
 
-                    const testid = this.state.activetestid;
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-
-                    moistpcf = (test.moistpcf);
-                } else {
-                    moistpcf = this.state.moistpcf;
-                }
-
-            }
-
+        // If a test is active, return its moistpcf
+        if (this.state.activetestid) {
+            const test = gfk.getcompactiontestbyid.call(
+                this,
+                projectid,
+                this.state.activefieldid,
+                this.state.activetestid
+            );
+            return test?.moistpcf || "";
         }
-        return moistpcf;
 
-
+        // Otherwise return the pending local moistpcf
+        return this.state.moistpcf || "";
     }
 
 
     handlemoistpcf(moistpcf) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        const makeid = new MakeID()
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activetestid) {
-                        const testid = this.state.activetestid;
-                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-                        myuser.fieldreports[i].compactiontests[j].moistpcf = moistpcf;
-                        this.props.reduxUser(myuser)
-                        this.setState({ render: 'render' })
-                    } else {
+        const makeid = new MakeID();
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
 
-                        let testid = makeid.compactionTest.call(this)
-                        let timetest = makeUTCStringCurrentTime();
-                        let location = this.state.location;
-                        let testnum = this.state.testnum
-                        let elevation = this.state.elevation;
-                        let wetpcf = this.state.wetpcf;
-                        let curveid = this.state.curveid;
-                        let letterid = "";
-                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                        if (fieldreport.hasOwnProperty("compactiontests")) {
+        // Must have an active field
+        if (!this.state.activefieldid) return;
 
-                            myuser.fieldreports[i].compactiontests.push(newTest);
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-                        } else {
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
-                            myuser.fieldreports[i].compactiontests = [newTest];
-                        }
+        // If a test is active → update moistpcf
+        if (this.state.activetestid) {
+            const testid = this.state.activetestid;
+            const k = gfk.getcompactiontestkeybyid.call(
+                this,
+                projectid,
+                fieldid,
+                testid
+            );
 
-                        this.props.reduxUser(myuser)
-                        this.setState({ activetestid: testid })
+            projects[i].fieldreports[j].compactiontests[k].moistpcf = moistpcf;
 
-
-                    }
-
-                }
-
-            }
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
         }
+
+        // Otherwise create a new test
+        const newTestId = makeid.compactionTest.call(this);
+
+        const newTest = compactionTest(
+            newTestId,
+            makeUTCStringCurrentTime(),
+            this.state.testnum,
+            this.state.elevation,
+            this.state.location,
+            this.state.wetpcf,
+            moistpcf,              // moistpcf (updated)
+            this.state.curveid,
+            fieldid,
+            "" // letterid
+        );
+
+        if (!fieldreport.compactiontests) {
+            projects[i].fieldreports[j].compactiontests = [];
+        }
+
+        projects[i].fieldreports[j].compactiontests.push(newTest);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activetestid: newTestId });
     }
 
 
 
     getcurveid() {
         const gfk = new GFK();
-        let curveid = "";
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const { projectid } = this.props.match.params;
 
-            if (fieldreport) {
+        // No active field → no curveid
+        if (!this.state.activefieldid) return "";
 
-                if (this.state.activetestid) {
+        const fieldreport = gfk.getfieldreportbyid.call(
+            this,
+            projectid,
+            this.state.activefieldid
+        );
+        if (!fieldreport) return "";
 
-                    const testid = this.state.activetestid;
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-
-                    curveid = (test.curveid);
-                } else {
-                    curveid = this.state.curveid;
-                }
-
-            }
-
+        // If a test is active → return its curveid
+        if (this.state.activetestid) {
+            const test = gfk.getcompactiontestbyid.call(
+                this,
+                projectid,
+                this.state.activefieldid,
+                this.state.activetestid
+            );
+            return test?.curveid || "";
         }
-        return curveid;
 
-
+        // Otherwise return the pending local curveid
+        return this.state.curveid || "";
     }
+
 
 
     handlecurveid(curveid) {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
-        const makeid = new MakeID()
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activetestid) {
-                        const testid = this.state.activetestid;
-                        const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-                        myuser.fieldreports[i].compactiontests[j].curveid = curveid;
-                        this.props.reduxUser(myuser)
-                        this.setState({ render: 'render' })
-                    } else {
+        const makeid = new MakeID();
+        const projects = gfk.getProjects.call(this);
+        
+        if (!projects) return;
 
-                        let testid = makeid.compactionTest.call(this)
-                        let timetest = makeUTCStringCurrentTime();
-                        let location = this.state.location;
-                        let testnum = this.state.testnum
-                        let elevation = this.state.elevation;
-                        let wetpcf = this.state.wetpcf;
-                        let moistpcf = this.state.moistpcf;
-                        let letterid = "";
-                        let newTest = compactionTest(testid, timetest, testnum, elevation, location, wetpcf, moistpcf, curveid, fieldid, letterid)
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                        if (fieldreport.hasOwnProperty("compactiontests")) {
+        // Must have active field
+        if (!this.state.activefieldid) return;
 
-                            myuser.fieldreports[i].compactiontests.push(newTest);
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport) return;
 
-                        } else {
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
-                            myuser.fieldreports[i].compactiontests = [newTest];
-                        }
+        // If a test is active → update its curveid
+        if (this.state.activetestid) {
+            const testid = this.state.activetestid;
+            const k = gfk.getcompactiontestkeybyid.call(
+                this,
+                projectid,
+                fieldid,
+                testid
+            );
 
-                        this.props.reduxUser(myuser)
-                        this.setState({ activetestid: testid })
+            projects[i].fieldreports[j].compactiontests[k].curveid = curveid;
 
-
-                    }
-
-                }
-
-            }
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
         }
 
+        // Otherwise → Create a new compaction test
+        const newTestId = makeid.compactionTest.call(this);
+
+        const newTest = compactionTest(
+            newTestId,
+            makeUTCStringCurrentTime(),
+            this.state.testnum,
+            this.state.elevation,
+            this.state.location,
+            this.state.wetpcf,
+            this.state.moistpcf,
+            curveid,               // updated curveid
+            fieldid,
+            "" // letterid
+        );
+
+        if (!fieldreport.compactiontests) {
+            projects[i].fieldreports[j].compactiontests = [];
+        }
+
+        projects[i].fieldreports[j].compactiontests.push(newTest);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activetestid: newTestId });
     }
+
 
     compactiontestinput() {
         const styles = MyStylesheet();
@@ -655,39 +741,65 @@ class FieldReports extends Component {
 
     }
     makereportactive(fieldid) {
-        if (this.state.activefieldid === fieldid) {
-            this.setState({ activefieldid: false, testnum: '', elevation: '', location: '', wetpcf: 0, moistpcf: 0, curveid: '', message: '', image: '', caption: '', activetestid: false, activeimageid: false })
-        } else {
-            this.setState({ activefieldid: fieldid, testnum: '', elevation: '', location: '', wetpcf: 0, moistpcf: 0, curveid: '', message: '', image: '', caption: '', activetestid: false, activeimageid: false })
-        }
+        console.log(fieldid)
+        const isActive = this.state.activefieldid === fieldid;
+
+        const resetState = {
+            testnum: '',
+            elevation: '',
+            location: '',
+            wetpcf: 0,
+            moistpcf: 0,
+            curveid: '',
+            message: '',
+            image: '',
+            caption: '',
+            activetestid: false,
+            activeimageid: false
+        };
+
+        this.setState({
+            activefieldid: isActive ? false : fieldid,
+            ...resetState
+        });
     }
+
     removefieldreport(fieldid) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const report = gfk.getfieldreportbyid.call(this, fieldid);
-            if (window.confirm(`Are you sure you want to delete report ${milestoneformatdatestring(report.datereport)}`)) {
-                const i = gfk.getfieldkeybyid.call(this, fieldid);
-                myuser.fieldreports.fieldreport.splice(i, 1);
-                if (myuser.fieldreports.fieldreport.length === 0) {
-                    delete myuser.fieldreports.fieldreport;
-                    delete myuser.fieldreports;
-                }
-                this.props.reduxUser(myuser);
-                this.setState({ activefieldid: false })
-            }
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
 
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const i = gfk.getProjectKeyById.call(this, projectid);
+
+        const report = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!report) return;
+
+        // Confirm deletion
+        if (!window.confirm(`Are you sure you want to delete report ${milestoneformatdatestring(report.datereport)}?`)) {
+            return;
         }
 
+        const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
 
+        // Remove the report
+        projects[i].fieldreports.splice(j, 1);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activefieldid: false });
     }
+
     showreportid(report) {
+      
         const styles = MyStylesheet();
         const gfk = new GFK();
         const removeIcon = gfk.getremoveicon.call(this)
         const regularFont = gfk.getRegularFont.call(this);
         const headerFont = gfk.getHeaderFont.call(this)
-        const engineerid = this.props.match.params.engineerid;
+        const engineerid = 'mazen'
         const projectid = this.props.match.params.projectid;
         const goIconWidth = gfk.getgotoicon.call(this)
         const activebackground = () => {
@@ -721,108 +833,113 @@ class FieldReports extends Component {
 
             </div>)
     }
-    showotherreports() {
-        const gfk = new GFK();
-        const reports = gfk.getfieldreports.call(this)
-        if (reports.length > 0) {
-            reports.sort((a, b) => {
+ showotherreports() {
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
 
-                return sorttimesdesc(a.datereport, b.datereport)
-            })
-        }
-        const fieldreports = [];
-        const projectid = this.props.match.params.projectid;
-        if (reports.hasOwnProperty("length")) {
-            // eslint-disable-next-line
-            reports.map(report => {
-                if (report.projectid === projectid && report.reportid !== this.state.activefieldid) {
-                    fieldreports.push(this.showreportid(report))
-                }
-            })
-        }
-        return fieldreports;
-    }
+    const reports = gfk.getfieldreports.call(this, projectid) || [];
+    if (!Array.isArray(reports)) return [];
+
+    // Sort newest → oldest
+    const sortedReports = [...reports].sort((a, b) =>
+        sorttimesdesc(a.datereport, b.datereport)
+    );
+
+    // Map all reports to render
+    return sortedReports.map(report => this.showreportid(report));
+}
+
+
     getcontent() {
-        const gfk = new GFK();
-        if (this.state.activefieldid) {
-            const report = gfk.getfieldreportbyid.call(this, this.state.activefieldid);
+    const gfk = new GFK();
+    const { projectid } = this.props.match.params;
 
-            return (report.content)
-        } else {
-            return (this.state.content)
-        }
+    if (this.state.activefieldid) {
+        const report = gfk.getfieldreportbyid.call(
+            this,
+            projectid,
+            this.state.activefieldid
+        );
+        return report?.content || "";
     }
-    handlecontent(content) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        const makeid = new MakeID();
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const i = gfk.getfieldkeybyid.call(this, this.state.activefieldid);
-                myuser.fieldreports[i].content = content;
-                this.setState({ render: 'render' })
-            } else {
-                let fieldid = makeid.fieldID.call(this)
-                let datereport = makeDatefromObj(this.state.datereport);
-                let engineerid = myuser.engineerid;
-                const projectid = this.props.match.params.projectid;
-                let fieldreport = fieldReport(fieldid, projectid, datereport, content, engineerid);
 
-                let fieldreports = gfk.getfieldreports.call(this);
-                if (fieldreports) {
-                    myuser.fieldreports.push(fieldreport)
-                } else {
-                    myuser.fieldreports = [fieldreport]
-                }
-                this.props.reduxUser(myuser);
-                this.setState({ activefieldid: fieldid })
+    return this.state.content || "";
+}
 
-            }
+  handlecontent(content) {
+    const gfk = new GFK();
+    const makeid = new MakeID();
+    const projects = gfk.getProjects.call(this);
+    if (!projects) return;
+
+    const { projectid } = this.props.match.params;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
+
+    const i = gfk.getProjectKeyById.call(this, projectid);
+
+    if (this.state.activefieldid) {
+        // Update existing field report
+        const j = gfk.getfieldkeybyid.call(this, projectid, this.state.activefieldid);
+        projects[i].fieldreports[j].content = content;
+        this.setState({ render: 'render' });
+    } else {
+        // Create new field report
+        const fieldid = makeid.fieldID.call(this);
+        const datereport = makeDatefromObj(this.state.datereport);
+        const engineerid = 'mazen'; // fallback if not in state
+
+        const newFieldReport = fieldReport(fieldid, projectid, datereport, content, engineerid);
+
+        if (!projects[i].fieldreports) {
+            projects[i].fieldreports = [];
         }
+        projects[i].fieldreports.push(newFieldReport);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activefieldid: fieldid });
     }
+}
+
     maketestactive(testid) {
-        if (this.state.activetestid === testid) {
-            this.setState({ activetestid: false })
-        } else {
-            this.setState({ activetestid: testid })
-        }
+    this.setState(prevState => ({
+        activetestid: prevState.activetestid === testid ? false : testid
+    }));
+}
+
+   removetest(testid) {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
+    if (!projects || !this.state.activefieldid) return;
+
+    const { projectid } = this.props.match.params;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
+
+    const i = gfk.getProjectKeyById.call(this, projectid);
+    const fieldid = this.state.activefieldid;
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+    if (!fieldreport) return;
+
+    const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+    const test = gfk.getcompactiontestbyid.call(this, projectid, fieldid, testid);
+    if (!test) return;
+
+    if (!window.confirm(`Are you sure you want to delete test number ${test.testnum}?`)) return;
+
+    const k = gfk.getcompactiontestkeybyid.call(this, projectid, fieldid, testid);
+
+    projects[i].fieldreports[j].compactiontests.splice(k, 1);
+
+    // Remove the compactiontests property if empty
+    if (projects[i].fieldreports[j].compactiontests.length === 0) {
+        delete projects[i].fieldreports[j].compactiontests;
     }
 
-    removetest(testid) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    const test = gfk.getcompactiontestbyid.call(this, fieldid, testid)
-                    if (test) {
-                        if (window.confirm(`Are you sure you want to delete test number ${test.testnum}?`)) {
+    this.props.reduxProjects(projects);
+    this.setState({ activetestid: false });
+}
 
-
-                            const j = gfk.getcompactiontestkeybyid.call(this, fieldid, testid)
-
-                            myuser.fieldreports[i].compactiontests.splice(j, 1);
-                            if (myuser.fieldreports[i].compactiontests.length === 0) {
-                                delete myuser.fieldreports[i].compactiontests
-
-                            }
-                            this.props.reduxUser(myuser);
-                            this.setState({ activetestid: false })
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-
-        }
-    }
     showtest(test) {
 
         const gfk = new GFK();
@@ -849,29 +966,20 @@ class FieldReports extends Component {
         )
 
     }
-    showcompactiontests() {
-        const gfk = new GFK();
-        let compactiontest = [];
-        if (this.state.activefieldid) {
-            let fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-            if (fieldreport) {
+   showcompactiontests() {
+    const gfk = new GFK();
 
-                if (fieldreport.hasOwnProperty("compactiontests")) {
+    if (!this.state.activefieldid) return [];
 
-                    // eslint-disable-next-line
-                    fieldreport.compactiontests.map(test => {
-                        compactiontest.push(this.showtest(test))
-                    })
+    const { projectid } = this.props.match.params;
+    const fieldid = this.state.activefieldid;
 
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+    if (!fieldreport || !Array.isArray(fieldreport.compactiontests)) return [];
 
-                }
-            }
+    return fieldreport.compactiontests.map(test => this.showtest(test));
+}
 
-        }
-
-        return compactiontest;
-    }
     handleactiveids(response) {
         let message = "";
         if (response.hasOwnProperty("message")) {
@@ -929,26 +1037,20 @@ class FieldReports extends Component {
     async savereport() {
 
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this);
+        const projects = gfk.getProjects.call(this)
+        const projectid = this.props.match.params.projectid;
+        const project = gfk.getProjectById.call(this,projectid)
+        const i = gfk.getProjectKeyById.call(this,projectid)
         if (this.state.activefieldid) {
             const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-            if (fieldreport) {
+            const fieldreports = gfk.getfieldreportbyid.call(this, projectid,  fieldid)
+            if (fieldreports) {
 
                 try {
-                    console.log(fieldreport)
-                    let response = await SaveFieldReport(fieldreport);
+                  
+                    let response = await SaveFieldReport(fieldreports);
                     console.log(response)
-                    if (response.hasOwnProperty("fieldreportdb")) {
-                        const i = gfk.getfieldkeybyid.call(this, fieldid)
-                        myuser.fieldreports[i] = response.fieldreportdb
-                    }
-                    this.props.reduxUser(myuser)
-                    let message = "";
-                    if (response.hasOwnProperty("message")) {
-                        message = response.message;
-                    }
-                    this.setState({ message: message })
+                   
 
                 } catch (err) {
                     alert(err)
@@ -960,169 +1062,155 @@ class FieldReports extends Component {
 
 
     }
-    makeimageactive(imageid) {
-        if (this.state.activeimageid === imageid) {
-            this.setState({ activeimageid: false })
-        } else {
-            this.setState({ activeimageid: imageid })
-        }
-    }
-    handlecaption(caption) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        const makeid = new MakeID();
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
+  makeimageactive(imageid) {
+    this.setState(prevState => ({
+        activeimageid: prevState.activeimageid === imageid ? false : imageid
+    }));
+}
 
-                    const images = gfk.getimagesbyfieldid.call(this, fieldid);
+   handlecaption(caption) {
+    const gfk = new GFK();
+    const makeid = new MakeID();
+    const projects = gfk.getProjects.call(this);
+    if (!projects || !this.state.activefieldid) return;
 
+    const { projectid } = this.props.match.params;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-                    if (this.state.activeimageid) {
-                        const imageid = this.state.activeimageid;
-                        const j = gfk.getimagekeybyid.call(this, fieldid, imageid)
+    const i = gfk.getProjectKeyById.call(this, projectid);
+    const fieldid = this.state.activefieldid;
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+    if (!fieldreport) return;
 
-                        myuser.fieldreports[i].images[j].caption = caption;
-                        this.props.reduxUser(myuser);
-                        this.setState({ render: 'render' })
+    const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+    const images = gfk.getimagesbyfieldid.call(this, projectid, fieldid) || [];
 
-                    } else {
+    if (this.state.activeimageid) {
+        // Update existing image caption
+        const imageid = this.state.activeimageid;
+        const k = gfk.getimagekeybyid.call(this, projectid, fieldid, imageid);
 
-                        let imageid = makeid.imageID.call(this)
-                        let image = this.state.image;
-                        let newImage = CreateImage(imageid, image, caption)
+        projects[i].fieldreports[j].images[k].caption = caption;
 
-                        if (images) {
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    } else {
+        // Create new image with caption
+        const imageid = makeid.imageID.call(this);
+        const image = this.state.image;
+        const newImage = CreateImage(imageid, image, caption);
 
-                            myuser.fieldreports[i].images.push(newImage)
-                        } else {
-
-                            myuser.fieldreports[i].images = [newImage];
-
-                        }
-                        this.props.reduxUser(myuser)
-                        this.setState({ activeimageid: imageid })
-
-                    }
-                }
-            }
+        if (!projects[i].fieldreports[j].images) {
+            projects[i].fieldreports[j].images = [];
         }
 
+        projects[i].fieldreports[j].images.push(newImage);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activeimageid: imageid });
+    }
+}
+
+
+  getcaption() {
+    const gfk = new GFK();
+
+    if (!this.state.activefieldid) return this.state.caption || "";
+
+    const { projectid } = this.props.match.params;
+    const fieldid = this.state.activefieldid;
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+    if (!fieldreport) return this.state.caption || "";
+
+    if (this.state.activeimageid) {
+        const imageid = this.state.activeimageid;
+        const activeimage = gfk.getimagebyid.call(this, projectid, fieldid, imageid);
+        return activeimage?.caption || "";
     }
 
-    getcaption() {
-        const gfk = new GFK();
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-            if (fieldreport) {
+    return this.state.caption || "";
+}
 
-                if (this.state.activeimageid) {
-                    const imageid = this.state.activeimageid;
-                    const activeimage = gfk.getimagebyid.call(this, fieldid, imageid)
-                    return activeimage.caption;
+   removeimage(imageid) {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
+    if (!projects || !this.state.activefieldid) return;
 
-                } else {
-                    return (this.state.caption);
-                }
+    const { projectid } = this.props.match.params;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
 
-            }
+    const i = gfk.getProjectKeyById.call(this, projectid);
+    const fieldid = this.state.activefieldid;
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+    if (!fieldreport) return;
 
+    const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+    const image = gfk.getimagebyid.call(this, projectid, fieldid, imageid);
+    if (!image) return;
+
+    if (!window.confirm(`Are you sure you want to delete image ${image.image}?`)) return;
+
+    const k = gfk.getimagekeybyid.call(this, projectid, fieldid, imageid);
+
+    projects[i].fieldreports[j].images.splice(k, 1);
+
+    // Remove images property if empty
+    if (projects[i].fieldreports[j].images.length === 0) {
+        delete projects[i].fieldreports[j].images;
+    }
+
+    this.props.reduxProjects(projects);
+    this.setState({ activeimageid: false });
+}
+
+
+  async uploadimage() {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
+    if (!projects || !this.state.activefieldid || !this.state.activeimageid) return;
+
+    const { projectid } = this.props.match.params;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
+
+    const i = gfk.getProjectKeyById.call(this, projectid);
+    const fieldid = this.state.activefieldid;
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+    if (!fieldreport) return;
+
+    const j = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+    const imageid = this.state.activeimageid;
+    const image = gfk.getimagebyid.call(this, projectid, fieldid, imageid);
+    if (!image) return;
+
+    image.fieldid = fieldid;
+
+    const formdata = new FormData();
+    const myfile = document.getElementById("field-image");
+    if (!myfile?.files?.[0]) return;
+
+    formdata.append("fieldimage", myfile.files[0]);
+    formdata.append("image", JSON.stringify(image));
+
+    try {
+        const response = await UploadFieldImage(formdata);
+
+        if (response?.imagedb) {
+            projects[i].fieldreports[j].images[gfk.getimagekeybyid.call(this, projectid, fieldid, imageid)] = response.imagedb;
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' });
         }
-    }
 
-    removeimage(imageid) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            if (this.state.activefieldid) {
-                const fieldid = this.state.activefieldid;
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid);
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    const image = gfk.getimagebyid.call(this, fieldid, imageid)
-                    if (image) {
-                        if (window.confirm(`Are you sure you want to delete image  ${image.image}?`)) {
-
-
-                            const j = gfk.getimagesbyfieldid.call(this, fieldid, imageid)
-
-                            myuser.fieldreports[i].images.splice(j, 1);
-                            if (myuser.fieldreports[i].images.length === 0) {
-                                delete myuser.fieldreports[i].images
-
-                            }
-                            this.props.reduxUser(myuser);
-                            this.setState({ activeimageid: false })
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-
+        if (response?.message) {
+            this.setState({ message: response.message });
         }
+    } catch (err) {
+        alert(err);
     }
+}
 
-    async uploadimage() {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
-
-            if (this.state.activefieldid) {
-                let fieldid = this.state.activefieldid;
-
-                const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
-                if (fieldreport) {
-                    const i = gfk.getfieldkeybyid.call(this, fieldid)
-                    if (this.state.activeimageid) {
-                        const imageid = this.state.activeimageid;
-                        const image = gfk.getimagebyid.call(this, fieldid, imageid)
-                        if (image) {
-                            const j = gfk.getimagekeybyid.call(this,fieldid,imageid)
-                            
-                            image.fieldid = fieldid;
-                            console.log(image)
-                            let formdata = new FormData();
-                            let myfile = document.getElementById("field-image");
-                            formdata.append("fieldimage", myfile.files[0]);
-                            formdata.append("image",  JSON.stringify(image))
-                            try {
-                      
-                                let response = await UploadFieldImage(formdata);
-                                console.log(response)
-                                                 
-                                 if (response.hasOwnProperty("imagedb")) {
-                              
-                                        myuser.fieldreports[i].images[j] = response.imagedb;
-                                        this.props.reduxUser(myuser)
-                                        this.setState({ render: 'render' })
-                                   
-                                 }
-                                 let message = "";
-                                 if(response.hasOwnProperty("message")) {
-                                     message = response.message;
-                                 }
-
-                                 this.setState({message})
-                            } catch (err) {
-                                alert(err)
-                            }
-
-                        }
-
-                    }
-                }
-
-            }
-        }
-    }
     showimageuploader() {
         const styles = MyStylesheet();
         const gfk = new GFK();
@@ -1130,6 +1218,7 @@ class FieldReports extends Component {
         const regularFont = gfk.getRegularFont.call(this);
         const thumbphoto = gfk.getthumbimage.call(this)
         const removeIcon = gfk.getremoveicon.call(this)
+        const projectid = this.props.match.params.projectid;
         const imagecontainer = () => {
             if (this.state.width > 800) {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
@@ -1205,7 +1294,7 @@ class FieldReports extends Component {
         const imageids = () => {
             let myimages = [];
             if (this.state.activefieldid) {
-                let images = gfk.getimagesbyfieldid.call(this, this.state.activefieldid)
+                let images = gfk.getimagesbyfieldid.call(this,projectid, this.state.activefieldid)
                 if (images) {
                     // eslint-disable-next-line
                     images.map(image => {
@@ -1253,12 +1342,9 @@ class FieldReports extends Component {
         const headerFont = gfk.getHeaderFont.call(this);
         const smallFont = gfk.getSmallFont.call(this);
         const regularFont = gfk.getRegularFont.call(this);
-        const engineerid = this.props.match.params.engineerid;
+        const engineerid = 'mazen'
         const projectid = this.props.match.params.projectid;
-
-
-        const myproject = gfk.getprojectbyid.call(this, this.props.match.params.projectid)
-
+        const myproject = gfk.getProjectById.call(this, this.props.match.params.projectid)
         const datereport = new DateReport();
         const saveReportIcon = gfk.getreporticon.call(this)
         return (
@@ -1336,7 +1422,7 @@ class FieldReports extends Component {
 }
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser
+        projects:state.projects
     }
 }
 export default connect(mapStateToProps, actions)(FieldReports);

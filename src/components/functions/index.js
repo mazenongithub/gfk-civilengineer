@@ -171,6 +171,17 @@ export function Boring(boringid, projectid, boringnumber, datedrilled, gwdepth, 
     return { boringid, projectid, boringnumber, datedrilled, gwdepth, elevation, drillrig, loggedby, latitude, longitude, diameter }
 }
 
+export function formatDateToYMD(dateInput) {
+    const date = new Date(dateInput);
+
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+
 
 
 export function inputDateSecActiveIDTimein(dateencoded, timein) {
