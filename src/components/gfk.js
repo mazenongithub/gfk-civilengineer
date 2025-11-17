@@ -1085,35 +1085,35 @@ class GFK {
         }
         return borings;
     }
-   getAllSampleImages() {
-    const gfk = new GFK();
-    const sampleImages = [];
+    getAllSampleImages() {
+        const gfk = new GFK();
+        const sampleImages = [];
 
-    const projects = gfk.getProjects.call(this);
-    if (!projects) return sampleImages;
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return sampleImages;
 
-    for (const project of projects) {
-        const projectNumber = project.projectnumber;
-        if (!Array.isArray(project.borings)) continue;
+        for (const project of projects) {
+            const projectNumber = project.projectnumber;
+            if (!Array.isArray(project.borings)) continue;
 
-        for (const boring of project.borings) {
-            if (!Array.isArray(boring.samples)) continue;
+            for (const boring of project.borings) {
+                if (!Array.isArray(boring.samples)) continue;
 
-            for (const sample of boring.samples) {
-                if (sample.graphiclog) {
-                    sampleImages.push({
-                        sampleid: sample.sampleid,
-                        projectnumber: projectNumber,
-                        description: sample.description,
-                        graphiclog: sample.graphiclog
-                    });
+                for (const sample of boring.samples) {
+                    if (sample.graphiclog) {
+                        sampleImages.push({
+                            sampleid: sample.sampleid,
+                            projectnumber: projectNumber,
+                            description: sample.description,
+                            graphiclog: sample.graphiclog
+                        });
+                    }
                 }
             }
         }
-    }
 
-    return sampleImages;
-}
+        return sampleImages;
+    }
 
     getsamples(boringid) {
         const gfk = new GFK();
@@ -1185,38 +1185,24 @@ class GFK {
         }
         return tests;
     }
-    unconfinedtestdatabyid(boringid, sampleid, unid) {
+    unconfinedTestDataById(projectId, boringId, sampleId, unid) {
         const gfk = new GFK();
-        const test = gfk.getUnconfinedTestById.call(this, boringid, sampleid)
-        let mydata = false;
-        if (test) {
-            // eslint-disable-next-line
-            test.map(data => {
-                if (data.unid === unid) {
-                    mydata = data;
-                }
-            })
+        const tests = gfk.getUnconfinedTestById(projectId, boringId, sampleId);
 
-        }
-        return mydata;
+        if (!Array.isArray(tests)) return false;
+
+        const result = tests.find(test => test.unid === unid);
+        return result || false;
     }
-    unconfinedtestdatakeybyid(boringid, sampleid, unid) {
+    unconfinedTestDataKeyById(projectId, boringId, sampleId, unid) {
         const gfk = new GFK();
-        const test = gfk.getUnconfinedTestById.call(this, boringid, sampleid)
-        let key = false;
-        if (test) {
+        const tests = gfk.getUnconfinedTestById(projectId, boringId, sampleId);
 
-            // eslint-disable-next-line
-            test.map((data, i) => {
-                if (data.unid === unid) {
-                    key = i;
-                }
-            })
+        if (!Array.isArray(tests)) return false;
 
-        }
-        return key;
+        const index = tests.findIndex(test => test.unid === unid);
+        return index >= 0 ? index : false;
     }
-
 
     getUnconfinedTestById(projectId, boringId, sampleId) {
         const gfk = new GFK();

@@ -146,37 +146,36 @@ class MakeID {
         return testid;
     }
 
-    unconfinedID() {
-        const gfk = new GFK();
-        let unid = false;
-        while (!unid) {
-            unid = makeID(16)
-            const borings = gfk.getborings.call(this)
-            if (borings) {
-                // eslint-disable-next-line
-                borings.map(boring => {
-                    if (boring.hasOwnProperty("samples")) {
-                        // eslint-disable-next-line
-                        boring.samples.map(sample => {
-                            if (sample.hasOwnProperty("unconfined")) {
-                                // eslint-disable-next-line
-                                sample.unconfined.map(unconfined => {
-                                    if (unconfined.unid === unid) {
-                                        unid = false;
-                                    }
-                                })
-                            }
-                        })
-                    }
-                })
+   unconfinedID() {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
 
-            }
+    if (!projects) return makeID(16); // fallback
 
+    let unid = false;
+
+    while (!unid) {
+        const candidate = makeID(16);
+
+        // Check if this ID exists anywhere in all projects → borings → samples → unconfined
+        const exists = projects.some(project =>
+            project.borings?.some(boring =>
+                boring.samples?.some(sample =>
+                    sample.unconfined?.some(test =>
+                        test.unid === candidate
+                    )
+                )
+            )
+        );
+
+        if (!exists) {
+            unid = candidate;
         }
-        return unid;
-
-
     }
+
+    return unid;
+}
+
 
     sampleID() {
     const gfk = new GFK();

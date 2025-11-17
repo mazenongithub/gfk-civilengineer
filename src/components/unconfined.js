@@ -34,10 +34,9 @@ class Unconfined extends Component {
         let loadreading = "";
         if (unconfined) {
             if (this.state.activeunid) {
-                const boringid = this.props.match.params.boringid;
-                const sampleid = this.props.match.params.sampleid;
+                const { projectid, boringid, sampleid } = this.props.match.params;
                 const unid = this.state.activeunid
-                const test = gfk.unconfinedtestdatabyid.call(this, boringid, sampleid, unid)
+                const test = gfk.unconfinedTestDataById.call(this, projectid, boringid, sampleid, unid)
                 if (test) {
                     loadreading = (test.loadreading)
                 }
@@ -54,45 +53,49 @@ class Unconfined extends Component {
 
     handleloadreading(loadreading) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const boringid = this.props.match.params.boringid;
-            const boring = gfk.getboringbyid.call(this, boringid)
-            if (boring) {
-                const i = gfk.getboringkeybyid.call(this, boringid)
-                const sampleid = this.props.match.params.sampleid;
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
+            const { projectid, boringid, sampleid } = this.props.match.params;
+            const project = gfk.getProjectById.call(this, projectid)
+            if (project) {
+                const i = gfk.getProjectKeyById.call(this, projectid)
+                const boring = gfk.getBoringById.call(this, projectid,  boringid)
 
-                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+                if (boring) {
+                    const j = gfk.getBoringKeyById.call(this, projectid, boringid)
 
-                if (sample) {
-                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
 
-                    if (sample.hasOwnProperty("unconfined")) {
+                    const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
 
-                        if (this.state.activeunid) {
-                            const unid = this.state.activeunid;
-                            const k = gfk.unconfinedtestdatakeybyid.call(this, boringid, sampleid, unid);
-                            myuser.borings[i].samples[j].unconfined[k].loadreading = loadreading;
-                            this.props.reduxUser(myuser);
-                            this.setState({ render: 'render' })
+                    if (sample) {
+                        const k = gfk.getSampleKeyById.call(this, projectid, boringid, sampleid)
+
+                        if (sample.hasOwnProperty("unconfined")) {
+
+                            if (this.state.activeunid) {
+                                const unid = this.state.activeunid;
+                                const l = gfk.unconfinedTestDataKeyById.call(this, projectid, boringid, sampleid, unid);
+                                projects[i].borings[j].samples[k].unconfined[l].loadreading = loadreading;
+                                this.props.reduxProjects(projects)
+                                this.setState({ render: 'render' })
+
+
+                            } else {
+                                this.setState({ loadreading })
+                            }
 
 
                         } else {
+
                             this.setState({ loadreading })
+
+
                         }
-
-
-                    } else {
-
-                        this.setState({ loadreading })
-
 
                     }
 
+
                 }
-
-
-
 
 
             }
@@ -102,90 +105,165 @@ class Unconfined extends Component {
     }
 
 
-    getdisplacement() {
+    getDisplacement() {
         const gfk = new GFK();
         const unconfined = this.getUnconfinedTest();
         let displacement = "";
+
         if (unconfined) {
             if (this.state.activeunid) {
-                const boringid = this.props.match.params.boringid;
-                const sampleid = this.props.match.params.sampleid;
-                const unid = this.state.activeunid
-                const test = gfk.unconfinedtestdatabyid.call(this, boringid, sampleid, unid)
-                if (test) {
-                    displacement = (test.displacement)
-                }
+                const { projectid, boringid, sampleid } = this.props.match.params;
+                const unid = this.state.activeunid;
 
+                const test = gfk.unconfinedTestDataById.call(
+                    this,
+                    projectid,
+                    boringid,
+                    sampleid,
+                    unid
+                );
+
+                if (test) {
+                    displacement = test.displacement;
+                }
             } else {
                 displacement = this.state.displacement;
             }
-
         }
+
         return displacement;
-
-
     }
-    removetestdata(unid) {
+
+    handleDisplacement(displacement) {
         const gfk = new GFK();
-        const sampleid = this.props.match.params.sampleid;
+        const projects = gfk.getProjects.call(this);
+        if (projects) {
+            const { projectid, boringid, sampleid } = this.props.match.params;
+            const project = gfk.getProjectById.call(this, projectid);
 
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const boringid = this.props.match.params.boringid;
-            const boring = gfk.getboringbyid.call(this, boringid)
-            if (boring) {
-                const i = gfk.getboringkeybyid.call(this, boringid);
-                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
-                if (sample) {
-                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid);
-                    if (sample.hasOwnProperty("unconfined")) {
-                        const testdata = gfk.unconfinedtestdatabyid.call(this, boringid, sampleid, unid)
-                        if (testdata) {
-                            if (window.confirm(`Are you sure you want to delete Displacement ${testdata.displacement}?`)) {
-                                const k = gfk.unconfinedtestdatakeybyid.call(this, boringid, sampleid, unid)
-                                myuser.borings[i].samples[j].unconfined.splice(k, 1);
-                                if (myuser.borings[i].samples[j].unconfined.length === 0) {
-                                    delete myuser.borings[i].samples[j].unconfined
-                                }
-                                this.props.reduxUser(myuser)
-                                this.setState({ activeunid: false })
+            if (project) {
+                const i = gfk.getProjectKeyById.call(this, projectid);
+                const boring = gfk.getBoringById.call(this, boringid);
 
+                if (boring) {
+                    const j = gfk.getBoringKeyById.call(this, projectid, boringid);
+                    const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid);
+
+                    if (sample) {
+                        const k = gfk.getSampleKeyById.call(this, boringid, sampleid);
+
+                        if (sample.hasOwnProperty("unconfined")) {
+
+                            if (this.state.activeunid) {
+                                const unid = this.state.activeunid;
+                                const l = gfk.unconfinedTestDataKeyById.call(
+                                    this,
+                                    projectid,
+                                    boringid,
+                                    sampleid,
+                                    unid
+                                );
+
+                                projects[i]
+                                    .borings[j]
+                                    .samples[k]
+                                    .unconfined[l]
+                                    .displacement = displacement;
+
+                                this.props.reduxProjects(projects);
+                                this.setState({ render: "render" });
+                            } else {
+                                this.setState({ displacement });
                             }
 
+                        } else {
+                            this.setState({ displacement });
                         }
-
                     }
-
                 }
             }
-
         }
-
-
-
-
     }
 
-    maketestidactive(unid) {
-        if (this.state.activeunid === unid) {
-            this.setState({ activeunid: false })
-        } else {
-            this.setState({ activeunid: unid })
+
+    removeTestData(unid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const { projectid, boringid, sampleid } = this.props.match.params;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectKey = gfk.getProjectKeyById.call(this, projectid);
+
+        const boring = gfk.getBoringById.call(this, boringid);
+        if (!boring) return;
+
+        const boringKey = gfk.getBoringKeyById.call(this, projectid, boringid);
+
+        const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid);
+        if (!sample) return;
+
+        const sampleKey = gfk.getSampleKeyById.call(this, boringid, sampleid);
+
+        // must have unconfined array
+        if (!sample.unconfined) return;
+
+        const testData = gfk.unconfinedTestDataById.call(
+            this,
+            projectid,
+            boringid,
+            sampleid,
+            unid
+        );
+        if (!testData) return;
+
+        if (!window.confirm(`Are you sure you want to delete Displacement ${testData.displacement}?`)) {
+            return;
         }
 
+        const testKey = gfk.unconfinedTestDataKeyById.call(
+            this,
+            projectid,
+            boringid,
+            sampleid,
+            unid
+        );
+
+        if (testKey === false) return;
+
+        // Remove the test entry
+        projects[projectKey]
+            .borings[boringKey]
+            .samples[sampleKey]
+            .unconfined
+            .splice(testKey, 1);
+
+        // If no tests left, delete the unconfined property
+        const updatedSample = projects[projectKey].borings[boringKey].samples[sampleKey];
+        if (updatedSample.unconfined.length === 0) {
+            delete updatedSample.unconfined;
+        }
+
+        // Save changes
+        this.props.reduxProjects(projects);
+        this.setState({ activeunid: false });
     }
-    loadlbs(dial) {
-        let lbs = 0;
+
+
+    makeTestIdActive(unid) {
+        this.setState({
+            activeunid: this.state.activeunid === unid ? false : unid
+        });
+    }
+
+    loadLbs(dial) {
         const loadchart = loadChart();
-        // eslint-disable-next-line
-        loadchart.map(chart => {
-            if (dial === chart.dial) {
-                lbs = chart.loadlbs;
-            }
-        })
-        return lbs;
+        const entry = loadchart.find(chart => chart.dial === dial);
+        return entry ? entry.loadlbs : 0;
     }
-
     showtestid(data) {
         const gfk = new GFK();
         const styles = MyStylesheet();
@@ -201,7 +279,7 @@ class Unconfined extends Component {
             return (.25 * Math.PI * Math.pow(sample.diameter, 2) / (1 - strain()))
         }
         const stress = () => {
-            return (144 * (this.loadlbs(data.loadreading) / area()))
+            return (144 * (this.loadLbs(data.loadreading) / area()))
         }
         const activeid = () => {
             if (this.state.activeunid === data.unid) {
@@ -212,7 +290,7 @@ class Unconfined extends Component {
         }
         return (<div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }} key={data.unid}>
             <span style={{ ...activeid() }}
-                onClick={() => { this.maketestidactive(data.unid) }}> Displacement {data.displacement} Loading Reading:{data.loadreading} Lbs:{this.loadlbs(data.loadreading)}lbs Stress: {Math.round(stress())}psf Strain: {Number(strain()).toFixed(3)}</span>
+                onClick={() => { this.makeTestIdActive(data.unid) }}> Displacement {data.displacement} Loading Reading:{data.loadreading} Lbs:{this.loadLbs(data.loadreading)}lbs Stress: {Math.round(stress())}psf Strain: {Number(strain()).toFixed(3)}</span>
             <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removetestdata(data.unid) }}>
                 {removeIconSmall()}
             </button>
@@ -242,54 +320,7 @@ class Unconfined extends Component {
         return ids;
     }
 
-    handledisplacement(displacement) {
-        const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const boringid = this.props.match.params.boringid;
-            const boring = gfk.getboringbyid.call(this, boringid)
-            if (boring) {
-                const i = gfk.getboringkeybyid.call(this, boringid)
-                const sampleid = this.props.match.params.sampleid;
 
-                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
-
-                if (sample) {
-                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
-
-                    if (sample.hasOwnProperty("unconfined")) {
-
-                        if (this.state.activeunid) {
-                            const unid = this.state.activeunid;
-                            const k = gfk.unconfinedtestdatakeybyid.call(this, boringid, sampleid, unid);
-                            myuser.borings[i].samples[j].unconfined[k].displacement = displacement;
-                            this.props.reduxUser(myuser);
-                            this.setState({ render: 'render' })
-
-
-                        } else {
-                            this.setState({ displacement })
-                        }
-
-
-                    } else {
-
-                        this.setState({ displacement })
-
-
-                    }
-
-                }
-
-
-
-
-
-            }
-
-        }
-
-    }
 
     addtest() {
         const gfk = new GFK();
@@ -297,37 +328,43 @@ class Unconfined extends Component {
         const loadreading = this.state.loadreading;
         const displacement = this.state.displacement;
         const unid = makeid.unconfinedID.call(this)
-        const myuser = gfk.getuser.call(this);
-        if (myuser) {
-            const boringid = this.props.match.params.boringid;
-            const boring = gfk.getboringbyid.call(this, boringid)
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
+            const { projectid, boringid, sampleid } = this.props.match.params;
 
-            if (boring) {
+            const project = gfk.getProjectById.call(this, projectid)
+            const i = gfk.getProjectKeyById.call(this, projectid)
+            if (project) {
+                const boring = gfk.getBoringById.call(this, projectid, boringid)
 
-                const i = gfk.getboringkeybyid.call(this, boringid)
-                const sampleid = this.props.match.params.sampleid;
+                if (boring) {
 
-                const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
-
-                if (sample) {
-
-                    const j = gfk.getsamplekeybyid.call(this, boringid, sampleid)
-                    const newData = UnconfinedTestData(unid, loadreading, displacement)
-
-                    if (sample.hasOwnProperty("unconfined")) {
+                    const j = gfk.getBoringKeyById.call(this, projectid, boringid)
 
 
-                        myuser.borings[i].samples[j].unconfined.push(newData)
+                    const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
 
-                    } else {
-                   
-                        myuser.borings[i].samples[j].unconfined =[newData];
+                    if (sample) {
+
+                        const k = gfk.getSampleKeyById.call(this, projectid, boringid, sampleid)
+                        const newData = UnconfinedTestData(unid, loadreading, displacement)
+
+                        if (sample.hasOwnProperty("unconfined")) {
+
+
+                            projects[i].borings[j].samples[k].unconfined.push(newData)
+
+                        } else {
+
+                            projects[i].borings[j].samples[k].unconfined = [newData];
+                        }
+
+                        this.props.reduxProjects(projects)
+                        this.setState({ render: 'render', displacement: Number(this.state.displacement) + 20, loadreading: '' })
+                        this.loadReading.focus();
+
+
                     }
-
-                    this.props.reduxUser(myuser)
-                    this.setState({ render: 'render', displacement: Number(this.state.displacement) + 20, loadreading: '' })
-                    this.loadReading.focus();
-
 
                 }
 
@@ -336,18 +373,14 @@ class Unconfined extends Component {
         }
     }
 
-    handleminus20() {
-        if (this.state.displacement) {
-            let displacement = Number(this.state.displacement);
-            if (displacement >= 20) {
-                displacement = displacement - 20;
-                this.setState({ displacement, loadreading: '' })
-                this.loadReading.focus();
-            }
+   handleMinus20() {
+    const displacement = Number(this.state.displacement);
 
-        }
-
+    if (displacement >= 20) {
+        this.setState({ displacement: displacement - 20, loadreading: "" });
+        this.loadReading.focus();
     }
+}
 
     getUnconfinedTest() {
         const sample = this.getSample();
@@ -363,12 +396,11 @@ class Unconfined extends Component {
 
     getSample() {
         const gfk = new GFK();
-        const boringid = this.props.match.params.boringid;
+        const { projectid, boringid, sampleid } = this.props.match.params;
         let getsample = false;
-        const boring = gfk.getboringbyid.call(this, boringid)
+        const boring = gfk.getBoringById.call(this, projectid, boringid)
         if (boring) {
-            const sampleid = this.props.match.params.sampleid;
-            const sample = gfk.getsamplebyid.call(this, boringid, sampleid)
+            const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
             if (sample) {
                 getsample = sample;
             }
@@ -376,120 +408,93 @@ class Unconfined extends Component {
         return getsample;
     }
     showunconfinedchart() {
-        const unconfined = this.getUnconfinedTest();
-        const sample = this.getSample();
-        const getmaxstrainunit = (maxstrain) => {
+           const unconfined = this.getUnconfinedTest() || [];
+    const sample = this.getSample();
 
-            let unit = 0.01
-            if (maxstrain > .2) {
-                unit = 0.06;
-            } else if (maxstrain > .16) {
-                unit = 0.05;
-            } else if (maxstrain > .12) {
-                unit = 0.04;
-            } else if (maxstrain > .08) {
-                unit = 0.03
-            } else if (maxstrain > .04) {
-                unit = 0.02
+    // If no sample exists, bail out early
+    if (!sample || !sample.samplelength || !sample.diameter) {
+        return null;
+    }
+
+    const getmaxstrainunit = (maxstrain) => {
+        if (maxstrain > 0.2) return 0.06;
+        if (maxstrain > 0.16) return 0.05;
+        if (maxstrain > 0.12) return 0.04;
+        if (maxstrain > 0.08) return 0.03;
+        if (maxstrain > 0.04) return 0.02;
+        return 0.01;
+    };
+
+    const strainunit = () => {
+        if (unconfined.length === 0) return getmaxstrainunit(0);
+
+        const data = [...unconfined].sort(sortdisplacement);
+
+        const last = data[data.length - 1];
+        const samplelength = Number(sample.samplelength);
+
+        if (!last || !last.displacement) return getmaxstrainunit(0);
+
+        const maxstrain = (0.001 * Number(last.displacement)) / samplelength;
+        return getmaxstrainunit(maxstrain);
+    };
+
+    const getmaxstressunit = (stress) => {
+        if (stress > 15000) return 5000;
+        if (stress > 12000) return 4000;
+        if (stress > 8000) return 3000;
+        if (stress > 4000) return 2000;
+        if (stress > 2000) return 1000;
+        if (stress > 1000) return 500;
+        if (stress > 500) return 250;
+        return 125;
+    };
+
+    const strain = (testdata) =>
+        (Number(testdata.displacement) * 0.001) / Number(sample.samplelength);
+
+    const area = (testdata) =>
+        (0.25 * Math.PI * Math.pow(sample.diameter, 2)) / (1 - strain(testdata));
+
+    const stress = (testdata) => {
+        const lbs = this.loadLbs(testdata.loadreading || 0);
+        return 144 * (lbs / area(testdata));
+    };
+
+    const stressunit = () => {
+        let maxstress = 0;
+
+        for (const t of unconfined) {
+            const s = stress(t);
+            if (s > maxstress) maxstress = s;
+        }
+
+        return getmaxstressunit(maxstress);
+    };
+
+    const getstresscurve = () => {
+        let points = "0,0 ";
+
+        if (unconfined.length > 0) {
+            const data = [...unconfined].sort(sortdisplacement);
+
+            for (const t of data) {
+                const s = stress(t);
+                const e = strain(t);
+
+                const x = (e / strainunit()) * 200;
+                const y = (s / stressunit()) * 200;
+
+                points += `${x},${y} `;
             }
-            return unit;
-
-        }
-        const strainunit = () => {
-            if (unconfined) {
-
-                const data = unconfined.sort((testa, testb) => {
-                    return (sortdisplacement(testa, testb))
-                })
-
-
-                const samplelength = Number(sample.samplelength);
-                let key = unconfined.length - 1;
-                let maxstrain = Number(.001 * data[key].displacement) / Number(samplelength);
-
-                return getmaxstrainunit(maxstrain)
-
-
-            } else {
-                return getmaxstrainunit(0)
-            }
-
-        }
-        const getmaxstressunit = (stress) => {
-            let unit = 125;
-            if (stress > 15000) {
-                unit = 5000;
-            } else if (stress > 12000) {
-                unit = 4000;
-            } else if (stress > 8000) {
-                unit = 3000;
-            } else if (stress > 4000) {
-                unit = 2000;
-            } else if (stress > 2000) {
-                unit = 1000;
-            } else if (stress > 1000) {
-                unit = 500;
-            } else if (stress > 500) {
-                unit = 250;
-            }
-
-            return unit;
-        }
-        const stress = (testdata) => {
-            return (144 * (this.loadlbs(testdata.loadreading) / area(testdata)))
-        }
-        const strain = (testdata) => {
-            return (Number(testdata.displacement * .001) / Number(sample.samplelength))
-        }
-        const area = (testdata) => {
-            return (.25 * Math.PI * Math.pow(sample.diameter, 2) / (1 - strain(testdata)))
-        }
-        const stressunit = () => {
-            let maxstress = 0;
-            if (unconfined) {
-
-                // eslint-disable-next-line
-                unconfined.map(testdata => {
-                    let calcstress = stress(testdata)
-                    if (calcstress > maxstress) {
-                        maxstress = calcstress;
-                    }
-                })
-            }
-
-            return getmaxstressunit(maxstress)
-
-
         }
 
-        const getstresscurve = () => {
-            let points = "0,0 ";
-            if (unconfined) {
-
-
-                const data = unconfined.sort((testa, testb) => {
-
-                    return (sortdisplacement(testa, testb))
-                })
-
-
-                // eslint-disable-next-line
-                data.map(testdata => {
-
-                    let getstress = stress(testdata);
-                    let getstrain = strain(testdata);
-
-                    let x = (getstrain / strainunit()) * 200;
-                    let y = (getstress / stressunit()) * 200;
-
-                    points += `${x},${y} `
-                })
-
-            }
-            return (<g transform="translate(165,803) scale(1,-1)">
+        return (
+            <g transform="translate(165,803) scale(1,-1)">
                 <polyline className="unchart-8" points={points} />
-            </g>)
-        }
+            </g>
+        );
+    };
 
 
 
@@ -524,17 +529,16 @@ class Unconfined extends Component {
     }
 
     render() {
+       
         const gfk = new GFK();
         const styles = MyStylesheet();
         const headerFont = gfk.getHeaderFont.call(this);
-        const project = gfk.getprojectbyid.call(this, this.props.match.params.projectid)
-        const boring = gfk.getboringbyid.call(this, this.props.match.params.boringid)
-        const sample = gfk.getsamplebyid.call(this, this.props.match.params.sampleid)
-        const myuser = gfk.getuser.call(this);
-        const projectid = this.props.match.params.projectid;
-        const boringid = this.props.match.params.boringid;
+        const {projectid, boringid, sampleid} = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid)
+        const boring = gfk.getBoringById.call(this, projectid, boringid)
+        const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
+    
         const regularFont = gfk.getRegularFont.call(this);
-        const sampleid = this.props.match.params.sampleid
         const plusIcon = () => {
             if (this.state.width > 1200) {
                 return ({ width: '101px', height: '66px' })
@@ -583,8 +587,8 @@ class Unconfined extends Component {
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont, ...styles.floatLeft, ...fieldWidth() }}>
                                 Displacement <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...fieldWidth() }}
-                                    value={this.getdisplacement()}
-                                    onChange={event => { this.handledisplacement(event.target.value) }}
+                                    value={this.getDisplacement()}
+                                    onChange={event => { this.handleDisplacement(event.target.value) }}
                                 />
                             </div>
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont, ...styles.floatLeft, ...fieldGap() }}>
@@ -620,8 +624,8 @@ class Unconfined extends Component {
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont, ...styles.floatLeft, ...fieldWidth() }}>
                                 Displacement <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...fieldWidth() }}
-                                    value={this.getdisplacement()}
-                                    onChange={event => { this.handledisplacement(event.target.value) }}
+                                    value={this.getDisplacement()}
+                                    onChange={event => { this.handleDisplacement(event.target.value) }}
                                 />
                             </div>
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont, ...styles.floatLeft, ...fieldGap() }}>
@@ -657,8 +661,8 @@ class Unconfined extends Component {
                             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }}>
                                 Displacement <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...fieldWidth() }}
-                                    value={this.getdisplacement()}
-                                    onChange={event => { this.handledisplacement(event.target.value) }}
+                                    value={this.getDisplacement()}
+                                    onChange={event => { this.handleDisplacement(event.target.value) }}
                                 />
                             </div>
 
@@ -678,8 +682,9 @@ class Unconfined extends Component {
 
             }
         }
-        if (myuser) {
-            const engineerid = myuser.engineerid;
+        if (project) {
+            
+            const engineerid = 'mazen'
             return (
                 <div style={{ ...styles.generalFlex }}>
                     <div style={{ ...styles.flex1 }}>
@@ -757,7 +762,7 @@ class Unconfined extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser
+        projects: state.projects
     }
 }
 export default connect(mapStateToProps, actions)(Unconfined);
