@@ -106,7 +106,7 @@ class SesimicCalcs {
 
     }
 
-    getOverBurden(sampleid, depth) {
+    getOverBurden(projectid, sampleid, depth) {
         const gfk = new GFK();
         let overburden = 0;
         let effective = 0;
@@ -114,7 +114,7 @@ class SesimicCalcs {
         depth = Number(depth)
         const seismiccalcs = new SesimicCalcs();
 
-        const boring = gfk.getBoringfromSampleID.call(this, sampleid);
+        const boring = gfk.getBoringfromSampleID.call(this, projectid, sampleid);
         const boringid =boring.boringid;
         let gwdepth = 0;
         if (boring) {
@@ -125,7 +125,7 @@ class SesimicCalcs {
 
 
 
-            const samples = gfk.getsamplesbyboringid.call(this, boringid);
+            const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid);
 
             if (samples) {
                 // eslint-disable-next-line

@@ -258,25 +258,18 @@ class GFK {
     }
     getPointIDfromStrainID(projectid, strainid) {
         const gfk = new GFK();
-        let pointid = false;
-        const points = gfk.getPointsByProjectID.call(this, projectid)
-        if (points) {
-            // eslint-disable-next-line
-            points.map(point => {
-                if (point.hasOwnProperty("strain")) {
-                    // eslint-disable-next-line
-                    point.strain.map(strain => {
-                        if (strain.strainid === strainid) {
-                            pointid = point.pointid;
-                        }
-                    })
-                }
-            })
+        const points = gfk.getPointsByProjectID.call(this, projectid);
+        if (!Array.isArray(points)) return false;
 
-        }
-        return pointid;
+        // Find the point that contains this strain
+        const point = points.find(p =>
+            Array.isArray(p.strain) &&
+            p.strain.some(s => s.strainid === strainid)
+        );
 
+        return point ? point.pointid : false;
     }
+
 
     getStrainbyID(projectid, strainid) {
         const gfk = new GFK();
@@ -338,70 +331,51 @@ class GFK {
 
     getSeismicStrainByProjectID(projectid) {
         const gfk = new GFK();
-        let getstrain = false;
         const points = gfk.getPointsByProjectID.call(this, projectid);
-        if (points) {
-            // eslint-disable-next-line
-            points.map(point => {
-                if (point.hasOwnProperty("strain")) {
-                    getstrain = [];
-                    // eslint-disable-next-line
-                    point.strain.map(strain => {
 
-                        getstrain.push(strain)
-                    })
+        if (!Array.isArray(points)) return false;
 
+        const allStrains = [];
 
-                }
+        points.forEach(point => {
+            if (Array.isArray(point.strain)) {
+                allStrains.push(...point.strain);
+            }
+        });
 
-            })
-
-        }
-        return getstrain
+        return allStrains.length > 0 ? allStrains : false;
     }
+
 
     getPointKeybyID(projectid, pointid) {
         const gfk = new GFK();
-        const points = gfk.getPointsByProjectID.call(this, projectid)
-        let key = false;
-        if (points) {
-            // eslint-disable-next-line
-            points.map((point, i) => {
-                if (point.pointid === pointid) {
-                    key = i;
+        const points = gfk.getPointsByProjectID.call(this, projectid);
 
-                }
-            })
-        }
-        return key;
+        if (!Array.isArray(points)) return false;
+
+        const index = points.findIndex(p => p.pointid === pointid);
+
+        return index >= 0 ? index : false;
     }
+
 
     getPointbyID(projectid, pointid) {
         const gfk = new GFK();
-        const points = gfk.getPointsByProjectID.call(this, projectid)
-        let getpoint = false;
-        if (points) {
-            // eslint-disable-next-line
-            points.map(point => {
-                if (point.pointid === pointid) {
-                    getpoint = point;
+        const points = gfk.getPointsByProjectID.call(this, projectid);
 
-                }
-            })
-        }
-        return getpoint;
+        if (!Array.isArray(points)) return false;
+
+        return points.find(point => point.pointid === pointid) || false;
     }
+
 
     getPointsByProjectID(projectid) {
-        const gfk = new GFK()
-        const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-        let points = false;
-        if (seismic) {
-            points = seismic.points;
+        const gfk = new GFK();
+        const seismic = gfk.getSeismicByProjectID.call(this, projectid);
 
-        }
-        return points;
+        return seismic?.points || false;
     }
+
 
     getSeismicKeybyProjectID(projectid) {
         const gfk = new GFK();
@@ -418,20 +392,20 @@ class GFK {
         return key;
     }
 
-    getSeismicbyProjectID(projectid) {
+    getSeismicByProjectID(projectid) {
         const gfk = new GFK();
-        const seismics = gfk.getSeismic.call(this)
-        let getseismic = false;
-        if (seismics) {
-            // eslint-disable-next-line
-            seismics.map(seismic => {
-                if (seismic.projectid === projectid) {
-                    getseismic = seismic;
-                }
-            })
-        }
-        return getseismic;
+        const projects = gfk.getProjects.call(this);
+
+        if (!projects) return false;
+
+        // Find project
+        const project = projects.find(p => p.projectid === projectid);
+        if (!project) return false;
+
+        // Return seismic section if it exists
+        return project.seismic || false;
     }
+
 
     getSeismic() {
         let seismic = false;
@@ -879,9 +853,9 @@ class GFK {
 
     }
 
-    getBoringfromSampleID(sampleid) {
+    getBoringfromSampleID(projectid, sampleid) {
         const gfk = new GFK();
-        const borings = gfk.getborings.call(this)
+        const borings = gfk.getBoringsByProjectId.call(this, projectid)
         let getboring = false;
         if (borings) {
             // eslint-disable-next-line

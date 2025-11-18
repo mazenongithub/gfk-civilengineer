@@ -15,13 +15,13 @@ import SesimicCalcs from './seismiccalcs';
 class Seismic extends Component {
     constructor(props) {
         super(props);
-        this.state = { width: 0, height: 0, render: 'render', magnitude: '', activepointid: false, depth: '', spt: '', pi: '', fines: '', sampleid: '', siteacceleration: '', message:'' }
+        this.state = { width: 0, height: 0, render: 'render', magnitude: '', activepointid: false, depth: '', spt: '', pi: '', fines: '', sampleid: '', siteacceleration: '', message: '' }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
-        this.loadSeismic();
+
 
     }
 
@@ -33,493 +33,422 @@ class Seismic extends Component {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
 
-    async loadSeismic() {
-        if (!this.props.seismic.hasOwnProperty("length")) {
-            const response = await LoadSeismic();
-            this.props.reduxSeismic(response.seismic.seismic)
-            this.setState({ render: 'render' })
 
-        }
-
-
-    }
 
     getAcceleration() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const seismic = gfk.getSeismicbyProjectID.call(this, projectid);
-        let value = '';
-        if (seismic) {
-            value = seismic.siteacceleration;
-        }
-        return value;
+        const { projectid } = this.props.match.params;
 
+        const seismic = gfk.getSeismicByProjectID.call(this, projectid);
+        return seismic?.siteacceleration || "";
     }
 
     handleAcceleration(value) {
-        const gfk = new GFK()
-        const projectid = this.props.match.params.projectid;
-        const seismics = gfk.getSeismic.call(this)
-        if (seismics) {
-            const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            if (seismic) {
-                const key = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                seismics[key].siteacceleration = value;
-                this.props.reduxSeismic(seismics);
-                this.setState({ render: 'render' })
-            } else {
-                const magnitude = this.state.magnitude;
-                const newValue = newSeismic(projectid, magnitude, value)
-                seismics.push(newValue)
-                this.props.reduxSeismic(seismics);
-                this.setState({ render: 'render' })
-            }
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
 
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const i = gfk.getProjectKeyById.call(this, projectid);
+
+        // If seismic data already exists → update it
+        if (project.seismic) {
+            projects[i].seismic.siteacceleration = value;
+        }
+        // Otherwise create new seismic object
+        else {
+            const magnitude = this.state.magnitude;
+            const newSeismicRecord = newSeismic(magnitude, value);
+            newSeismicRecord.points = [];
+            projects[i].seismic = newSeismicRecord;
         }
 
-
+        // Save changes
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
+
 
     getMagnitude() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const seismic = gfk.getSeismicbyProjectID.call(this, projectid);
-        let value = '';
-        if (seismic) {
-            value = seismic.magnitude;
-        }
-        return value;
+        const { projectid } = this.props.match.params;
 
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.seismic) return "";
+
+        return project.seismic.magnitude || "";
     }
+
 
     handleMagnitude(value) {
-        const gfk = new GFK()
-        const projectid = this.props.match.params.projectid;
-        const seismics = gfk.getSeismic.call(this)
-        if (seismics) {
-            const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            if (seismic) {
-                const key = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                seismics[key].magnitude = value;
-                this.props.reduxSeismic(seismics);
-                this.setState({ render: 'render' })
-            } else {
-                const siteacceleration = this.state.siteacceleration;
-                const newValue = newSeismic(projectid, value, siteacceleration)
-                seismics.push(newValue)
-                this.props.reduxSeismic(seismics);
-                this.setState({ render: 'render' })
-            }
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
 
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const i = gfk.getProjectKeyById.call(this, projectid);
+
+        // If seismic data already exists → update magnitude
+        if (project.seismic) {
+            projects[i].seismic.magnitude = value;
+        }
+        // Otherwise create new seismic record
+        else {
+            const acceleration = this.state.acceleration; // stored locally
+            const newSeismicRecord = newSeismic(value, acceleration);
+            newSeismicRecord.points = [];
+            projects[i].seismic = newSeismicRecord;
         }
 
-
+        // Save updates
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
+
     getDepth() {
         const gfk = new GFK();
-        let depth = "";
-        const projectid = this.props.match.params.projectid;
+        const { projectid } = this.props.match.params;
         const pointid = this.state.activepointid;
-        if (this.state.activepointid) {
-            const point = gfk.getPointbyID.call(this, projectid, pointid)
-            if (point) {
-                depth = point.depth;
-            }
 
+        if (!pointid) return "";
 
-        }
-        return depth;
-
-
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        return point?.depth || "";
     }
+
 
     handleDepth(value) {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
         const makeid = new MakeID();
-        const seismics = gfk.getSeismic.call(this)
 
-        if (this.state.activepointid) {
-            const pointid = this.state.activepointid;
+        const projectid = this.props.match.params.projectid;
+        const projects = gfk.getProjects.call(this) || [];
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        const project = projects[projectIndex];
 
+        if (!project) return;
 
-            if (seismics) {
-                let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
-                    const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                    const points = gfk.getPointsByProjectID.call(this, projectid)
-                    if (points) {
-                        const point = gfk.getPointbyID.call(this, projectid, pointid)
-                        if (point) {
-                            const j = gfk.getPointKeybyID.call(this, projectid, pointid)
-                            seismics[i].points[j].depth = value
-                            this.props.reduxSeismic(seismics);
-                            this.setState({ render: 'render' })
-                        }
-
-                    }
-                }
-
-            }
-
-        } else {
-            let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            const magnitude = this.state.magnitude;
-            const siteacceleration = this.state.siteacceleration;
-            let pointid = makeid.seismicpointid.call(this)
-            const pi = this.state.pi;
-            const fines = this.state.fines;
-            const spt = this.state.spt;
-            const sampleid = this.state.sampleid;
-
-            if (seismic) {
-
-                const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                const points = gfk.getPointsByProjectID.call(this, projectid);
-                let newSeismic = SeismicPoint(pointid, value, pi, fines, spt, sampleid)
-
-                if (points) {
-
-                    seismics[i].points.push(newSeismic);
-
-
-                } else {
-                    seismics[i].points = [newSeismic]
-
-                }
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-
-            } else {
-
-                let newseismic = newSeismicPoint(projectid, siteacceleration, magnitude, pointid, value, pi, fines, spt, sampleid)
-
-                seismics.push(newseismic)
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-            }
-
-
-
+        // Ensure seismic object exists
+        if (!project.seismic) {
+            project.seismic = {
+                magnitude: this.state.magnitude,
+                siteacceleration: this.state.siteacceleration,
+                points: []
+            };
         }
 
+        // Ensure points array exists
+        if (!Array.isArray(project.seismic.points)) {
+            project.seismic.points = [];
+        }
+
+        const points = project.seismic.points;
+        const activePointId = this.state.activepointid;
+
+        // -------------------------------------------------
+        // 1️⃣ UPDATE EXISTING POINT
+        // -------------------------------------------------
+        if (activePointId) {
+            const pointIndex = gfk.getPointKeybyID.call(this, projectid, activePointId);
+            if (pointIndex !== false && points[pointIndex]) {
+                points[pointIndex].depth = value;
+
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
+            }
+        }
+
+        // -------------------------------------------------
+        // 2️⃣ CREATE NEW POINT
+        // -------------------------------------------------
+        const pointid = makeid.seismicpointid.call(this, projectid);
+
+        const { pi, fines, spt, sampleid } = this.state;
+
+        const newPoint = SeismicPoint(
+            pointid,
+            value,     // depth
+            pi,
+            fines,
+            spt,
+            sampleid
+        );
+
+        points.push(newPoint);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activepointid: pointid, render: "render" });
     }
+
 
     getPI() {
         const gfk = new GFK();
-        let pi = "";
         const projectid = this.props.match.params.projectid;
         const pointid = this.state.activepointid;
-        if (this.state.activepointid) {
-            const point = gfk.getPointbyID.call(this, projectid, pointid)
-            if (point) {
-                pi = point.pi;
-            }
 
+        if (!pointid) return "";
 
-        }
-        return pi;
-
-
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        return point?.pi ?? "";
     }
+
 
     handlePI(value) {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
+        const project = gfk.getProjectById.call(this, projectid);
+        const projects = gfk.getProjects.call(this);
         const makeid = new MakeID();
-        const seismics = gfk.getSeismic.call(this)
 
-        if (this.state.activepointid) {
-            const pointid = this.state.activepointid;
+        if (!project) return;
 
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
 
-            if (seismics) {
-                let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
-                    const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                    const points = gfk.getPointsByProjectID.call(this, projectid)
-                    if (points) {
-                        const point = gfk.getPointbyID.call(this, projectid, pointid)
-                        if (point) {
-                            const j = gfk.getPointKeybyID.call(this, projectid, pointid)
-                            seismics[i].points[j].pi = value
-                            this.props.reduxSeismic(seismics);
-                            this.setState({ render: 'render' })
-                        }
-
-                    }
-                }
-
-            }
-
-        } else {
-            let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            const magnitude = this.state.magnitude;
-            const siteacceleration = this.state.siteacceleration;
-            let pointid = makeid.seismicpointid.call(this)
-            const depth = this.state.depth
-            const fines = this.state.fines;
-            const spt = this.state.spt;
-            const sampleid = this.state.sampleid;
-
-            if (seismic) {
-
-                const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                const points = gfk.getPointsByProjectID.call(this, projectid);
-                let newSeismic = SeismicPoint(pointid, depth, value, fines, spt, sampleid)
-
-                if (points) {
-
-                    seismics[i].points.push(newSeismic);
-
-
-                } else {
-                    seismics[i].points = [newSeismic]
-
-                }
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-
-            } else {
-
-                let newseismic = newSeismicPoint(projectid, magnitude, siteacceleration, pointid, depth, value, fines, spt, sampleid)
-
-                seismics.push(newseismic)
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-            }
-
-
-
+        // Make sure seismic exists on the project
+        if (!project.seismic) {
+            project.seismic = {
+                siteacceleration: this.state.siteacceleration || "",
+                magnitude: this.state.magnitude || "",
+                points: []
+            };
         }
 
+        const seismic = project.seismic;
+
+        // ---- UPDATE EXISTING POINT ----
+        if (this.state.activepointid) {
+            const pointid = this.state.activepointid;
+            const pointIndex = gfk.getPointKeybyID.call(this, projectid, pointid);
+
+            if (pointIndex !== false) {
+                seismic.points[pointIndex].pi = value;
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
+            }
+        }
+
+        // ---- CREATE NEW POINT ----
+        const newPointID = makeid.seismicpointid.call(this, projectid);
+
+        const newPoint = {
+            pointid: newPointID,
+            depth: this.state.depth || "",
+            pi: value,
+            fines: this.state.fines || "",
+            spt: this.state.spt || "",
+            sampleid: this.state.sampleid || ""
+        };
+
+        seismic.points.push(newPoint);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activepointid: newPointID, render: "render" });
     }
+
 
     getSPT() {
         const gfk = new GFK();
-        let spt = "";
         const projectid = this.props.match.params.projectid;
         const pointid = this.state.activepointid;
-        if (this.state.activepointid) {
-            const point = gfk.getPointbyID.call(this, projectid, pointid)
-            if (point) {
-                spt = point.spt;
-            }
 
+        if (!pointid) return "";
 
-        }
-        return spt;
-
-
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        return point?.spt ?? "";
     }
+
 
     handleSPT(value) {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
+        const project = gfk.getProjectById.call(this, projectid);
+        const projects = gfk.getProjects.call(this);
         const makeid = new MakeID();
-        const seismics = gfk.getSeismic.call(this)
 
-        if (this.state.activepointid) {
-            const pointid = this.state.activepointid;
+        if (!project) return;
 
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
 
-            if (seismics) {
-                let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
-                    const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                    const points = gfk.getPointsByProjectID.call(this, projectid)
-                    if (points) {
-                        const point = gfk.getPointbyID.call(this, projectid, pointid)
-                        if (point) {
-                            const j = gfk.getPointKeybyID.call(this, projectid, pointid)
-                            seismics[i].points[j].spt = value
-                            this.props.reduxSeismic(seismics);
-                            this.setState({ render: 'render' })
-                        }
-
-                    }
-                }
-
-            }
-
-        } else {
-            let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            const magnitude = this.state.magnitude;
-            const siteacceleration = this.state.siteacceleration;
-            let pointid = makeid.seismicpointid.call(this)
-            const depth = this.state.depth
-            const fines = this.state.fines;
-            const pi = this.state.pi;
-            const sampleid = this.state.sampleid;
-
-            if (seismic) {
-
-                const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                const points = gfk.getPointsByProjectID.call(this, projectid);
-                let newSeismic = SeismicPoint(pointid, depth, pi, fines, value, sampleid)
-
-                if (points) {
-
-                    seismics[i].points.push(newSeismic);
-
-
-                } else {
-                    seismics[i].points = [newSeismic]
-
-                }
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-
-            } else {
-
-                let newseismic = newSeismicPoint(projectid, magnitude, siteacceleration, pointid, depth, pi, fines, value, sampleid)
-
-                seismics.push(newseismic)
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-            }
-
-
-
+        // Ensure seismic exists
+        if (!project.seismic) {
+            project.seismic = {
+                siteacceleration: this.state.siteacceleration || "",
+                magnitude: this.state.magnitude || "",
+                points: []
+            };
         }
 
+        const seismic = project.seismic;
+
+        // ---- UPDATE EXISTING POINT ----
+        if (this.state.activepointid) {
+            const pointid = this.state.activepointid;
+            const pointIndex = gfk.getPointKeybyID.call(this, projectid, pointid);
+
+            if (pointIndex !== false) {
+                seismic.points[pointIndex].spt = value;
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
+            }
+        }
+
+        // ---- CREATE NEW POINT ----
+        const newPointID = makeid.seismicpointid.call(this, projectid);
+
+        const newPoint = {
+            pointid: newPointID,
+            depth: this.state.depth || "",
+            pi: this.state.pi || "",
+            fines: this.state.fines || "",
+            spt: value,
+            sampleid: this.state.sampleid || ""
+        };
+
+        seismic.points.push(newPoint);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activepointid: newPointID, render: "render" });
     }
+
 
     getFines() {
         const gfk = new GFK();
-        let fines = "";
         const projectid = this.props.match.params.projectid;
         const pointid = this.state.activepointid;
-        if (this.state.activepointid) {
-            const point = gfk.getPointbyID.call(this, projectid, pointid)
-            if (point) {
-                fines = point.fines;
-            }
 
+        if (!pointid) return "";
 
-        }
-        return fines;
-
-
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        return point?.fines ?? "";
     }
 
     handleFines(value) {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
+        const project = gfk.getProjectById.call(this, projectid);
+        const projects = gfk.getProjects.call(this);
         const makeid = new MakeID();
-        const seismics = gfk.getSeismic.call(this)
 
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+
+        // Ensure `seismic` object exists
+        if (!project.seismic) {
+            project.seismic = {
+                siteacceleration: this.state.siteacceleration || "",
+                magnitude: this.state.magnitude || "",
+                points: []
+            };
+        }
+
+        const seismic = project.seismic;
+
+        // ---- UPDATE EXISTING POINT ----
         if (this.state.activepointid) {
             const pointid = this.state.activepointid;
+            const pointIndex = gfk.getPointKeybyID.call(this, projectid, pointid);
 
-
-            if (seismics) {
-                let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
-                    const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                    const points = gfk.getPointsByProjectID.call(this, projectid)
-                    if (points) {
-                        const point = gfk.getPointbyID.call(this, projectid, pointid)
-                        if (point) {
-                            const j = gfk.getPointKeybyID.call(this, projectid, pointid)
-                            seismics[i].points[j].fines = value
-                            this.props.reduxSeismic(seismics);
-                            this.setState({ render: 'render' })
-                        }
-
-                    }
-                }
-
+            if (pointIndex !== false) {
+                seismic.points[pointIndex].fines = value;
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
             }
-
-        } else {
-            let seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            const magnitude = this.state.magnitude;
-            const siteacceleration = this.state.siteacceleration;
-            let pointid = makeid.seismicpointid.call(this)
-            const depth = this.state.depth
-            const spt = this.state.spt;
-            const pi = this.state.pi;
-            const sampleid = this.state.sampleid;
-
-            if (seismic) {
-
-                const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                const points = gfk.getPointsByProjectID.call(this, projectid);
-                let newSeismic = SeismicPoint(pointid, depth, pi, value, spt, sampleid)
-
-                if (points) {
-
-                    seismics[i].points.push(newSeismic);
-
-
-                } else {
-                    seismics[i].points = [newSeismic]
-
-                }
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-
-            } else {
-
-                let newseismic = newSeismicPoint(projectid, magnitude, siteacceleration, pointid, depth, pi, value, spt, sampleid)
-                seismics.push(newseismic)
-                this.props.reduxSeismic(seismics);
-                this.setState({ activepointid: pointid })
-            }
-
-
-
         }
 
+        // ---- CREATE NEW POINT ----
+        const newPointID = makeid.seismicpointid.call(this, projectid);
+
+        const newPoint = {
+            pointid: newPointID,
+            depth: this.state.depth || "",
+            pi: this.state.pi || "",
+            fines: value,
+            spt: this.state.spt || "",
+            sampleid: this.state.sampleid || ""
+        };
+
+        seismic.points.push(newPoint);
+
+        this.props.reduxProjects(projects);
+        this.setState({ activepointid: newPointID, render: "render" });
     }
 
 
-    handlepointid(pointid) {
-        if (!this.state.activepointid) {
-            this.setState({ activepointid: pointid })
-        } else {
-            this.setState({ activepointid: false })
-        }
+    handlePointID(pointid) {
+        this.setState(prevState => ({
+            activepointid: prevState.activepointid === pointid ? false : pointid
+        }));
     }
 
-    handlestrainid(strainid) {
+    handleStrainID(strainid) {
+        const { activestrainid } = this.state;
 
-        if (!this.state.activestrainid) {
+        // If clicking a new strain → activate it and its parent point
+        if (activestrainid !== strainid) {
             const gfk = new GFK();
             const projectid = this.props.match.params.projectid;
-            const pointid = gfk.getPointIDfromStrainID.call(this, projectid, strainid)
 
-            this.setState({ activestrainid: strainid, activepointid: pointid })
-        } else {
-            this.setState({ activestrainid: false })
+            const pointid = gfk.getPointIDfromStrainID.call(this, projectid, strainid);
+
+            this.setState({
+                activestrainid: strainid,
+                activepointid: pointid || false,
+            });
+
+            return;
         }
+
+        // Clicking the same strain again → deactivate
+        this.setState({ activestrainid: false });
     }
+
 
 
     removePoint(projectid, pointid) {
-
         const gfk = new GFK();
-        const seismics = gfk.getSeismic.call(this)
-        if (seismics) {
-            const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-            if (seismic) {
-                const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-                const points = gfk.getPointsByProjectID.call(this, projectid)
-                if (points) {
-                    const point = gfk.getPointbyID.call(this, projectid, pointid)
-                    if (point) {
-                        const j = gfk.getPointKeybyID.call(this, projectid, pointid)
-                        seismics[i].points.splice(j, 1);
-                        this.props.reduxSeismic(seismics);
-                        this.setState({ activepointid: false })
-                    }
+        const projects = gfk.getProjects.call(this);
 
-                }
-            }
+        if (!projects) return;
 
-        }
+        // Get the project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        // Index of project in array
+        const i = gfk.getProjectKeyById.call(this, projectid);
+        if (i === false) return;
+
+        // Seismic object
+        const seismic = project.seismic;
+        if (!seismic || !Array.isArray(seismic.points)) return;
+
+        // Get point & index
+        const j = seismic.points.findIndex(p => p.pointid === pointid);
+        if (j === -1) return;
+
+        // Remove the point
+        projects[i].seismic.points.splice(j, 1);
+
+        // Save updated projects
+        this.props.reduxProjects(projects);
+
+        // Reset UI state
+        this.setState({ activepointid: false });
     }
+
 
 
     showpoint(point) {
@@ -540,7 +469,7 @@ class Seismic extends Component {
         return (
 
             <div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15 }} key={point.pointid}>
-                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handlepointid(point.pointid) }}>
+                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handlePointID(point.pointid) }}>
                     <span style={{ ...regularFont }}>Depth: {point.depth} SPT:{point.spt} Fines:{point.fines}%  PI: {point.pi} </span>
                 </div>
                 <div style={{ ...styles.flex1 }}>
@@ -572,252 +501,315 @@ class Seismic extends Component {
 
     }
 
-    removeStrain(projectid, strainid) {
+    removeStrain(projectid, pointid, strainid) {
         const gfk = new GFK();
-        const seismics = gfk.getSeismic.call(this)
-        const strain = gfk.getStrainbyID.call(this, projectid, strainid)
-        if (strain) {
-            const keys = gfk.getStrainKeybyProjectID.call(this, projectid, strainid)
-            let i = keys.a;
-            let j = keys.b;
-            let k = keys.c;
-            seismics[i].points[j].strain.splice(k, 1)
-            this.props.reduxSeismic(seismics)
-            this.setState({ activestrainid: false })
+        const projects = gfk.getProjects.call(this);
 
-        }
+        if (!projects) return;
 
+        // Get project
+        const project = gfk.getProjectByID.call(this, projectid);
+        if (!project) return;
+
+        // Index of project
+        const i = gfk.getProjectKeyByID.call(this, projectid);
+        if (i === false) return;
+
+        const seismic = project.seismic;
+        if (!seismic || !Array.isArray(seismic.points)) return;
+
+        // Find the point inside seismic.points
+        const j = seismic.points.findIndex(p => p.pointid === pointid);
+        if (j === -1) return;
+
+        const point = seismic.points[j];
+
+        if (!Array.isArray(point.strain)) return;
+
+        // Find strain index
+        const k = point.strain.findIndex(s => s.strainid === strainid);
+        if (k === -1) return;
+
+        // Remove strain
+        projects[i].seismic.points[j].strain.splice(k, 1);
+
+        // Save updated projects
+        this.props.reduxProjects(projects);
+
+        // Reset UI state
+        this.setState({ activestrainid: false });
     }
+
 
     handleStrainRatio(value) {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const seismics = gfk.getSeismic.call(this)
         const makeid = new MakeID();
-        if (this.state.activestrainid) {
-            const strainid = this.state.activestrainid;
+        const projectid = this.props.match.params.projectid;
 
-            if (seismics) {
-                const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                    const keys = gfk.getStrainKeybyProjectID.call(this, projectid, strainid)
-                    const i = keys.a;
-                    const j = keys.b;
-                    const k = keys.c;
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    seismics[i].points[j].strain[k].strainratio = value;
-                    this.props.reduxSeismic(seismics);
-                    this.setState({ render: 'render' })
-                }
-
-
-
-            }
-
-        } else {
-
-            const strainid = makeid.seismicstrainid.call(this)
-            const toplayer = this.state.toplayer;
-            const bottomlayer = this.state.bottomlayer;
-
-            // if pointid is active
-            if (this.state.activepointid) {
-                let pointid = this.state.activepointid;
-                const point = gfk.getPointbyID.call(this, projectid, pointid);
-                let getStrain = newStrain(strainid, pointid, toplayer, bottomlayer, value)
-                if (point) {
-                    let i = gfk.getSeismicKeybyProjectID.call(this, projectid);
-                    let j = gfk.getPointKeybyID.call(this, projectid, pointid)
-
-                    if (point.hasOwnProperty("strain")) {
-                        seismics[i].points[j].strain.push(getStrain)
-
-                    } else {
-                        seismics[i].points[j].strain = [getStrain];
-
-                    }
-                    this.props.reduxSeismic(seismics)
-                    this.setState({ activestrainid: strainid })
-
-                }
-
-
-            }
-
-
+        // Ensure seismic object exists
+        if (!project.seismic) {
+            project.seismic = { points: [] };
         }
 
+        const pointid = this.state.activepointid;
+        if (!pointid) return; // Cannot assign strain without a point
+
+        // Ensure points array exists
+        if (!Array.isArray(project.seismic.points)) {
+            project.seismic.points = [];
+        }
+
+        // Find point
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        const pointIndex = gfk.getPointKeybyID.call(this, projectid, pointid);
+
+        if (!point) return;
+
+        // Ensure strain array exists
+        if (!Array.isArray(point.strain)) {
+            project.seismic.points[pointIndex].strain = [];
+        }
+
+        const strainid = this.state.activestrainid;
+
+        if (strainid) {
+            // -------------------------------------------------------
+            // UPDATE EXISTING STRAIN
+            // -------------------------------------------------------
+            const strainIndex = point.strain.findIndex(s => s.strainid === strainid);
+            if (strainIndex !== -1) {
+                project.seismic.points[pointIndex].strain[strainIndex].strainratio = value;
+
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
+            }
+        }
+
+        // -------------------------------------------------------
+        // CREATE NEW STRAIN ENTRY
+        // -------------------------------------------------------
+        const newStrainID = makeid.strainid.call(this);
+        const toplayer = this.state.toplayer || "";
+        const bottomlayer = this.state.bottomlayer || "";
+
+        const newStrainEntry = newStrain(
+            newStrainID,
+            toplayer,
+            bottomlayer,
+            value
+        );
+
+        project.seismic.points[pointIndex].strain.push(newStrainEntry);
+
+        this.props.reduxProjects(projects);
+
+        // Set new active strain
+        this.setState({ activestrainid: newStrainID, render: "render" });
     }
+
 
     getStrainRatio() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        let strainratio = '';
-        if (this.state.activestrainid) {
-            const strainid = this.state.activestrainid;
-            const strain = gfk.getStrainbyID.call(this, projectid, strainid)
-            if (strain) {
-                strainratio = strain.strainratio;
-            }
 
-        }
-        return strainratio;
+        const projectid = this.props.match.params.projectid;
+        const pointid = this.state.activepointid;
+        const strainid = this.state.activestrainid;
+
+        if (!pointid || !strainid) return "";
+
+        // Find point
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        if (!point || !Array.isArray(point.strain)) return "";
+
+        // Find strain entry
+        const strain = point.strain.find(s => s.strainid === strainid);
+        if (!strain) return "";
+
+        return strain.strainratio || "";
     }
+
 
     getTopLayer() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        let toplayer = '';
-        if (this.state.activestrainid) {
-            const strainid = this.state.activestrainid;
-            const strain = gfk.getStrainbyID.call(this, projectid, strainid)
-            if (strain) {
-                toplayer = strain.toplayer;
-            }
+        const strainid = this.state.activestrainid;
 
-        }
-        return toplayer;
+        if (!strainid) return "";
+
+        const pointid = this.state.activepointid;
+        if (!pointid) return "";
+
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        if (!point || !Array.isArray(point.strain)) return "";
+
+        const strain = point.strain.find(s => s.strainid === strainid);
+        return strain ? strain.toplayer : "";
     }
-
 
 
     handleTopLayer(value) {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const seismics = gfk.getSeismic.call(this)
         const makeid = new MakeID();
-        if (this.state.activestrainid) {
-            const strainid = this.state.activestrainid;
+        const projectid = this.props.match.params.projectid;
 
-            if (seismics) {
-                const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                    const keys = gfk.getStrainKeybyProjectID.call(this, projectid, strainid)
-                    const i = keys.a;
-                    const j = keys.b;
-                    const k = keys.c;
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    seismics[i].points[j].strain[k].toplayer = value;
-                    this.props.reduxSeismic(seismics);
-                    this.setState({ render: 'render' })
-                }
-
-
-
-            }
-
-        } else {
-
-            const strainid = makeid.seismicstrainid.call(this)
-            const strainratio = this.state.strainratio;
-            const bottomlayer = this.state.bottomlayer;
-
-            // if pointid is active
-            if (this.state.activepointid) {
-                let pointid = this.state.activepointid;
-                const point = gfk.getPointbyID.call(this, projectid, pointid);
-                let getStrain = newStrain(strainid, pointid, value, bottomlayer, strainratio)
-                if (point) {
-                    let i = gfk.getSeismicKeybyProjectID.call(this, projectid);
-                    let j = gfk.getPointKeybyID.call(this, projectid, pointid)
-
-                    if (point.hasOwnProperty("strain")) {
-                        seismics[i].points[j].strain.push(getStrain)
-
-                    } else {
-                        seismics[i].points[j].strain = [getStrain];
-
-                    }
-                    this.props.reduxSeismic(seismics)
-                    this.setState({ activestrainid: strainid })
-
-                }
-
-
-            }
-
-
+        // Ensure seismic structure exists
+        if (!project.seismic) {
+            project.seismic = { points: [] };
+        }
+        if (!Array.isArray(project.seismic.points)) {
+            project.seismic.points = [];
         }
 
+        const pointid = this.state.activepointid;
+        if (!pointid) return;
+
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        const pointIndex = gfk.getPointKeybyID.call(this, projectid, pointid);
+        if (!point) return;
+
+        // Ensure strain array exists
+        if (!Array.isArray(point.strain)) {
+            project.seismic.points[pointIndex].strain = [];
+        }
+
+        const strainid = this.state.activestrainid;
+
+        // -----------------------------------------------------
+        // UPDATE EXISTING STRAIN
+        // -----------------------------------------------------
+        if (strainid) {
+            const strainIndex = point.strain.findIndex(s => s.strainid === strainid);
+            if (strainIndex !== -1) {
+                project.seismic.points[pointIndex]
+                    .strain[strainIndex]
+                    .toplayer = value;
+
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
+            }
+        }
+
+        // -----------------------------------------------------
+        // CREATE NEW STRAIN ENTRY
+        // -----------------------------------------------------
+        const newStrainID = makeid.strainid.call(this);
+        const bottomlayer = this.state.bottomlayer || "";
+        const strainratio = this.state.strainratio || "";
+
+        const newEntry = newStrain(
+            newStrainID,
+            value,           // toplayer
+            bottomlayer,     // bottomlayer
+            strainratio      // strainratio
+        );
+
+        project.seismic.points[pointIndex].strain.push(newEntry);
+
+        this.props.reduxProjects(projects);
+
+        this.setState({
+            activestrainid: newStrainID,
+            render: "render"
+        });
     }
+
 
     getBottomLayer() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        let bottomlayer = '';
-        if (this.state.activestrainid) {
-            const strainid = this.state.activestrainid;
-            const strain = gfk.getStrainbyID.call(this, projectid, strainid)
-            if (strain) {
-                bottomlayer = strain.bottomlayer;
-            }
+        const strainid = this.state.activestrainid;
+        const pointid = this.state.activepointid;
 
-        }
-        return bottomlayer;
+        if (!pointid || !strainid) return "";
+
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        if (!point || !Array.isArray(point.strain)) return "";
+
+        const strain = point.strain.find(s => s.strainid === strainid);
+        return strain ? strain.bottomlayer : "";
     }
+
 
     handleBottomLayer(value) {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const seismics = gfk.getSeismic.call(this)
         const makeid = new MakeID();
-        if (this.state.activestrainid) {
-            const strainid = this.state.activestrainid;
+        const projectid = this.props.match.params.projectid;
 
-            if (seismics) {
-                const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-                if (seismic) {
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                    const keys = gfk.getStrainKeybyProjectID.call(this, projectid, strainid)
-                    const i = keys.a;
-                    const j = keys.b;
-                    const k = keys.c;
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    seismics[i].points[j].strain[k].bottomlayer = value;
-                    this.props.reduxSeismic(seismics);
-                    this.setState({ render: 'render' })
-                }
+        // Ensure seismic structure exists
+        if (!project.seismic) project.seismic = { points: [] };
+        if (!Array.isArray(project.seismic.points)) project.seismic.points = [];
 
+        const pointid = this.state.activepointid;
+        if (!pointid) return;
 
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        const pointIndex = gfk.getPointKeybyID.call(this, projectid, pointid);
+        if (!point) return;
 
+        if (!Array.isArray(point.strain)) project.seismic.points[pointIndex].strain = [];
+
+        const strainid = this.state.activestrainid;
+
+        // -----------------------------------------------------
+        // UPDATE EXISTING STRAIN
+        // -----------------------------------------------------
+        if (strainid) {
+            const strainIndex = point.strain.findIndex(s => s.strainid === strainid);
+            if (strainIndex !== -1) {
+                project.seismic.points[pointIndex]
+                    .strain[strainIndex]
+                    .bottomlayer = value;
+
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+                return;
             }
-
-        } else {
-
-            const strainid = makeid.seismicstrainid.call(this)
-            const strainratio = this.state.strainratio;
-            const toplayer = this.state.toplayer;
-
-            // if pointid is active
-            if (this.state.activepointid) {
-                let pointid = this.state.activepointid;
-                const point = gfk.getPointbyID.call(this, projectid, pointid);
-                let getStrain = newStrain(strainid, pointid, toplayer, value, strainratio)
-                if (point) {
-                    let i = gfk.getSeismicKeybyProjectID.call(this, projectid);
-                    let j = gfk.getPointKeybyID.call(this, projectid, pointid)
-
-                    if (point.hasOwnProperty("strain")) {
-                        seismics[i].points[j].strain.push(getStrain)
-
-                    } else {
-                        seismics[i].points[j].strain = [getStrain];
-
-                    }
-                    this.props.reduxSeismic(seismics)
-                    this.setState({ activestrainid: strainid })
-
-                }
-
-
-            }
-
-
         }
 
+        // -----------------------------------------------------
+        // CREATE NEW STRAIN ENTRY
+        // -----------------------------------------------------
+        const newStrainID = makeid.strainid.call(this);
+        const toplayer = this.state.toplayer || "";
+        const strainratio = this.state.strainratio || "";
+
+        const newEntry = newStrain(
+            newStrainID,
+            toplayer,    // toplayer
+            value,       // bottomlayer
+            strainratio  // strainratio
+        );
+
+        project.seismic.points[pointIndex].strain.push(newEntry);
+
+        this.props.reduxProjects(projects);
+
+        this.setState({
+            activestrainid: newStrainID,
+            render: "render"
+        });
     }
+
 
     getStrainIDs() {
         const gfk = new GFK();
@@ -862,7 +854,7 @@ class Seismic extends Component {
         return (
 
             <div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15 }} key={strain.strainid}>
-                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handlestrainid(strain.strainid) }}>
+                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handleStrainID(strain.strainid) }}>
                     <span style={{ ...regularFont }}>Top Depth: {strain.toplayer}ft Bottom Depth:{strain.bottomlayer} Strain Ratio:{strain.strainratio}  Settlement {settlement()} in </span>
                 </div>
                 <div style={{ ...styles.flex1 }}>
@@ -878,149 +870,125 @@ class Seismic extends Component {
 
     }
 
-    getprojectsamples() {
+    getProjectSamples() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid
-        let options = [];
-        const borings = gfk.getboringsbyprojectid.call(this, projectid);
-        if (borings) {
-            // eslint-disable-next-line
-            borings.map(boring => {
-                let boringid = boring.boringid;
-                const samples = gfk.getsamplesbyboringid.call(this, boringid)
-                const boringnumber = boring.boringnumber;
-                if (samples) {
-                    // eslint-disable-next-line
-                    samples.map(sample => {
-                        const sampleid = sample.sampleid;
-                        const sampleset = sample.sampleset;
-                        const samplenumber = sample.samplenumber;
-                        const depth = sample.depth;
+        const { projectid } = this.props.match.params;
+        const options = [];
 
-                        options.push(<option key={sampleid} value={sampleid}>{boringnumber}-{sampleset}({samplenumber}){depth}</option>)
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (!Array.isArray(borings)) return options;
 
+        borings.forEach(boring => {
+            const { boringid, boringnumber } = boring;
+            const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid);
 
-                    })
+            if (Array.isArray(samples)) {
+                samples.forEach(sample => {
+                    const { sampleid, sampleset, samplenumber, depth } = sample;
+                    options.push(
+                        <option key={sampleid} value={sampleid}>
+                            {boringnumber}-{sampleset}({samplenumber}){depth}
+                        </option>
+                    );
+                });
+            }
+        });
 
-
-                }
-
-
-            })
-
-
-        }
         return options;
-
-    }
-    handleSampleID(sampleid) {
-        let depth = 0;
-        let pi = 0;
-        let spt = 0;
-        let fines = 0;
-        let ll = 0;
-        const projectid = this.props.match.params.projectid;
-        const makeid = new MakeID();
-
-
-        const netwgt = (sample) => {
-
-            let wgt = Number(sample.drywgt) - Number(sample.tarewgt)
-            wgt = Number(wgt).toFixed(1)
-
-            return (wgt)
-        }
-
-        const gfk = new GFK();
-        const boring = gfk.getBoringfromSampleID.call(this,sampleid);
-
-        const sample = gfk.getsamplebyid.call(this, boring.boringid, sampleid);
-        let i = false;
-        if (sample) {
-            depth = Number(sample.depth);
-            pi = Number(sample.pi);
-            spt = Number(sample.spt)
-            ll = Number(sample.ll)
-
-            const sieve = gfk.getsievebysampleid.call(this, boring.boringid, sampleid)
-            const wgt34 = sieve.wgt34;
-            const wgt38 = sieve.wgt38;
-            const wgt4 = sieve.wgt4;
-            const wgt10 = sieve.wgt10;
-            const wgt30 = sieve.wgt30;
-            const wgt40 = sieve.wgt40;
-            const wgt100 = sieve.wgt100;
-            const wgt200 = sieve.wgt200;
-            const soilclassification = new SoilClassification(netwgt(sample), ll, pi, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200)
-
-            fines = soilclassification.getFines();
-
-        }
-
-        const seismics = gfk.getSeismic.call(this)
-        const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
-        if (seismic) {
-            i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-        }
-
-
-        if (this.state.activepointid) {
-            let pointid = this.state.activepointid;
-            const point = gfk.getPointbyID.call(this, projectid, pointid)
-            if (point) {
-                const j = gfk.getPointKeybyID.call(this, projectid, pointid)
-                seismics[i].points[j].sampleid = sampleid;
-                seismics[i].points[j].depth = depth;
-                seismics[i].points[j].pi = pi;
-                seismics[i].points[j].spt = spt;
-                seismics[i].points[j].fines = fines;
-                this.props.reduxSeismic(seismics)
-                this.setState({ render: 'render' })
-            }
-
-        } else {
-            let pointid = makeid.seismicpointid.call(this)
-
-            if (seismic) {
-                let newPoint = SeismicPoint(pointid, depth, pi, fines, spt, sampleid)
-                if (seismic.hasOwnProperty("points")) {
-
-                    seismics[i].points.push(newPoint)
-
-                } else {
-                    seismics[i].points = [newPoint]
-                }
-                this.props.reduxSeismic(seismics)
-                this.setState({ activepointid: pointid })
-
-            } else {
-                // make
-                const siteacceleration = this.state.siteacceleration;
-                const magnitude = this.state.magnitude
-                let newPoint = newSeismicPoint(projectid, siteacceleration, magnitude, pointid, depth, pi, fines, spt, sampleid)
-                seismics.push(newPoint)
-                this.props.reduxSeismic(seismics)
-                this.setState({ activepointid: pointid })
-
-            }
-
-
-        }
     }
 
-    getSampleID() {
-        const gfk = new GFK();
-        let sampleid = '';
-        const projectid = this.props.match.params.projectid;
-        if (this.state.activepointid) {
-            const pointid = this.state.activepointid;
-            const point = gfk.getPointbyID.call(this, projectid, pointid)
-            if (point) {
-                sampleid = point.sampleid;
-            }
-        }
-        return sampleid;
+handleSampleID(sampleid) {
+    const projectid = this.props.match.params.projectid;
+    const makeid = new MakeID();
+    const gfk = new GFK();
+
+    let depth = 0, pi = 0, spt = 0, fines = 0, ll = 0;
+
+    const netwgt = sample => {
+        let wgt = Number(sample.drywgt) - Number(sample.tarewgt);
+        return Number(wgt).toFixed(1);
+    };
+
+    // Get the sample and calculate fines
+    const boring = gfk.getBoringfromSampleID.call(this, projectid, sampleid);
+    const sample = gfk.getSampleById.call(this, projectid, boring.boringid, sampleid);
+
+    if (sample) {
+        console.log(sample)
+        depth = Number(sample.depth);
+        pi = Number(sample.pi);
+        spt = Number(sample.spt);
+        ll = Number(sample.ll);
+
+        const sieve = gfk.getSieveBySampleId.call(this, projectid, boring.boringid, sampleid);
+        const soilclassification = new SoilClassification(
+            netwgt(sample),
+            ll,
+            pi,
+            sieve.wgt34,
+            sieve.wgt38,
+            sieve.wgt4,
+            sieve.wgt10,
+            sieve.wgt30,
+            sieve.wgt40,
+            sieve.wgt100,
+            sieve.wgt200
+        );
+        fines = soilclassification.getFines();
     }
+
+    // Get projects and ensure project exists
+    const projects = gfk.getProjects.call(this);
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return;
+
+    const i = gfk.getProjectKeyById.call(this, projectid);
+
+    // Ensure seismic object and points array exist
+    if (!projects[i].seismic) projects[i].seismic = {};
+    if (!Array.isArray(projects[i].seismic.points)) projects[i].seismic.points = [];
+
+    const seismic = projects[i].seismic;
+
+    if (this.state.activepointid) {
+        // Update existing point
+        const pointid = this.state.activepointid;
+        const j = gfk.getPointKeybyID.call(this, projectid, pointid);
+        if (j === false) return;
+
+        seismic.points[j].sampleid = sampleid;
+        seismic.points[j].depth = depth;
+        seismic.points[j].pi = pi;
+        seismic.points[j].spt = spt;
+        seismic.points[j].fines = fines;
+    } else {
+        // Create new point and append to seismic.points
+        const pointid = makeid.seismicpointid.call(this, projectid);
+        console.log(pointid, depth, pi, fines, spt, sampleid)
+        const newPoint = SeismicPoint(pointid, depth, pi, fines, spt, sampleid);
+        seismic.points.push(newPoint);
+
+        // Set new active point
+        this.setState({ activepointid: pointid });
+    }
+
+    // Push updated projects to Redux
+    this.props.reduxProjects(projects);
+    this.setState({ render: 'render' });
+}
+
+
+   getSampleID() {
+    const gfk = new GFK();
+    const projectid = this.props.match.params.projectid;
+    const pointid = this.state.activepointid;
+
+    if (!pointid) return '';
+
+    const point = gfk.getPointbyID.call(this, projectid, pointid);
+    return point?.sampleid || '';
+}
+
 
     getOverBurden() {
         const gfk = new GFK();
@@ -1034,7 +1002,7 @@ class Seismic extends Component {
             const sampleid = point.sampleid;
             const depth = point.depth
 
-            const stress = seismiccalcs.getOverBurden.call(this, sampleid, depth)
+            const stress = seismiccalcs.getOverBurden.call(this, projectid, sampleid, depth)
             overburden = stress.overburden
 
         }
@@ -1054,7 +1022,7 @@ class Seismic extends Component {
             const sampleid = point.sampleid;
             const depth = point.depth
 
-            const stress = seismiccalcs.getOverBurden.call(this, sampleid, depth)
+            const stress = seismiccalcs.getOverBurden.call(this, projectid, sampleid, depth)
             effective = stress.effective
 
         }
@@ -1075,7 +1043,7 @@ class Seismic extends Component {
             const sampleid = point.sampleid;
             const depth = point.depth
 
-            const stress = seismiccalcs.getOverBurden.call(this, sampleid, depth)
+            const stress = seismiccalcs.getOverBurden.call(this, projectid, sampleid, depth)
             effective = stress.effective
 
         }
@@ -1155,7 +1123,7 @@ class Seismic extends Component {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
         let csr = 0;
-        const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
+        const seismic = gfk.getSeismicByProjectID.call(this, projectid)
         if (seismic) {
             const siteacceleration = seismic.siteacceleration;
             const overburden = this.getOverBurden();
@@ -1171,7 +1139,7 @@ class Seismic extends Component {
         const seismiccalcs = new SesimicCalcs();
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const seismic = gfk.getSeismicbyProjectID.call(this, projectid)
+        const seismic = gfk.getSeismicByProjectID.call(this, projectid)
         let csr = 0;
         if (seismic) {
             const fines = this.getFines();
@@ -1180,7 +1148,7 @@ class Seismic extends Component {
             const magnitude = Number(seismic.magnitude)
             const magcorrection = Number(seismiccalcs.magnitudeCorrectionFactor(magnitude))
 
-             csr = seismiccalcs.allowableStrengthRatio(fines, n60, picorrection, magcorrection)
+            csr = seismiccalcs.allowableStrengthRatio(fines, n60, picorrection, magcorrection)
 
         }
 
@@ -1193,31 +1161,20 @@ class Seismic extends Component {
         let fs = 0;
         const driving = Number(this.getDrivingCSR())
         const allowable = Number(this.getAllowableCSR())
-        fs = allowable/driving
+        fs = allowable / driving
         return Number(fs).toFixed(2)
     }
 
     async handleSaveProject() {
-        
+
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const seismic = gfk.getSeismicbyProjectID.call(this,projectid)
-        if(seismic) {
-             const i = gfk.getSeismicKeybyProjectID.call(this,projectid)
-             let response = await HandleSeismic({seismic})
-             console.log(response)
-             if(response.hasOwnProperty("seismic")) {
-                let newSeismic = response.seismic.seismic;
-                const seismics = gfk.getSeismic.call(this)
-                seismics[i] = newSeismic;
-                this.props.reduxSeismic(seismics);
-
-             }
-             let message = '';
-             if(response.hasOwnProperty("message")) {
-                message =  response.message
-             }
-             this.setState({message:message})
+        const seismic = gfk.getSeismicByProjectID.call(this, projectid)
+        if (seismic) {
+            const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
+            let response = await HandleSeismic({ seismic })
+            console.log(response)
+         
         }
     }
 
@@ -1229,7 +1186,7 @@ class Seismic extends Component {
         const headerFont = gfk.getHeaderFont.call(this)
         const engineerid = this.props.match.params.engineerid;
         const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid);
+        const project = gfk.getProjectById.call(this, projectid);
         const regularFont = gfk.getRegularFont.call(this)
         const saveprojecticon = gfk.getsaveprojecticon.call(this)
         if (project) {
@@ -1297,7 +1254,7 @@ class Seismic extends Component {
                         value={this.getSampleID()}
                         onChange={(event) => { this.handleSampleID(event.target.value) }}>
                         <option value="">Select A Sample</option>
-                        {this.getprojectsamples()}
+                        {this.getProjectSamples()}
                     </select>
                 </div>
 
@@ -1395,11 +1352,11 @@ class Seismic extends Component {
                             value={this.getBottomLayer()}
                             onChange={event => { this.handleBottomLayer(event.target.value) }}
                         />
-                        <div style={{...styles.generalContainer, ...styles.alignCenter}}>
-                            <span style={{...regularFont}}>{this.state.message}</span>
+                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                            <span style={{ ...regularFont }}>{this.state.message}</span>
                         </div>
-                        <div style={{...styles.generalContainer, ...styles.bottomMargin15}}>
-                            <button style={{...styles.generalButton, ...saveprojecticon}} onClick={()=>{this.handleSaveProject()}}>{saveProjectIcon()}</button>
+                        <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+                            <button style={{ ...styles.generalButton, ...saveprojecticon }} onClick={() => { this.handleSaveProject() }}>{saveProjectIcon()}</button>
                         </div>
                         {this.getStrainIDs()}
                     </div>
@@ -1427,8 +1384,7 @@ class Seismic extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser,
-        seismic: state.seismic
+        projects:state.projects
     }
 }
 export default connect(mapStateToProps, actions)(Seismic);

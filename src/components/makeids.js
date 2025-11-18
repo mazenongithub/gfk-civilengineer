@@ -146,74 +146,74 @@ class MakeID {
         return testid;
     }
 
-   unconfinedID() {
-    const gfk = new GFK();
-    const projects = gfk.getProjects.call(this);
+    unconfinedID() {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
 
-    if (!projects) return makeID(16); // fallback
+        if (!projects) return makeID(16); // fallback
 
-    let unid = false;
+        let unid = false;
 
-    while (!unid) {
-        const candidate = makeID(16);
+        while (!unid) {
+            const candidate = makeID(16);
 
-        // Check if this ID exists anywhere in all projects → borings → samples → unconfined
-        const exists = projects.some(project =>
-            project.borings?.some(boring =>
-                boring.samples?.some(sample =>
-                    sample.unconfined?.some(test =>
-                        test.unid === candidate
+            // Check if this ID exists anywhere in all projects → borings → samples → unconfined
+            const exists = projects.some(project =>
+                project.borings?.some(boring =>
+                    boring.samples?.some(sample =>
+                        sample.unconfined?.some(test =>
+                            test.unid === candidate
+                        )
                     )
                 )
-            )
-        );
+            );
 
-        if (!exists) {
-            unid = candidate;
+            if (!exists) {
+                unid = candidate;
+            }
         }
-    }
 
-    return unid;
-}
+        return unid;
+    }
 
 
     sampleID() {
-    const gfk = new GFK();
-    let sampleid = null;
+        const gfk = new GFK();
+        let sampleid = null;
 
-    const projects = gfk.getProjects.call(this) || [];
+        const projects = gfk.getProjects.call(this) || [];
 
-    while (!sampleid) {
-        // Generate a candidate ID
-        const candidate = makeID(16);
-        let exists = false;
+        while (!sampleid) {
+            // Generate a candidate ID
+            const candidate = makeID(16);
+            let exists = false;
 
-        // Check if the candidate already exists
-        for (const project of projects) {
-            if (!Array.isArray(project.borings)) continue;
+            // Check if the candidate already exists
+            for (const project of projects) {
+                if (!Array.isArray(project.borings)) continue;
 
-            for (const boring of project.borings) {
-                if (!Array.isArray(boring.samples)) continue;
+                for (const boring of project.borings) {
+                    if (!Array.isArray(boring.samples)) continue;
 
-                for (const sample of boring.samples) {
-                    if (sample.sampleid === candidate) {
-                        exists = true;
-                        break;
+                    for (const sample of boring.samples) {
+                        if (sample.sampleid === candidate) {
+                            exists = true;
+                            break;
+                        }
                     }
+                    if (exists) break;
                 }
                 if (exists) break;
             }
-            if (exists) break;
+
+            // If it doesn’t exist, use it
+            if (!exists) {
+                sampleid = candidate;
+            }
         }
 
-        // If it doesn’t exist, use it
-        if (!exists) {
-            sampleid = candidate;
-        }
+        return sampleid;
     }
-
-    return sampleid;
-}
 
     seismicstrainid() {
         let strainid = false;
@@ -258,37 +258,24 @@ class MakeID {
         return strainid
     }
 
-    seismicpointid() {
-        const gfk = new GFK();
-        const seismics = gfk.getSeismic.call(this)
-        let pointid = false;
+    seismicpointid(projectid) {
+    const gfk = new GFK();
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return false;
 
-        if (seismics) {
+    const points = project.seismic?.points || [];
+    let pointid = null;
 
-            while (!pointid) {
-                pointid = makeID(16)
-                // eslint-disable-next-line
-                seismics.map(seismic => {
-                    if (seismic.hasOwnProperty("points")) {
-                        // eslint-disable-next-line
-                        seismic.points.map(point => {
-                            if (pointid === point.pointid) {
-                                pointid = false;
-                            }
-                        })
-                    }
-                })
+    do {
+        pointid = makeID(16);
+        // Check if the generated ID already exists
+        const exists = points.some(point => point.pointid === pointid);
+        if (!exists) break;
+        pointid = null;
+    } while (!pointid);
 
-
-            }
-
-        } else {
-            pointid = makeID(16)
-        }
-
-
-        return pointid;
-    }
+    return pointid;
+}
 
     plslablayerid() {
         let layerid = false;
