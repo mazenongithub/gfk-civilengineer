@@ -18,8 +18,8 @@ export function SeismicPoint(pointid,depth,pi,fines,spt,sampleid) {
     return({pointid,depth,pi,fines,spt,sampleid,strain:[]})
 
 }
-export function PTSlabSection(projectid,sectionid,sectionname) {
-    return{projectid,sectionid,sectionname,layers:[]}
+export function PTSlabSection(sectionid,sectionname) {
+    return{sectionid,sectionname,layers:[]}
 }
 export function formatDateforCalendarDisplay(datein) {
     let month = getmonth(datein);

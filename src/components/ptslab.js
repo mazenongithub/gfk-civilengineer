@@ -21,7 +21,7 @@ class PTSlab extends Component {
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
-        this.loadProgram();
+       
 
 
 
@@ -51,694 +51,727 @@ class PTSlab extends Component {
 
     getSectionName() {
         const gfk = new GFK();
-        let sectionname = '';
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projectid = this.props.match.params.projectid;
+        const { activesectionid } = this.state;
 
-            sectionname = section.sectionname;
-        }
-        return sectionname;
+        if (!activesectionid) return "";
 
+        const section = gfk.getPTSlabByID.call(this, projectid, activesectionid);
+        if (!section) return "";
+
+        return section.sectionname || "";
     }
+
 
     handleSectionName(value) {
-
         const gfk = new GFK();
+        const makeid = new MakeID();
+        const projectid = this.props.match.params.projectid;
 
+        // Load projects
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false) return;
+
+        const project = projects[projectIndex];
+
+        // Ensure ptslab and sections array exist
+        if (!project.ptslab) project.ptslab = {};
+        if (!Array.isArray(project.ptslab.sections)) project.ptslab.sections = [];
+
+        const sections = project.ptslab.sections;
+
+        // If a section is active, update it
         if (this.state.activesectionid) {
-
             const sectionid = this.state.activesectionid;
-            let ptslabs = gfk.getPTslabs.call(this)
-            if (ptslabs) {
 
-                const ptslab = gfk.getPTSlabbyID.call(this, sectionid)
-                if (ptslab) {
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
+            const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+            if (sectionIndex === false) return;
 
-                    ptslabs[i].sectionname = value;
-                    this.props.reduxPTSlab(ptslabs)
-                    this.setState({ render: 'render' })
-
-                }
-
-            }
+            sections[sectionIndex].sectionname = value;
 
         } else {
-            const projectid = this.props.match.params.projectid;
-            const makeid = new MakeID();
-            const sectionid = makeid.ptslabsectionid.call(this);
-            const sectionname = value;
-            const newSection = PTSlabSection(projectid, sectionid, sectionname)
-            const ptslabs = gfk.getPTslabs.call(this)
+            // CREATE A NEW SECTION
+            const sectionid = makeid.ptslabsectionid.call(this, projectid);
 
-            if (ptslabs) {
-                ptslabs.push(newSection)
-                this.props.reduxPTSlab(ptslabs)
-                this.setState({ activesectionid: sectionid })
-            }
+            const newSection = PTSlabSection(sectionid, value);
+            sections.push(newSection);
 
+            // NEW SECTION BECOMES ACTIVE
+            this.setState({ activesectionid: sectionid });
         }
 
+        // Save back to Redux
+        this.props.reduxProjects(projects);
+
+        // Trigger UI update
+        this.setState({ render: 'render' });
     }
 
 
-    getlayername() {
+    getLayerName() {
         const gfk = new GFK();
         let layername = '';
-        if (this.state.activelayerid) {
+
+        const projectid = this.props.match.params.projectid;
+
+        if (this.state.activelayerid && this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
+
+            const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+
             if (layer) {
                 layername = layer.layername;
             }
         }
+
         return layername;
-
     }
 
-    handlelayername(value) {
+
+    handleLayerName(value) {
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
+        const projectid = this.props.match.params.projectid;
+        const projects = gfk.getProjects.call(this);
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        if (i === false) return;
 
-                if (section) {
-
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].layername = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-
-
-                        }
-
-
-
-                    } else {
-
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const toplayer = this.state.toplayer;
-                        const bottomlayer = this.state.bottomlayer;
-                        const ll = this.state.ll;
-                        const pi = this.state.pi;
-                        const fines = this.state.fines;
-                        const micro = this.state.micro;
-                        const newLayer = PTSlabLayer(layerid, value, toplayer, bottomlayer, ll, pi, fines, micro)
-                        
-                        if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-                        
-                       
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab object exists
+        if (!projects[i].ptslab) {
+            projects[i].ptslab = { sections: [] };
         }
 
+        const ptslab = projects[i].ptslab;
 
-    }
+        // Must have an active section selected
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
 
-    gettoplayer() {
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
 
-        const gfk = new GFK();
-        let toplayer = '';
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers array exists
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        // Case 1: Update existing layer
         if (this.state.activelayerid) {
-            const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-            if (layer) {
-                toplayer = layer.toplayer;
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+
+            if (layerIndex !== false) {
+                section.layers[layerIndex].layername = value;
+
+                this.props.reduxProjects(projects);
+                this.setState({ render: 'render' });
+                return;
             }
         }
+
+        // Case 2: Create new layer
+        const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+        const toplayer = "";
+        const bottomlayer = "";
+        const ll = 0;
+        const pi = 0;
+        const fines = 0;
+        const micro = "";
+
+        const newLayer = PTSlabLayer(
+            newLayerID,
+            value,
+            toplayer,
+            bottomlayer,
+            ll,
+            pi,
+            fines,
+            micro
+        );
+
+        section.layers.push(newLayer);
+
+        // Make new layer active
+        this.setState({ activelayerid: newLayerID });
+
+        // Save results
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
+    }
+
+    getTopLayer() {
+        const gfk = new GFK();
+        let toplayer = "";
+
+        const projectid = this.props.match.params.projectid;
+
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
+
+        if (!sectionid || !layerid) return toplayer;
+
+        const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+
+        if (layer && layer.toplayer !== undefined) {
+            toplayer = layer.toplayer;
+        }
+
         return toplayer;
-
     }
 
-    handletoplayer(value) {
 
+    handleTopLayer(value) {
+        const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                if (section) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].toplayer = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-
-
-                        }
-
-
-
-                    } else {
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const layername = this.state.layername;
-                        const bottomlayer = this.state.bottomlayer;
-                        const ll = this.state.ll;
-                        const pi = this.state.pi;
-                        const fines = this.state.fines;
-                        const micro = this.state.micro;
-                        const newLayer = PTSlabLayer(layerid, layername, value, bottomlayer, ll, pi, fines, micro)
-                        
-                        if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab object exists
+        if (!projects[i].ptslab) projects[i].ptslab = {};
+        if (!Array.isArray(projects[i].ptslab.sections)) {
+            projects[i].ptslab.sections = [];
         }
 
+        const ptslab = projects[i].ptslab;
+
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return; // Cannot assign a layer without an active section
+
+        // Ensure section exists
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers array exists
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        const layerid = this.state.activelayerid;
+
+        if (layerid) {
+            // --- UPDATE EXISTING LAYER ---
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+            if (layerIndex === false) return;
+
+            section.layers[layerIndex].toplayer = value;
+
+        } else {
+            // --- CREATE NEW LAYER ---
+            const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+            const newLayer = PTSlabLayer(
+                newLayerID,
+                "",        // layername default
+                value,     // toplayer
+                "",        // bottomlayer default
+                0,         // ll
+                0,         // pi
+                0,         // fines
+                ""         // micro
+            );
+
+            section.layers.push(newLayer);
+
+            // Set new layer active
+            this.setState({ activelayerid: newLayerID });
+        }
+
+        // Update Redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
 
-    getbottomlayer() {
-
+    getBottomLayer() {
         const gfk = new GFK();
-        let bottomlayer = '';
-        if (this.state.activelayerid) {
+        let bottomlayer = "";
+
+        const projectid = this.props.match.params.projectid;
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-            if (layer) {
+
+            const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer && layer.bottomlayer) {
                 bottomlayer = layer.bottomlayer;
             }
         }
-        return bottomlayer;
 
+        return bottomlayer;
     }
 
-    handlebottomlayer(value) {
 
+    handleBottomLayer(value) {
+        const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                if (section) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].bottomlayer = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-
-
-                        }
-
-
-
-                    } else {
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const layername = this.state.layername;
-                        const toplayer = this.state.toplayer;
-                        const ll = this.state.ll;
-                        const pi = this.state.pi;
-                        const fines = this.state.fines;
-                        const micro = this.state.micro;
-                        const newLayer = PTSlabLayer(layerid, layername, toplayer, value, ll, pi, fines, micro)
-                         if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab object exists
+        if (!projects[i].ptslab) projects[i].ptslab = {};
+        if (!Array.isArray(projects[i].ptslab.sections)) {
+            projects[i].ptslab.sections = [];
         }
 
+        const ptslab = projects[i].ptslab;
+
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return; // Can't assign bottomlayer without active section
+
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers array exists
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        const layerid = this.state.activelayerid;
+
+        if (layerid) {
+            // --- UPDATE EXISTING LAYER ---
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+            if (layerIndex === false) return;
+
+            section.layers[layerIndex].bottomlayer = value;
+
+        } else {
+            // --- CREATE NEW LAYER ---
+            const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+            const newLayer = PTSlabLayer(
+                newLayerID,
+                "",        // layername
+                "",        // toplayer
+                value,     // bottomlayer
+                0,         // ll
+                0,         // pi
+                0,         // fines
+                ""         // micro
+            );
+
+            section.layers.push(newLayer);
+
+            // Set the new layer active
+            this.setState({ activelayerid: newLayerID });
+        }
+
+        // Update Redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
 
-    getll() {
 
+    getLL() {
         const gfk = new GFK();
-        let ll = '';
-        if (this.state.activelayerid) {
+        let ll = "";
+
+        const projectid = this.props.match.params.projectid;
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-            if (layer) {
+
+            const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer && layer.ll !== undefined) {
                 ll = layer.ll;
             }
         }
-        return ll;
 
+        return ll;
     }
 
-    handlell(value) {
 
+    handleLL(value) {
+        const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                if (section) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].ll = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-                        }
-
-                    } else {
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const layername = this.state.layername;
-                        const toplayer = this.state.toplayer;
-                        const bottomlayer = this.state.bottomlayer
-                        const pi = this.state.pi;
-                        const fines = this.state.fines;
-                        const micro = this.state.micro;
-                        const newLayer = PTSlabLayer(layerid, layername, toplayer, bottomlayer, value, pi, fines, micro)
-                        if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab exists
+        if (!projects[i].ptslab) projects[i].ptslab = {};
+        if (!Array.isArray(projects[i].ptslab.sections)) {
+            projects[i].ptslab.sections = [];
         }
 
+        const ptslab = projects[i].ptslab;
+
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers array
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        const layerid = this.state.activelayerid;
+
+        if (layerid) {
+            // ----- UPDATE EXISTING LAYER -----
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+            if (layerIndex === false) return;
+
+            section.layers[layerIndex].ll = value;
+
+        } else {
+            // ----- CREATE NEW LAYER -----
+            const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+            const newLayer = PTSlabLayer(
+                newLayerID,
+                "",     // layername
+                "",     // toplayer
+                "",     // bottomlayer
+                value,  // ll
+                0,      // pi
+                0,      // fines
+                ""      // micro
+            );
+
+            section.layers.push(newLayer);
+
+            // Make new layer the active one
+            this.setState({ activelayerid: newLayerID });
+        }
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
 
-    getpi() {
 
+    getPI() {
         const gfk = new GFK();
-        let pi = '';
-        if (this.state.activelayerid) {
+        let pi = "";
+
+        const projectid = this.props.match.params.projectid;
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-            if (layer) {
+
+            const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer && layer.pi !== undefined) {
                 pi = layer.pi;
             }
         }
-        return pi;
 
+        return pi;
     }
 
-    handlepi(value) {
 
+    handlePI(value) {
+        const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                if (section) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].pi = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-                        }
-
-
-                    } else {
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const layername = this.state.layername;
-                        const toplayer = this.state.toplayer;
-                        const bottomlayer = this.state.bottomlayer
-                        const ll = this.state.ll;
-                        const fines = this.state.fines;
-                        const micro = this.state.micro;
-                        const newLayer = PTSlabLayer(layerid, layername, toplayer, bottomlayer, ll, value, fines, micro)
-                        
-                        if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-                        
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab exists
+        if (!projects[i].ptslab) projects[i].ptslab = {};
+        if (!Array.isArray(projects[i].ptslab.sections)) {
+            projects[i].ptslab.sections = [];
         }
 
+        const ptslab = projects[i].ptslab;
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers array
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        const layerid = this.state.activelayerid;
+
+        if (layerid) {
+            // ----- UPDATE EXISTING LAYER -----
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+            if (layerIndex === false) return;
+
+            section.layers[layerIndex].pi = value;
+
+        } else {
+            // ----- CREATE NEW LAYER -----
+            const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+            const newLayer = PTSlabLayer(
+                newLayerID,
+                "",     // layername
+                "",     // toplayer
+                "",     // bottomlayer
+                "",     // ll
+                value,  // pi
+                0,      // fines
+                ""      // micro
+            );
+
+            section.layers.push(newLayer);
+
+            // Set newly created layer active
+            this.setState({ activelayerid: newLayerID });
+        }
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
 
-    getfines() {
-
+    getFines() {
         const gfk = new GFK();
-        let fines = '';
-        if (this.state.activelayerid) {
+        let fines = "";
+
+        const projectid = this.props.match.params.projectid;
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-            if (layer) {
+
+            const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer && layer.fines !== undefined) {
                 fines = layer.fines;
             }
         }
-        return fines;
 
+        return fines;
     }
 
-    handlefines(value) {
 
+    handleFines(value) {
+        const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                if (section) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].fines = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-
-
-                        }
-
-
-
-                    } else {
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const layername = this.state.layername;
-                        const toplayer = this.state.toplayer;
-                        const bottomlayer = this.state.bottomlayer
-                        const ll = this.state.ll;
-                        const pi = this.state.pi;
-                        const micro = this.state.micro;
-                        const newLayer = PTSlabLayer(layerid, layername, toplayer, bottomlayer, ll, pi, value, micro)
-                        if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab exists
+        if (!projects[i].ptslab) projects[i].ptslab = {};
+        if (!Array.isArray(projects[i].ptslab.sections)) {
+            projects[i].ptslab.sections = [];
         }
 
+        const ptslab = projects[i].ptslab;
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers exist
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        const layerid = this.state.activelayerid;
+
+        if (layerid) {
+            // ----- UPDATE EXISTING LAYER -----
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+            if (layerIndex === false) return;
+
+            section.layers[layerIndex].fines = value;
+
+        } else {
+            // ----- CREATE NEW LAYER -----
+            const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+            const newLayer = PTSlabLayer(
+                newLayerID,
+                "",     // layername
+                "",     // toplayer
+                "",     // bottomlayer
+                "",     // ll
+                "",     // pi
+                value,  // fines
+                ""      // micro
+            );
+
+            section.layers.push(newLayer);
+
+            // Set new layer active
+            this.setState({ activelayerid: newLayerID });
+        }
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
 
-    getmicro() {
 
+    getMicro() {
         const gfk = new GFK();
-        let micro = '';
-        if (this.state.activelayerid) {
+        let micro = "";
+
+        const projectid = this.props.match.params.projectid;
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
             const layerid = this.state.activelayerid;
-            const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-            if (layer) {
+
+            const layer = gfk.getPTSlabLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer && layer.micro !== undefined) {
                 micro = layer.micro;
             }
         }
-        return micro;
 
+        return micro;
     }
 
-    handlemicro(value) {
 
+    handleMicro(value) {
+        const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
+        const makeid = new MakeID();
 
-            if (this.state.activesectionid) {
-                const sectionid = this.state.activesectionid;
-                const section = gfk.getPTSlabbyID.call(this, sectionid)
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                if (section) {
+        const i = gfk.getProjectKeyById.call(this, projectid);
 
-                    const i = gfk.getPTSlabkeybyID.call(this, sectionid)
-
-
-                    if (this.state.activelayerid) {
-
-                        const layerid = this.state.activelayerid;
-
-                        const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
-                        if (layer) {
-
-                            const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                            ptslabs[i].layers[j].micro = value;
-                            this.props.reduxPTSlab(ptslabs)
-                            this.setState({ render: 'render' })
-
-
-
-                        }
-
-
-                    } else {
-
-                        const makeid = new MakeID();
-                        const layerid = makeid.plslablayerid.call(this, sectionid)
-                        const layername = this.state.layername;
-                        const toplayer = this.state.toplayer;
-                        const bottomlayer = this.state.bottomlayer
-                        const ll = this.state.ll;
-                        const pi = this.state.pi;
-                        const fines = this.state.fines;
-                        const newLayer = PTSlabLayer(layerid, layername, toplayer, bottomlayer, ll, pi, fines, value)
-                        if(section.hasOwnProperty("layers")) {
-                            ptslabs[i].layers.push(newLayer)
-
-                        } else {
-                            ptslabs[i].layers = [];
-                            ptslabs[i].layers.push(newLayer)
-
-
-                        }
-                        this.props.reduxPTSlab(ptslabs);
-                        this.setState({ activelayerid: layerid })
-
-                    }
-
-                }
-
-
-            }
-
-
+        // Ensure ptslab exists
+        if (!projects[i].ptslab) projects[i].ptslab = {};
+        if (!Array.isArray(projects[i].ptslab.sections)) {
+            projects[i].ptslab.sections = [];
         }
 
+        const ptslab = projects[i].ptslab;
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = ptslab.sections[sectionIndex];
+
+        // Ensure layers array exists
+        if (!Array.isArray(section.layers)) {
+            section.layers = [];
+        }
+
+        const layerid = this.state.activelayerid;
+
+        if (layerid) {
+            // ---- UPDATE EXISTING LAYER ----
+            const layerIndex = gfk.getPTSlabLayerKeyByID.call(this, projectid, sectionid, layerid);
+            if (layerIndex === false) return;
+
+            section.layers[layerIndex].micro = value;
+
+        } else {
+            // ---- CREATE NEW LAYER ----
+            const newLayerID = makeid.ptslablayerid.call(this, projectid, sectionid);
+
+            const newLayer = PTSlabLayer(
+                newLayerID,
+                "",     // layername
+                "",     // toplayer
+                "",     // bottomlayer
+                "",     // ll
+                "",     // pi
+                "",     // fines
+                value   // micro
+            );
+
+            section.layers.push(newLayer);
+
+            // Set new layer active
+            this.setState({ activelayerid: newLayerID });
+        }
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
+
 
     async saveSection() {
         const gfk = new GFK();
-        const ptslab = gfk.getPTslabs.call(this);
-        const hello = 'hello'
-        const response = await HandlePTSlab({ ptslab, hello })
-        if(response.ptslab.hasOwnProperty("sections")) {
-            let ptslabdb = response.ptslab.sections
-            this.props.reduxPTSlab(ptslabdb)
-        } else {
-            let ptslabdb = response.ptslab
-            this.props.reduxPTSlab(ptslabdb)
-        }
-        
-        this.setState({ message: response.message })
+        const projectid = this.props.match.params.projectidl
+        const ptslab = gfk.getPTSlabByProjectID.call(this,projectid)
+        const response = await HandlePTSlab({ ptslab })
+       
 
 
 
     }
 
-    loadslabids() {
-        const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        let sectionids = [];
-        const projectid = this.props.match.params.projectid;
+   loadslabids() {
+    const gfk = new GFK();
+    const projectid = this.props.match.params.projectid;
 
-        if (ptslabs) {
-            // eslint-disable-next-line
-            ptslabs.map(ptslab => {
-
-                if (ptslab.projectid === projectid) {
-
-
-
-                    sectionids.push(this.showslabid(ptslab))
-
-                }
-
-            })
-        }
-        return sectionids;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project || !project.ptslab || !Array.isArray(project.ptslab.sections)) {
+        return [];
     }
 
-    handlesectionid(sectionid) {
-        if (!this.state.activesectionid) {
-            this.setState({ activesectionid: sectionid })
-        } else {
-            this.setState({ activesectionid: false })
-        }
-    }
+    const sections = project.ptslab.sections;
+    const sectionids = [];
+
+    sections.forEach(section => {
+        sectionids.push(this.showslabid(section));
+    });
+
+    return sectionids;
+}
+
+
+  handleSectionId(sectionid) {
+    const active = this.state.activesectionid;
+
+    this.setState({
+        activesectionid: active === sectionid ? false : sectionid
+    });
+}
+
 
     showslabid(ptslab) {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
         const removeIcon = gfk.getremoveicon.call(this)
+        const projectid = this.props.match.params.projectid;
 
         const highlightactive = () => {
 
@@ -751,7 +784,7 @@ class PTSlab extends Component {
 
         return (
             <div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15, }}>
-                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handlesectionid(ptslab.sectionid) }}>
+                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handleSectionId(ptslab.sectionid) }}>
                     <span style={{ ...regularFont }}>
                         {ptslab.sectionname}
                     </span>
@@ -771,30 +804,48 @@ class PTSlab extends Component {
 
     }
 
-    async removeSection(slabid) {
-        const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this);
-        if (ptslabs) {
-            const ptslab = gfk.getPTSlabbyID.call(this, slabid)
-            if (ptslab) {
-                const i = gfk.getPTSlabkeybyID.call(this, slabid)
-                ptslabs.splice(i, 1)
-                this.props.reduxPTSlab(ptslabs)
-                const response = await DeletePTSlab(ptslab._id,0)
+    removeSection(sectionid) {
+    const gfk = new GFK();
+    const projectid = this.props.match.params.projectid;
+    const projects = gfk.getProjects.call(this);
 
-                this.setState({ activesectionid: false, message:response.message })
-            }
+    // Find project index
+    const i = gfk.getProjectKeyById.call(this, projectid);
+    if (i === false) return false;
 
+    const project = projects[i];
 
-        }
+    // Ensure ptslab exists
+    if (!project.ptslab || !Array.isArray(project.ptslab.sections)) return false;
+
+    const sections = project.ptslab.sections;
+
+    // Find section index
+    const j = sections.findIndex(sec => sec.sectionid === sectionid);
+    if (j === -1) return false;
+
+    // Remove the section
+    sections.splice(j, 1);
+
+    // Update Redux
+    this.props.reduxProjects(projects);
+
+    // Clear active section if it was removed
+    if (this.state.activesectionid === sectionid) {
+        this.setState({ activesectionid: false });
     }
+
+    return true;
+}
+
 
     showlayerids() {
         const gfk = new GFK();
         const layerids = [];
+        const projectid = this.props.match.params.projectid;
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
-            const layers = gfk.getPTSlabLayersbysectionID.call(this, sectionid)
+            const layers = gfk.getPTSlabLayersbysectionID.call(this,projectid, sectionid)
             if (layers) {
                 // eslint-disable-next-line
                 layers.map(layer => {
@@ -825,7 +876,7 @@ class PTSlab extends Component {
         return (
 
             <div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handlelayerid(layer.layerid) }}>
+                <div style={{ ...styles.flex5, ...highlightactive() }} onClick={() => { this.handleLayerID(layer.layerid) }}>
                     <span style={{ ...regularFont }}>{layer.layername} Top:{layer.toplayer}ft Bottom:{layer.bottomlayer}ft LL:{layer.ll} PI: {layer.pi} Fines: {layer.fines}% Micro:{layer.micro}%</span>
                 </div>
                 <div style={{ ...styles.flex1 }}>
@@ -842,46 +893,41 @@ class PTSlab extends Component {
 
     }
 
-    async removeLayer(layerid) {
-        const gfk = new GFK();
-        const sectionid = this.state.activesectionid;
-        const section = gfk.getPTSlabbyID.call(this, sectionid);
-        const ptslabs = gfk.getPTslabs.call(this)
-        if (ptslabs) {
-            if (section) {
-                const i = gfk.getPTSlabkeybyID.call(this, sectionid)
+   removeLayer(layerid) {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
+    const projectid = this.props.match.params.projectid;
+    const sectionid = this.state.activesectionid;
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project || !project.ptslab || !Array.isArray(project.ptslab.sections)) return;
 
-                const layer = gfk.getPTSlabLayerbyID.call(this, sectionid, layerid)
+    const i = gfk.getProjectKeyById.call(this, projectid);
+    const section = project.ptslab.sections.find(sec => sec.sectionid === sectionid);
+    if (!section || !Array.isArray(section.layers)) return;
 
-                if (layer) {
-                    const j = gfk.getPTSlabLayerKeybyID.call(this, sectionid, layerid)
-                    ptslabs[i].layers.splice(j, 1)
-                    this.props.reduxPTSlab(ptslabs)
-                    const response = await DeletePTSlab(0,layer._id)
-                    this.setState({ activelayerid: false, message:response.message })
+    const layerIndex = section.layers.findIndex(layer => layer.layerid === layerid);
+    if (layerIndex === -1) return;
+
+    // Remove the layer
+    projects[i].ptslab.sections.find(sec => sec.sectionid === sectionid)
+                              .layers.splice(layerIndex, 1);
+
+    this.props.reduxProjects(projects);
+    this.setState({ activelayerid: false, render: 'render' });
+}
 
 
-                }
+    handleLayerID(layerid) {
+    this.setState(prevState => ({
+        activelayerid: prevState.activelayerid === layerid ? false : layerid
+    }));
+}
 
-
-            }
-
-        }
-
-    }
-
-    handlelayerid(layerid) {
-        if (!this.state.activelayerid) {
-            this.setState({ activelayerid: layerid })
-        } else {
-            this.setState({ activelayerid: false })
-        }
-    }
 
     getPISamples() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const borings = gfk.getboringsbyprojectid.call(this, projectid)
+        const borings = gfk.getBoringsByProjectId.call(this, projectid)
         const sampleids = [];
         let showoptions = [];
 
@@ -903,7 +949,7 @@ class PTSlab extends Component {
             borings.map(boring => {
                 const boringid = boring.boringid;
                 const boringnumber = boring.boringnumber;
-                const samples = gfk.getsamples.call(this, boringid)
+                const samples = gfk.getSamplesByBoringId.call(this,projectid, boringid)
                 if (samples) {
                     // eslint-disable-next-line
                     samples.map(sample => {
@@ -935,7 +981,7 @@ class PTSlab extends Component {
 
                 // eslint-disable-next-line
                 sampleids.map(id => {
-                    const getsample = gfk.getsamplebyid.call(this, boringid, id.sampleid)
+                    const getsample = gfk.getSampleById.call(this, projectid, boringid, id.sampleid)
                     const label = `${boringnumber}-${getsample.sampleset}(${getsample.samplenumber})${getsample.depth}`
                     showoptions.push(this.showPISamples(id.sampleid, label))
 
@@ -960,25 +1006,27 @@ class PTSlab extends Component {
     getLabData(value) {
         const gfk = new GFK();
         const sampleid = value;
+        const projectid = this.props.match.params.projectid;
         if (this.state.activelayerid) {
-            const boring = gfk.getBoringfromSampleID.call(this,sampleid)
+            const boring = gfk.getBoringfromSampleID.call(this, projectid, sampleid)
 
             let ll = 0
             let pi = 0
             let fines = '';
-            const sample = gfk.getsamplebyid.call(this, boring.boringid, sampleid)
+            const sample = gfk.getSampleById.call(this, projectid, boring.boringid, sampleid)
+            console.log(sample)
             if (sample) {
 
                 if (Number(sample.ll) > 0) {
                     ll = Number(sample.ll)
-                    this.handlell(ll)
+                    this.handleLL(ll)
                 }
                 if (Number(sample.pi) > 0) {
                     pi = Number(sample.pi)
-                    this.handlepi(pi)
+                    this.handlePI(pi)
                 }
 
-                const sieve = gfk.getsievebysampleid.call(this, boring.boringid, sampleid)
+                const sieve = gfk.getSieveBySampleId.call(this, projectid, boring.boringid, sampleid)
                 if (sieve) {
                     const netwgt = Number(sample.drywgt) - Number(sample.tarewgt)
                     const wgt34 = sieve.wgt34;
@@ -991,7 +1039,7 @@ class PTSlab extends Component {
                     const wgt200 = sieve.wgt200;
                     const soilclassification = new SoilClassification(netwgt, ll, pi, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200)
                     fines = soilclassification.getFines()
-                    this.handlefines(fines)
+                    this.handleFines(fines)
                 }
 
             }
@@ -1004,10 +1052,11 @@ class PTSlab extends Component {
         let output = [];
         const gfk = new GFK();
         const ptslabcalcs = new PTSlabCalcs();
+        const projectid = this.props.match.params.projectid;
         let calculate = [];
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
-            const section = gfk.getPTSlabbyID.call(this, sectionid)
+            const section = gfk.getPTSlabByID.call(this, projectid, sectionid)
             if (section) {
 
                 if (section.hasOwnProperty("layers")) {
@@ -1211,7 +1260,7 @@ class PTSlab extends Component {
         const engineerid = this.props.match.params.engineerid;
         const headerFont = gfk.getHeaderFont.call(this)
         const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid)
+        const project = gfk.getProjectById.call(this, projectid)
         const regularFont = gfk.getRegularFont.call(this)
         const buttonWidth = gfk.getsaveprojecticon.call(this)
         if (project) {
@@ -1284,8 +1333,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getlayername()}
-                                    onChange={event => { this.handlelayername(event.target.value) }}
+                                    value={this.getLayerName()}
+                                    onChange={event => { this.handleLayerName(event.target.value) }}
                                 />
 
                             </div>
@@ -1297,8 +1346,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.gettoplayer()}
-                                    onChange={event => { this.handletoplayer(event.target.value) }}
+                                    value={this. getTopLayer()}
+                                    onChange={event => { this.handleTopLayer(event.target.value) }}
                                 />
 
                             </div>
@@ -1310,8 +1359,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getbottomlayer()}
-                                    onChange={event => { this.handlebottomlayer(event.target.value) }}
+                                    value={this.getBottomLayer()}
+                                    onChange={event => { this.handleBottomLayer(event.target.value) }}
                                 />
 
                             </div>
@@ -1323,8 +1372,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getll()}
-                                    onChange={event => { this.handlell(event.target.value) }}
+                                    value={this.getLL()}
+                                    onChange={event => { this.handleLL(event.target.value) }}
                                 />
 
                             </div>
@@ -1336,8 +1385,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getpi()}
-                                    onChange={event => { this.handlepi(event.target.value) }}
+                                    value={this.getPI()}
+                                    onChange={event => { this.handlePI(event.target.value) }}
                                 />
 
                             </div>
@@ -1349,8 +1398,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getfines()}
-                                    onChange={event => { this.handlefines(event.target.value) }}
+                                    value={this.getFines()}
+                                    onChange={event => { this.handleFines(event.target.value) }}
                                 />
 
                             </div>
@@ -1362,8 +1411,8 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getmicro()}
-                                    onChange={event => { this.handlemicro(event.target.value) }}
+                                    value={this.getMicro()}
+                                    onChange={event => { this.handleMicro(event.target.value) }}
                                 />
 
                             </div>
@@ -1431,7 +1480,7 @@ class PTSlab extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser,
+        projects:state.projects,
         zonecharts: state.zonecharts,
         ptslab: state.ptslab
     }

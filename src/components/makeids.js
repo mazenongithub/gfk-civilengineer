@@ -277,50 +277,82 @@ class MakeID {
     return pointid;
 }
 
-    plslablayerid() {
-        let layerid = false;
-        const sectionid = this.state.activesectionid;
-        const gfk = new GFK();
-        const layers = gfk.getPTSlabLayersbysectionID.call(this, sectionid)
-        if (layers) {
-            while (!layerid) {
-                layerid = makeID(16)
-                // eslint-disable-next-line
-                layers.map(layer => {
+  ptslablayerid(projectid, sectionid) {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return false;
 
-                    if (layer.layerid === layerid) {
-                        layerid = false;
-                    }
+    const i = gfk.getProjectKeyById.call(this, projectid);
 
-                })
+    // Ensure project.ptslab exists
+    if (!projects[i].ptslab) projects[i].ptslab = {};
 
-            }
-        } else {
-            layerid = makeID(16)
-        }
-        return layerid;
-
+    // Ensure sections array exists
+    if (!Array.isArray(projects[i].ptslab.sections)) {
+        projects[i].ptslab.sections = [];
     }
 
-    ptslabsectionid() {
-        let sectionid = false;
-        const gfk = new GFK();
-        const ptslabs = gfk.getPTslabs.call(this)
-        while (!sectionid) {
-            sectionid = makeID(16)
-            if (ptslabs) {
-                // eslint-disable-next-line
-                ptslabs.map(ptslab => {
-                    if (ptslab.sectionid === sectionid) {
-                        sectionid = false;
-                    }
-                })
-            }
+    // Get section index
+    const s = gfk.getPTSlabKeyByID.call(this, projectid, sectionid);
+    if (s === false) return false;
 
-
-        }
-        return sectionid;
+    // Ensure layers array exists
+    if (!Array.isArray(projects[i].ptslab.sections[s].layers)) {
+        projects[i].ptslab.sections[s].layers = [];
     }
+
+    const layers = projects[i].ptslab.sections[s].layers;
+
+    let layerid = false;
+
+    // Generate a unique layer id inside this section
+    while (!layerid) {
+        layerid = makeID(16);
+
+        const exists = layers.some(
+            layer => layer.layerid === layerid
+        );
+
+        if (exists) {
+            layerid = false; // regenerate
+        }
+    }
+
+    return layerid;
+}
+
+
+   ptslabsectionid(projectid) {
+    const gfk = new GFK();
+    const projects = gfk.getProjects.call(this);
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return false;
+
+    const i = gfk.getProjectKeyById.call(this, projectid);
+
+    // Ensure ptslab + sections exist
+    if (!projects[i].ptslab) projects[i].ptslab = {};
+    if (!Array.isArray(projects[i].ptslab.sections)) {
+        projects[i].ptslab.sections = [];
+    }
+
+    const sections = projects[i].ptslab.sections;
+
+    let sectionid = false;
+
+    // Generate unique ID
+    while (!sectionid) {
+        sectionid = makeID(16);
+
+        // Check uniqueness
+        const exists = sections.some(sec => sec.sectionid === sectionid);
+        if (exists) sectionid = false;
+    }
+
+    return sectionid;
+}
+
 
     projectid() {
         let projectid = false;

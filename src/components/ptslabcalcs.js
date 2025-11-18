@@ -138,49 +138,29 @@ class PTSlabCalcs {
         return Number(gammah).toFixed(4);
     }
 
-    getGamma(zone, pifc, llfc) {
-        const gfk = new GFK();
-        const zonecharts = gfk.getZoneCharts.call(this)
-        let zonechart = [];
-        let gamma = 0;
-        switch (zone) {
-            case 1:
-                zonechart = zonecharts.zone_1;
-                break;
-            case 2:
-                zonechart = zonecharts.zone_2;
-                break;
-            case 3:
-                zonechart = zonecharts.zone_3;
-                break;
-            case 4:
-                zonechart = zonecharts.zone_4;
-                break;
-            case 5:
-                zonechart = zonecharts.zone_5;
-                break;
-            case 6:
-                zonechart = zonecharts.zone_6;
-                break;
-            default:
-                break;
+  getGamma(zone, pifc, llfc) {
+    const gfk = new GFK();
+    const zonecharts = gfk.getZoneCharts.call(this) || {};
+    let gamma = 0;
+
+    if (!zonecharts) return gamma;
+
+    // Safely select the correct zone array
+    const zonechart = zonecharts[`zone_${zone}`] || [];
+
+    if (Array.isArray(zonechart) && zonechart.length > 0) {
+        const match = zonechart.find(chart => 
+            Number(chart.ll) === Number(llfc) && Number(chart.pi) === Number(pifc)
+        );
+
+        if (match) {
+            gamma = match.gamma;
         }
-
-        if (zonechart.length > 0) {
-            // eslint-disable-next-line
-            zonechart.map(chart => {
-                if (Number(chart.ll) === Number(llfc) && Number(chart.pi) === Number(pifc)) {
-                    gamma = chart.gamma;
-                }
-
-
-            })
-        }
-
-
-        return gamma;
-
     }
+
+    return gamma;
+}
+
 
     getLLFc(ll, fc) {
 

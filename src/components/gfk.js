@@ -416,10 +416,8 @@ class GFK {
     }
 
     getZoneCharts() {
-        let zonecharts = false;
-        if (this.props.zonecharts.hasOwnProperty("zone_1")) {
-            zonecharts = this.props.zonecharts;
-        }
+        let zonecharts = [];
+       
         return zonecharts;
     }
     getSmallFont() {
@@ -445,94 +443,107 @@ class GFK {
         return project?.fieldreports || false;
     }
 
-    getPTSlabkeybyID(sectionid) {
-
+    getPTSlabKeyByID(projectid, sectionid) {
         const gfk = new GFK();
-        let key = false;
-        const ptslabs = gfk.getPTslabs.call(this)
-        // eslint-disable-next-line
-        ptslabs.map((ptslab, i) => {
-            if (ptslab.sectionid === sectionid) {
-                key = i;
-            }
-        })
-        return key;
+
+        // Get the project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab) return false;
+
+        const sections = project.ptslab.sections;
+        if (!Array.isArray(sections)) return false;
+
+        // Find index of matching section
+        const index = sections.findIndex(section => section.sectionid === sectionid);
+
+        return index !== -1 ? index : false;
     }
 
-    getPTSlabbyID(sectionid) {
-
+    getPTSlabByID(projectid, sectionid) {
         const gfk = new GFK();
-        let slab = false;
-        const ptslabs = gfk.getPTslabs.call(this)
-        // eslint-disable-next-line
-        ptslabs.map(ptslab => {
-            if (ptslab.sectionid === sectionid) {
-                slab = ptslab;
-            }
-        })
-        return slab;
+
+        // Get the project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab) return false;
+
+        const sections = project.ptslab.sections;
+        if (!Array.isArray(sections)) return false;
+
+        // Find the section with matching ID
+        return sections.find(section => section.sectionid === sectionid) || false;
     }
 
-    getPTSlabLayerKeybyID(sectionid, layerid) {
+    getPTSlabLayerKeyByID(projectid, sectionid, layerid) {
         const gfk = new GFK();
-        let key = false;
-        const layers = gfk.getPTSlabLayersbysectionID.call(this, sectionid)
-        if (layers) {
-            // eslint-disable-next-line
-            layers.map((layer, i) => {
-                if (layer.layerid === layerid) {
-                    key = i
-                }
-            })
-        }
-        return key;
 
+        // Get project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab) return false;
+
+        // Get sections array
+        const sections = project.ptslab.sections;
+        if (!Array.isArray(sections)) return false;
+
+        // Find section
+        const section = sections.find(sec => sec.sectionid === sectionid);
+        if (!section || !Array.isArray(section.layers)) return false;
+
+        // Find index of layer
+        const index = section.layers.findIndex(lay => lay.layerid === layerid);
+
+        return index >= 0 ? index : false;
     }
 
-    getPTSlabLayerbyID(sectionid, layerid) {
+
+    getPTSlabLayerByID(projectid, sectionid, layerid) {
         const gfk = new GFK();
-        let getlayer = false;
-        const layers = gfk.getPTSlabLayersbysectionID.call(this, sectionid)
-        if (layers) {
-            // eslint-disable-next-line
-            layers.map(layer => {
-                if (layer.layerid === layerid) {
-                    getlayer = layer;
-                }
-            })
-        }
-        return getlayer;
 
+        // Get project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab) return false;
+
+        // Get sections
+        const sections = project.ptslab.sections;
+        if (!Array.isArray(sections)) return false;
+
+        // Find the section
+        const section = sections.find(sec => sec.sectionid === sectionid);
+        if (!section || !Array.isArray(section.layers)) return false;
+
+        // Find the layer
+        const layer = section.layers.find(lay => lay.layerid === layerid);
+
+        return layer || false;
     }
 
-    getPTSlabLayersbysectionID(sectionid) {
-        let layers = false;
+
+    getPTSlabLayersbysectionID(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getPTSlabbyID.call(this, sectionid)
-        if (section) {
-            if (section.hasOwnProperty("layers")) {
-                layers = section.layers;
 
-                layers.sort((a, b) => {
-                    if (Number(a.toplayer) >= Number(b.toplayer)) {
-                        return 1;
-                    } else {
-                        return -1
-                    }
-                })
+        // Get project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab) return [];
 
-            }
-        }
-        return layers;
+        const sections = project.ptslab.sections;
+        if (!Array.isArray(sections)) return [];
+
+        // Find the section
+        const section = sections.find(sec => sec.sectionid === sectionid);
+        if (!section || !Array.isArray(section.layers)) return [];
+
+        // Return layers sorted by numeric value of toplayer
+        return [...section.layers].sort((a, b) => Number(a.toplayer) - Number(b.toplayer));
     }
 
-    getPTslabs() {
-        let ptslabs = false;
-        if (this.props.ptslab.hasOwnProperty("length")) {
-            ptslabs = this.props.ptslab;
-        }
-        return ptslabs;
-    }
+   getPTSlabByProjectID(projectid) {
+    const gfk = new GFK();
+
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return false;
+
+    return project.ptslab || false;
+}
+
     getcurvebyid(curveid) {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
