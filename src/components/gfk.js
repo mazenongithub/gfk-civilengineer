@@ -64,7 +64,7 @@ class GFK {
 
     getSlices(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
+        const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid)
         let slices = false;
         if (section.hasOwnProperty("slices")) {
             slices = section.slices;
@@ -74,21 +74,21 @@ class GFK {
 
     getFailureSurface(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-        let failuresurface = false;
-        if (section) {
-            if (section.hasOwnProperty("layers")) {
-                // eslint-disable-next-line
-                section.layers.map(layer => {
-                    if (layer.hasOwnProperty("failuresurface")) {
-                        failuresurface = layer.failuresurface;
-                    }
-                })
-            }
 
-        }
-        return failuresurface;
+        // Get the section
+        const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid);
+        if (!section || !Array.isArray(section.layers)) return false;
+
+        // Find the layer with layertype = "failure"
+        const failureLayer = section.layers.find(layer =>
+            layer &&
+            layer.layertype &&
+            layer.layertype.toLowerCase() === "failure"
+        );
+
+        return failureLayer || false;
     }
+
 
     getTopSurface(projectid, sectionid) {
         const gfk = new GFK();
@@ -102,160 +102,121 @@ class GFK {
 
     getSubsurfaces(projectid, sectionid) {
         const gfk = new GFK();
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid);
-        let subsurface = false
+        const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid);
 
-        if (section) {
+        // No section or no layers → return empty array
+        if (!section || !Array.isArray(section.layers)) return [];
 
+        // Filter layers with points, then sort points inside each layer
+        const layersWithSortedPoints = section.layers
+            .filter(layer =>
+                layer &&
+                Array.isArray(layer.points) &&
+                layer.points.length > 0
+            )
+            .map(layer => {
+                // Create a shallow copy so original objects are not mutated
+                const sortedLayer = { ...layer };
 
-            if (section.hasOwnProperty("layers")) {
-                subsurface = [];
-                // eslint-disable-next-line
-                section.layers.map(layer => {
-                    if (layer.hasOwnProperty("subsurface")) {
-                        subsurface.push(layer)
-                    }
-                })
+                sortedLayer.points = [...layer.points].sort((a, b) => {
+                    return Number(a.xcoord) - Number(b.xcoord);
+                });
 
-            }
+                return sortedLayer;
+            });
 
-        }
-        return subsurface;
+        return layersWithSortedPoints;
 
     }
 
-    getSlopeKeybySectionID(projectid, sectionid) {
-
+    getSlopeKeyBySectionID(projectid, sectionid) {
         const gfk = new GFK();
-        const sections = gfk.getSlopebyProjectID.call(this, projectid)
+        const slope = gfk.getSlopeByProjectID.call(this, projectid);
 
-        let key = false;
-        if (sections) {
-            // eslint-disable-next-line
-            sections.map((section, i) => {
-                if (section.sectionid === sectionid) {
-                    key = i;
-                }
-            })
-        }
-        return key;
+        if (!slope || !Array.isArray(slope.sections)) return false;
 
+        const index = slope.sections.findIndex(sec => sec.sectionid === sectionid);
+
+        return index !== -1 ? index : false;
     }
+
 
     getSlopeLayerKeyByID(projectid, sectionid, layerid) {
         const gfk = new GFK();
-        let key = false;
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid);
-        if (section) {
-            if (section.hasOwnProperty("layers")) {
-                // eslint-disable-next-line
-                section.layers.map((layer, i) => {
-                    if (layer.layerid === layerid) {
-                        key = i
-                    }
-                })
+        const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid);
 
-            }
-        }
-        return key
+        if (!section || !Array.isArray(section.layers)) return false;
+
+        const index = section.layers.findIndex(layer => layer.layerid === layerid);
+
+        return index !== -1 ? index : false;
     }
+
 
     getSlopePointKeyByID(projectid, sectionid, layerid, pointid) {
         const gfk = new GFK();
-        let key = false;
-        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-        if (layer) {
-            if (layer.hasOwnProperty("points")) {
-                // eslint-disable-next-line
-                layer.points.map((point, i) => {
-                    if (point.pointid === pointid) {
-                        key = i;
-                    }
-                })
-            }
-        }
-        return key;
+
+        // Get the layer
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+        if (!layer || !Array.isArray(layer.points)) return false;
+
+        // Find the index
+        const index = layer.points.findIndex(pt => pt.pointid === pointid);
+
+        return index >= 0 ? index : false;
     }
+
 
     getSlopePointByID(projectid, sectionid, layerid, pointid) {
         const gfk = new GFK();
-        let getpoint = false;
-        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-        if (layer) {
-            if (layer.hasOwnProperty("points")) {
-                // eslint-disable-next-line
-                layer.points.map(point => {
-                    if (point.pointid === pointid) {
-                        getpoint = point;
-                    }
-                })
-            }
-        }
-        return getpoint;
+
+        // Get the layer first
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+        if (!layer || !Array.isArray(layer.points)) return false;
+
+        // Find the point
+        const point = layer.points.find(pt => pt.pointid === pointid);
+
+        return point || false;
     }
+
 
     getSlopeLayerByID(projectid, sectionid, layerid) {
         const gfk = new GFK();
-        let getlayer = false;
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid);
-        if (section) {
-            if (section.hasOwnProperty("layers")) {
-                // eslint-disable-next-line
-                section.layers.map(layer => {
 
-                    if (layer.layerid === layerid) {
-                        getlayer = layer;
-                    }
-                })
+        // Get the section inside the slope object
+        const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid);
+        if (!section || !Array.isArray(section.layers)) return false;
 
-            }
-        }
-        return getlayer;
+        // Find the layer with the matching layerid
+        const layer = section.layers.find(l => l.layerid === layerid);
+
+        return layer || false;
     }
 
 
-    getSlopebySectionID(projectid, sectionid) {
 
+    getSlopeBySectionID(projectid, sectionid) {
         const gfk = new GFK();
-        const sections = gfk.getSlopebyProjectID.call(this, projectid)
 
-        let getsection = false;
-        if (sections) {
-            // eslint-disable-next-line
-            sections.map(section => {
-                if (section.sectionid === sectionid) {
-                    getsection = section;
-                }
-            })
-        }
-        return getsection;
+        const slope = gfk.getSlopeByProjectID.call(this, projectid);
+        if (!slope || !Array.isArray(slope.sections)) return false;
 
+        return slope.sections.find(section => section.sectionid === sectionid) || false;
     }
 
-    getSlopebyProjectID(projectid) {
+
+    getSlopeByProjectID(projectid) {
         const gfk = new GFK();
-        const slopestability = gfk.getSlopeStability.call(this);
 
-        let getslope = [];
-        if (slopestability) {
-            // eslint-disable-next-line
-            slopestability.map(section => {
-                if (section.projectid === projectid) {
-                    getslope.push(section)
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return false;
 
-                }
-            })
-        }
-        return getslope;
+        // slope is a direct property of project
+        return project.slope ? project.slope : false;
     }
 
-    getSlopeStability() {
-        let slopestability = false;
-        if (this.props.slopestability.hasOwnProperty("length")) {
-            slopestability = this.props.slopestability;
-        }
-        return slopestability;
-    }
+
     getPointIDfromStrainID(projectid, strainid) {
         const gfk = new GFK();
         const points = gfk.getPointsByProjectID.call(this, projectid);
@@ -417,7 +378,7 @@ class GFK {
 
     getZoneCharts() {
         let zonecharts = [];
-       
+
         return zonecharts;
     }
     getSmallFont() {
@@ -535,14 +496,14 @@ class GFK {
         return [...section.layers].sort((a, b) => Number(a.toplayer) - Number(b.toplayer));
     }
 
-   getPTSlabByProjectID(projectid) {
-    const gfk = new GFK();
+    getPTSlabByProjectID(projectid) {
+        const gfk = new GFK();
 
-    const project = gfk.getProjectById.call(this, projectid);
-    if (!project) return false;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return false;
 
-    return project.ptslab || false;
-}
+        return project.ptslab || false;
+    }
 
     getcurvebyid(curveid) {
         const gfk = new GFK();

@@ -22,21 +22,10 @@ class SlopeStability extends Component {
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
-        this.loadslopestability()
+
 
 
     }
-    async loadslopestability() {
-        let response = await LoadSlopeStability();
-        if (response.hasOwnProperty("slopestability")) {
-            this.props.reduxSlopeStability(response.slopestability.slopestability)
-        }
-
-
-    }
-
-
-
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateWindowDimensions);
@@ -49,22 +38,12 @@ class SlopeStability extends Component {
     async saveSlopeStability() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopebyProjectID.call(this, projectid)
+        const sections = gfk.getSlopeByProjectID.call(this, projectid)
         if (sections) {
             try {
                 let response = await HandleSlopeStability(projectid, sections)
                 console.log(response)
-                if (response.hasOwnProperty("sectionsdb")) {
-                    this.props.reduxSlopeStability(response.sectionsdb)
-                }
-                let message = "";
-                if (response.hasOwnProperty("lastupdated")) {
-                    message += `Last Saved ${inputUTCStringForLaborID(response.lastupdated)} `
-                }
-                if (response.hasOwnProperty("message")) {
-                    message += `${response.message}`;
-                }
-                this.setState({ message })
+
             } catch (err) {
                 alert(err)
             }
@@ -73,142 +52,80 @@ class SlopeStability extends Component {
     }
 
     getFactorofSafety() {
-
         const gfk = new GFK();
         const calcs = new SlopeStabilityCalcs();
         const projectid = this.props.match.params.projectid;
         const sectionid = this.state.activesectionid;
-        const extents = calcs.getExtents.call(this, projectid, sectionid)
-        const failuresurface = gfk.getFailureSurface.call(this, projectid, sectionid)
-        const cx = Number(failuresurface.cx);
-        const cy = Number(failuresurface.cy);
-        const rx = Number(failuresurface.rx);
-        const ry = Number(failuresurface.ry);
-        const slices = gfk.getSlices.call(this, projectid, sectionid)
-        const deltax = extents / slices;
+
+        const extents = calcs.getExtents.call(this, projectid, sectionid);
+        const failuresurface = gfk.getFailureSurface.call(this, projectid, sectionid);
+
+        // Safely get failure surface properties
+        const cx = failuresurface?.failure?.cx ?? 0;
+        const cy = failuresurface?.failure?.cy ?? 0;
+        const rx = failuresurface?.failure?.rx ?? 0;
+        const ry = failuresurface?.failure?.ry ?? 0;
+
+        const slices = gfk.getSlices.call(this, projectid, sectionid);
+        const deltax = slices > 0 ? extents / slices : 0;
+
         let fs = 0;
         let driving = 0;
         let resisting = 0;
 
-        const subsurfaces = gfk.getSubsurfaces.call(this, projectid, sectionid)
-        if (extents > 0) {
-            if (subsurfaces) {
-                const numberofsurfaces = subsurfaces.length
+        const subsurfaces = gfk.getSubsurfaces.call(this, projectid, sectionid);
 
-                for (let x = 0; x <= extents; x = x + deltax) {
-                    let weight = 0;
-                    let pointy = calcs.getellispey(rx, ry, cx, cy, x)
-                    // eslint-disable-next-line
-                    subsurfaces.map((subsurface, i) => {
+        if (extents > 0 && Array.isArray(subsurfaces) && deltax > 0) {
+            const numberofsurfaces = subsurfaces.length;
 
-                        if (subsurface.hasOwnProperty("points")) {
+            for (let x = 0; x <= extents; x += deltax) {
+                let weight = 0;
+                const pointy = calcs.getellispey(rx, ry, cx, cy, x);
 
-                            subsurface.points.sort((a, b) => {
-                                if (Number(a.xcoord) >= Number(b.xcoord)) {
-                                    return 1;
-                                } else {
-                                    return -1
-                                }
-                            })
+                subsurfaces.forEach((subsurface, i) => {
+                    if (!subsurface || !subsurface.points || !subsurface.strength) return;
 
+                    const cohesion = subsurface.strength.cohesion ?? 0;
+                    const phi = subsurface.strength.friction ?? 0;
+                    const density = subsurface.strength.gamma ?? 0;
+
+                    const surfacey = calcs.getYsurface.call(this, subsurface.points, x);
+                    const surfacedeltay = calcs.getYsurface.call(this, subsurface.points, x + deltax);
+                    const pointdeltay = calcs.getellispey(rx, ry, cx, cy, x + deltax);
+
+                    if (numberofsurfaces === i + 1) {
+                        if (surfacedeltay > pointdeltay && x + deltax <= extents) {
+                            const area = calcs.getarea(deltax, pointy, pointdeltay, surfacey, surfacedeltay);
+                            weight += density * area;
+                            const alpha = calcs.getalpha(pointdeltay, pointy, deltax);
+                            resisting += calcs.calcfsnum(cohesion, weight, phi, alpha, deltax);
+                            driving += calcs.calcfsden(weight, alpha);
+                            weight = 0;
                         }
+                    } else {
+                        const surfacey_next = calcs.getYsurface.call(this, subsurfaces[i + 1].points, x);
+                        const surfacedeltay_next = calcs.getYsurface.call(this, subsurfaces[i + 1].points, x + deltax);
 
-
-                        let cohesion = subsurface.subsurface.cohesion;
-                        let phi = subsurface.subsurface.friction;
-                        let surfacey = calcs.getYsurface.call(this, subsurface.points, x)
-                        let surfacedeltay = calcs.getYsurface.call(this, subsurface.points, x + deltax)
-                        let pointdeltay = calcs.getellispey(rx, ry, cx, cy, x + deltax)
-
-                        if (numberofsurfaces === i + 1) {
-
-
-                            if (surfacedeltay > pointdeltay) {
-
-                                if (x + deltax <= extents) {
-
-
-                                    let area = calcs.getarea(deltax, pointy, pointdeltay, surfacey, surfacedeltay)
-                                    let density = subsurface.subsurface.gamma;
-                                    weight += density * area;
-                                    let alpha = calcs.getalpha(pointdeltay, pointy, deltax)
-
-                                    resisting += calcs.calcfsnum(cohesion, weight, phi, alpha, deltax)
-
-                                    driving += calcs.calcfsden(weight, alpha)
-                                    weight = 0;
-                                    // console.log(resisting, driving)
-
-
-
-                                }
-                            }
-
-
-
-                        } else {
-
-                            let surfacey_2 = calcs.getYsurface.call(this, subsurfaces[i + 1].points, x)
-                            let surfacedeltay_2 = calcs.getYsurface.call(this, subsurfaces[i + 1].points, x + deltax)
-
-                            if (surfacey_2 > pointdeltay) {
-
-                                if (x + deltax <= extents) {
-                                    let area = calcs.getarea(deltax, surfacey_2, surfacedeltay_2, surfacey, surfacedeltay)
-                                    let density = subsurface.subsurface.gamma;
-                                    weight += density * area;
-
-
-                                }
-
-                            } else {
-
-                                if (surfacedeltay > pointdeltay) {
-
-                                    if (x + deltax <= extents) {
-
-                                        let area = calcs.getarea(deltax, pointy, pointdeltay, surfacey, surfacedeltay)
-                                        let density = subsurface.subsurface.gamma;
-                                        weight += density * area;
-                                        let alpha = calcs.getalpha(pointdeltay, pointy, deltax)
-                                        resisting += calcs.calcfsnum(cohesion, weight, phi, alpha, deltax)
-                                        driving += calcs.calcfsden(weight, alpha)
-                                        weight = 0;
-
-
-
-                                    }
-                                }
-
-                            }
-                            // check second surface to see if its above failure surface. If so, then slices goes to second surface
-
-                            // if not slice goes to failure surface
-
-
+                        if (surfacey_next > pointdeltay && x + deltax <= extents) {
+                            const area = calcs.getarea(deltax, surfacey_next, surfacedeltay_next, surfacey, surfacedeltay);
+                            weight += density * area;
+                        } else if (surfacedeltay > pointdeltay && x + deltax <= extents) {
+                            const area = calcs.getarea(deltax, pointy, pointdeltay, surfacey, surfacedeltay);
+                            weight += density * area;
+                            const alpha = calcs.getalpha(pointdeltay, pointy, deltax);
+                            resisting += calcs.calcfsnum(cohesion, weight, phi, alpha, deltax);
+                            driving += calcs.calcfsden(weight, alpha);
+                            weight = 0;
                         }
-
-
-
-                    })
-
-
-
-
-
-
-
-
-                }
-
+                    }
+                });
             }
-
         }
 
-        fs = Number(resisting / driving).toFixed(2)
+        fs = driving > 0 ? Number(resisting / driving).toFixed(2) : 0;
         return fs;
-
     }
+
 
     drawslices() {
 
@@ -218,10 +135,10 @@ class SlopeStability extends Component {
         const sectionid = this.state.activesectionid;
         const extents = calcs.getExtents.call(this, projectid, sectionid)
         const failuresurface = gfk.getFailureSurface.call(this, projectid, sectionid)
-        const cx = Number(failuresurface.cx);
-        const cy = Number(failuresurface.cy);
-        const rx = Number(failuresurface.rx);
-        const ry = Number(failuresurface.ry);
+        const cx = failuresurface?.failure?.cx ?? 0;
+        const cy = failuresurface?.failure?.cy ?? 0;
+        const rx = failuresurface?.failure?.rx ?? 0;
+        const ry = failuresurface?.failure?.ry ?? 0;
         const slices = gfk.getSlices.call(this, projectid, sectionid)
         const deltax = extents / slices;
         let scale = calcs.getScale.call(this, projectid, sectionid)
@@ -332,10 +249,10 @@ class SlopeStability extends Component {
         const sectionid = this.state.activesectionid;
         const extents = calcs.getExtents.call(this, projectid, sectionid)
         const failuresurface = gfk.getFailureSurface.call(this, projectid, sectionid)
-        const cx = Number(failuresurface.cx);
-        const cy = Number(failuresurface.cy);
-        const rx = Number(failuresurface.rx);
-        const ry = Number(failuresurface.ry);
+        const cx = failuresurface?.failure?.cx ?? 0;
+        const cy = failuresurface?.failure?.cy ?? 0;
+        const rx = failuresurface?.failure?.rx ?? 0;
+        const ry = failuresurface?.failure?.ry ?? 0;
         const slices = gfk.getSlices.call(this, projectid, sectionid)
         const deltax = extents / slices;
         let scale = calcs.getScale.call(this, projectid, sectionid)
@@ -391,7 +308,7 @@ class SlopeStability extends Component {
         const calcs = new SlopeStabilityCalcs();
         const projectid = this.props.match.params.projectid;
         const sectionid = this.state.activesectionid;
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
+        const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid)
         let subsurface = [];
 
         let scale = calcs.getScale.call(this, projectid, sectionid)
@@ -505,154 +422,220 @@ class SlopeStability extends Component {
     }
 
     getGamma() {
-        let gamma = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("subsurface")) {
-                        gamma = layer.subsurface.gamma;
-                    }
-                }
-            }
 
+        // No active section
+        if (!this.state.activesectionid) return "";
+
+        const sectionid = this.state.activesectionid;
+
+        // No active layer
+        if (!this.state.activelayerid) return "";
+
+        const layerid = this.state.activelayerid;
+
+        // Get the layer
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+        if (!layer) return "";
+
+        // Failure layers do not have gamma
+        if (layer.layertype === "failure") return "";
+
+        // Ensure strength exists & gamma exists
+        if (layer.strength && typeof layer.strength.gamma !== "undefined") {
+            return layer.strength.gamma;
         }
 
-        return gamma;
-
-
+        // Default fallback
+        return "";
     }
+
 
     handleGamma(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("subsurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].subsurface.gamma = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
-            }
-        }
+        // Retrieve project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope) return;
 
+        const slope = project.slope;
+
+        // Must have active section
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = slope.sections[sectionIndex];
+
+        // Must have active layer
+        const layerid = this.state.activelayerid;
+        if (!layerid) return;
+
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        if (layerIndex === false) return;
+
+        const layer = section.layers[layerIndex];
+
+        // Failure layer has no gamma
+        if (!layer.strength) return;
+
+        // Clone project so we can safely modify
+        const updatedProject = { ...project };
+        updatedProject.slope = { ...project.slope };
+        updatedProject.slope.sections = [...project.slope.sections];
+        updatedProject.slope.sections[sectionIndex] = { ...section };
+        updatedProject.slope.sections[sectionIndex].layers = [...section.layers];
+        updatedProject.slope.sections[sectionIndex].layers[layerIndex] = { ...layer };
+
+        // Apply gamma update
+        updatedProject.slope.sections[sectionIndex].layers[layerIndex].strength.gamma = value;
+
+        // Save through Redux
+        this.props.reduxProject(updatedProject);
+
+        // Trigger UI refresh
+        this.setState({ render: 'render' });
     }
 
-    getCohension() {
-        let cohesion = "";
+
+    getCohesion() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("subsurface")) {
-                        cohesion = layer.subsurface.cohesion;
-                    }
-                }
-            }
 
-        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
-        return cohesion;
+        if (!sectionid || !layerid) return "";
 
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+        if (!layer || !layer.strength) return "";
 
+        return layer.strength.cohesion || "";
     }
 
-    handleCohension(value) {
+
+    handleCohesion(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("subsurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].subsurface.cohesion = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
-            }
-        }
+        // Retrieve project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope) return;
 
+        const slope = project.slope;
+
+        // Must have active section
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = slope.sections[sectionIndex];
+
+        // Must have active layer
+        const layerid = this.state.activelayerid;
+        if (!layerid) return;
+
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        if (layerIndex === false) return;
+
+        const layer = section.layers[layerIndex];
+
+        // Failure layers have no cohesion
+        if (!layer.strength) return;
+
+        // Clone project structure
+        const updatedProject = { ...project };
+        updatedProject.slope = { ...project.slope };
+        updatedProject.slope.sections = [...project.slope.sections];
+        updatedProject.slope.sections[sectionIndex] = { ...section };
+        updatedProject.slope.sections[sectionIndex].layers = [...section.layers];
+        updatedProject.slope.sections[sectionIndex].layers[layerIndex] = { ...layer };
+
+        // Update cohesion
+        updatedProject.slope.sections[sectionIndex].layers[layerIndex].strength.cohesion = value;
+
+        // Push to Redux store
+        this.props.reduxProject(updatedProject);
+
+        // Trigger re-render
+        this.setState({ render: 'render' });
     }
+
 
     getFriction() {
-        let friction = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("subsurface")) {
-                        friction = layer.subsurface.friction;
-                    }
-                }
-            }
 
-        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
-        return friction;
+        if (!sectionid || !layerid) return "";
 
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+        if (!layer || !layer.strength) return "";
 
+        return layer.strength.friction || "";
     }
+
 
     handleFriction(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("subsurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].subsurface.friction = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
+        // Retrieve project
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope) return;
+
+        const slope = project.slope;
+
+        // Must have active section
+        const sectionid = this.state.activesectionid;
+        if (!sectionid) return;
+
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        const section = slope.sections[sectionIndex];
+
+        // Must have active layer
+        const layerid = this.state.activelayerid;
+        if (!layerid) return;
+
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        if (layerIndex === false) return;
+
+        const layer = section.layers[layerIndex];
+
+        // If no strength object exists, create one
+        const strength = layer.strength ? { ...layer.strength } : {};
+
+        // Clone project hierarchy
+        const updatedProject = { ...project };
+        updatedProject.slope = { ...project.slope };
+        updatedProject.slope.sections = [...project.slope.sections];
+        updatedProject.slope.sections[sectionIndex] = { ...section };
+        updatedProject.slope.sections[sectionIndex].layers = [...section.layers];
+        updatedProject.slope.sections[sectionIndex].layers[layerIndex] = {
+            ...layer,
+            strength: {
+                ...strength,
+                friction: value
             }
-        }
+        };
 
+        // Push to Redux
+        this.props.reduxProject(updatedProject);
+
+        // Trigger re-render
+        this.setState({ render: 'render' });
     }
+
 
     showPointIDs() {
         const gfk = new GFK();
@@ -660,7 +643,7 @@ class SlopeStability extends Component {
         let getpoints = [];
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
+            const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid)
             if (section) {
                 if (this.state.activelayerid) {
                     const layerid = this.state.activelayerid;
@@ -699,14 +682,17 @@ class SlopeStability extends Component {
 
     }
 
-    handlepointid(pointid) {
-        let activepointid = false;
-        if (!this.state.activepointid) {
-            activepointid = pointid;
-        }
-        this.setState({ activepointid })
+    handlePointID(pointid) {
+        const { activepointid } = this.state;
 
+        // Toggle behavior:
+        // If no active point → activate this point
+        // If already active → deactivate
+        const newActivePointID = activepointid ? false : pointid;
+
+        this.setState({ activepointid: newActivePointID });
     }
+
 
     showPointID(point) {
         const gfk = new GFK();
@@ -723,7 +709,7 @@ class SlopeStability extends Component {
         return (<div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex5, ...styles.generalFont }}>
-                    <span style={{ ...regularFont, ...highlightactive() }} onClick={() => { this.handlepointid(point.pointid) }}>
+                    <span style={{ ...regularFont, ...highlightactive() }} onClick={() => { this.handlePointID(point.pointid) }}>
                         X: {point.xcoord} Y: {point.ycoord}
                     </span>
                 </div>
@@ -741,197 +727,217 @@ class SlopeStability extends Component {
     }
 
     removePoint(pointid) {
-        console.log(pointid)
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeStability.call(this)
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                console.log(section)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        console.log(layer)
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid)
-                        if (point) {
-                            console.log(point)
-                            const k = gfk.getSlopePointKeyByID.call(this, projectid, sectionid, layerid, pointid)
-                            sections[i].layers[j].points.splice(k, 1)
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ activepointid: false })
 
-                        }
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope) return;
 
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
-                    }
+        if (!sectionid || !layerid) return;
 
-                }
-            }
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
 
-        }
+        const section = project.slope.sections[sectionIndex];
+        if (!section || !Array.isArray(section.layers)) return;
 
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        if (layerIndex === false) return;
+
+        const layer = section.layers[layerIndex];
+        if (!layer || !Array.isArray(layer.points)) return;
+
+        const pointIndex = gfk.getSlopePointKeyByID.call(this, projectid, sectionid, layerid, pointid);
+        if (pointIndex === false) return;
+
+        // ---- Remove the point ----
+        layer.points.splice(pointIndex, 1);
+
+        // ---- Push updated project list to Redux ----
+        this.props.reduxProjects(projects);
+
+        // ---- Clear active point if removing selected one ----
+      
+            this.setState({ activepointid: false });
+        
     }
+
 
     getXcoord() {
-
-        let xcoord = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
 
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-
-
-                if (this.state.activepointid) {
-                    const pointid = this.state.activepointid;
-                    const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid)
-                    if (point) {
-                        xcoord = point.xcoord;
-                    }
-
-                }
-
-            }
+        if (!this.state.activesectionid || !this.state.activelayerid || !this.state.activepointid) {
+            return "";
         }
-        return xcoord;
 
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
+        const pointid = this.state.activepointid;
+
+        const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid);
+        return point && point.xcoord ? point.xcoord : "";
     }
+
 
     handleXcoord(value) {
-
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeStability.call(this)
         const makeid = new MakeID();
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        if (this.state.activepointid) {
-                            const pointid = this.state.activepointid;
-                            const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid)
-                            if (point) {
-                                const k = gfk.getSlopePointKeyByID.call(this, projectid, sectionid, layerid, pointid)
-                                sections[i].layers[j].points[k].xcoord = value
-                                this.props.reduxSlopeStability(sections)
-                                this.setState({ render: 'render' })
+        const projectid = this.props.match.params.projectid;
 
-                            }
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope) return;
 
-                        } else {
-                            // new point
-                            const pointid = makeid.pointID.call(this)
-                            const ycoord = this.state.ycoord;
-                            const newpoint = newPoint(pointid, value, ycoord)
-                            if (layer.hasOwnProperty("points")) {
-                                sections[i].layers[j].points.push(newpoint)
-                            } else {
-                                sections[i].layers[j].points = [newpoint]
-                            }
-                            this.setState({ activepointid: pointid })
+        // Must have active section and layer
+        if (!this.state.activesectionid || !this.state.activelayerid) return;
 
-                        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
 
-                    }
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        if (layerIndex === false) return;
 
-                }
-            }
-
+        // Ensure points array exists
+        const layer = projects[projectid].slope.sections[sectionIndex].layers[layerIndex];
+        if (!Array.isArray(layer.points)) {
+            layer.points = [];
         }
 
+        // If a point is active → update its xcoord
+        if (this.state.activepointid) {
+            const pointid = this.state.activepointid;
+
+            const pointIndex = gfk.getSlopePointKeyByID.call(
+                this,
+                projectid,
+                sectionid,
+                layerid,
+                pointid
+            );
+
+            if (pointIndex === false) return;
+
+            layer.points[pointIndex].xcoord = value;
+
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
+        }
+
+        // Otherwise create a new point
+        const newPointID = makeid.pointID.call(this);
+        const ycoord = ""; // default ycoord until user enters it
+
+        const createdPoint = newPoint(newPointID, value, ycoord);
+
+        // Append it
+        layer.points.push(createdPoint);
+
+        // Make this new point active
+        this.setState({ activepointid: newPointID });
+
+        // Update Redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
+
 
 
     getYcoord() {
-
-        let ycoord = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
 
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-
-
-                if (this.state.activepointid) {
-                    const pointid = this.state.activepointid;
-                    const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid)
-                    if (point) {
-                        ycoord = point.ycoord;
-                    }
-
-                }
-
-            }
+        if (!this.state.activesectionid || !this.state.activelayerid || !this.state.activepointid) {
+            return "";
         }
-        return ycoord;
 
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
+        const pointid = this.state.activepointid;
+
+        const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid);
+        if (point && point.hasOwnProperty("ycoord")) {
+            return point.ycoord;
+        }
+
+        return "";
     }
 
+
     handleYcoord(value) {
-
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeStability.call(this)
         const makeid = new MakeID();
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        if (this.state.activepointid) {
-                            const pointid = this.state.activepointid;
-                            const point = gfk.getSlopePointByID.call(this, projectid, sectionid, layerid, pointid)
-                            if (point) {
-                                const k = gfk.getSlopePointKeyByID.call(this, projectid, sectionid, layerid, pointid)
-                                sections[i].layers[j].points[k].ycoord = value
-                                this.props.reduxSlopeStability(sections)
-                                this.setState({ render: 'render' })
+        const projectid = this.props.match.params.projectid;
 
-                            }
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope) return;
 
-                        } else {
-                            // new point
-                            const pointid = makeid.pointID.call(this)
-                            const xcoord = this.state.xcoord;
-                            const newpoint = newPoint(pointid, xcoord, value)
-                            if (layer.hasOwnProperty("points")) {
-                                sections[i].layers[j].points.push(newpoint)
-                            } else {
-                                sections[i].layers[j].points = [newpoint]
-                            }
-                            this.setState({ activepointid: pointid })
+        // Must have active section + layer
+        if (!this.state.activesectionid || !this.state.activelayerid) return;
 
-                        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
 
-                    }
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        if (layerIndex === false) return;
 
-                }
-            }
+        const layer = projects[projectid].slope.sections[sectionIndex].layers[layerIndex];
 
+        // Ensure points array exists
+        if (!Array.isArray(layer.points)) {
+            layer.points = [];
         }
 
+        // If a point is active → update ycoord
+        if (this.state.activepointid) {
+            const pointid = this.state.activepointid;
+
+            const pointIndex = gfk.getSlopePointKeyByID.call(
+                this,
+                projectid,
+                sectionid,
+                layerid,
+                pointid
+            );
+
+            if (pointIndex === false) return;
+
+            layer.points[pointIndex].ycoord = value;
+
+            this.props.reduxProjects(projects);
+            this.setState({ render: "render" });
+            return;
+        }
+
+        // Otherwise create a brand-new point
+        const newPointID = makeid.pointID.call(this);
+
+        // We don't know xcoord yet → default empty
+        const xcoord = "";
+
+        const createdPoint = newPoint(newPointID, xcoord, value);
+
+        // Append it to the layer
+        layer.points.push(createdPoint);
+
+        // Make this new point active
+        this.setState({ activepointid: newPointID });
+
+        // Update Redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
     }
 
     showSubsurface() {
@@ -970,8 +976,8 @@ class SlopeStability extends Component {
                         <div style={{ ...styles.flex1, ...styles.addMargin }}>
                             <div style={{ ...styles.generalContainer }}>
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                    value={this.getCohension()}
-                                    onChange={event => { this.handleCohension(event.target.value) }} />
+                                    value={this.getCohesion()}
+                                    onChange={event => { this.handleCohesion(event.target.value) }} />
                             </div>
                             <span style={{ ...styles.generalFont, ...regularFont }}>Cohesion (psf)</span>
                         </div>
@@ -1018,203 +1024,240 @@ class SlopeStability extends Component {
     }
 
     getCx() {
-        let cx = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("failuresurface")) {
-                        cx = layer.failuresurface.cx;
-                    }
-                }
-            }
 
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
+
+        if (!sectionid || !layerid) return "";
+
+        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+        if (!layer) return "";
+
+        if (layer.layertype === "failure" && layer.failure?.cx !== undefined) {
+            return layer.failure.cx;
         }
 
-        return cx;
-
-
+        return "";
     }
+
 
     handleCx(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("failuresurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].failuresurface.cx = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
-            }
-        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
+        if (!sectionid || !layerid) return;
+
+        // Get full project list (root state)
+        const project = gfk.getProjectById.call(this, projectid)
+        if (!project) return;
+
+        // Section lookup
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        const section = project[sectionIndex];
+        if (!section || !section.layers) return;
+
+        // Layer lookup
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        const layer = section.layers[layerIndex];
+        if (!layer) return;
+
+        // Only applies to failure layers
+        if (layer.layertype !== "failure") return;
+
+        // Ensure failure object exists
+        if (!layer.failure) layer.failure = {};
+
+        // Update value
+        layer.failure.cx = value;
+
+        // Push updated project to Redux
+        this.props.reduxProject(project);
+
+        // Trigger UI update
+        this.setState({ render: 'render' });
     }
+
 
     getCy() {
         let cy = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("failuresurface")) {
-                        cy = layer.failuresurface.cy;
-                    }
+            const layerid = this.state.activelayerid;
+
+            const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+
+            if (layer && layer.layertype === "failure") {
+                if (layer.failure && layer.failure.cy !== undefined) {
+                    cy = layer.failure.cy;
                 }
             }
-
         }
 
         return cy;
-
-
     }
+
 
     handleCy(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("failuresurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].failuresurface.cy = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
-            }
-        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
+        if (!sectionid || !layerid) return;
+
+        // Retrieve project object from Redux
+        const project = gfk.getProjectById.call(this, projectid)
+        if (!project) return;
+
+        // Section lookup
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        const section = project[sectionIndex];
+        if (!section || !section.layers) return;
+
+        // Layer lookup
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        const layer = section.layers[layerIndex];
+        if (!layer) return;
+
+        // Only failure layers have cy
+        if (layer.layertype !== "failure") return;
+
+        // Ensure failure object exists
+        if (!layer.failure) layer.failure = {};
+
+        // Update cy
+        layer.failure.cy = value;
+
+        // Push updated project tree into Redux
+        this.props.reduxProject(project);
+
+        // Refresh UI
+        this.setState({ render: 'render' });
     }
+
 
     getRx() {
         let rx = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("failuresurface")) {
-                        rx = layer.failuresurface.rx;
-                    }
+            const layerid = this.state.activelayerid;
+
+            const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+
+            if (layer && layer.layertype === "failure") {
+                if (layer.failure && layer.failure.rx !== undefined) {
+                    rx = layer.failure.rx;
                 }
             }
-
         }
 
         return rx;
-
-
     }
+
 
     handleRx(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("failuresurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].failuresurface.rx = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
-            }
-        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
+        if (!sectionid || !layerid) return;
+
+        // Retrieve project tree from Redux
+        const project = gfk.getProjectById.call(this, projectid)
+        if (!project) return;
+
+        // Find section index
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        const section = project[sectionIndex];
+        if (!section || !section.layers) return;
+
+        // Find layer index
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        const layer = section.layers[layerIndex];
+        if (!layer) return;
+
+        // Only failure layers have Rx
+        if (layer.layertype !== "failure") return;
+
+        // Ensure failure object exists
+        if (!layer.failure) layer.failure = {};
+
+        // Set Rx
+        layer.failure.rx = value;
+
+        // Update Redux
+        this.props.reduxProject(project);
+
+        // Trigger UI update
+        this.setState({ render: 'render' });
     }
+
 
     getRy() {
         let ry = "";
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
-            if (this.state.activelayerid) {
-                const layerid = this.state.activelayerid;
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                if (layer) {
-                    if (layer.hasOwnProperty("failuresurface")) {
-                        ry = layer.failuresurface.ry;
-                    }
+            const layerid = this.state.activelayerid;
+
+            const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+
+            if (layer && layer.layertype === "failure") {
+                if (layer.failure && layer.failure.ry !== undefined) {
+                    ry = layer.failure.ry;
                 }
             }
-
         }
 
         return ry;
-
-
     }
+
 
     handleRy(value) {
         const gfk = new GFK();
-        const sections = gfk.getSlopeStability.call(this)
         const projectid = this.props.match.params.projectid;
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    const layerid = this.state.activelayerid;
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    if (layer) {
-                        if (layer.hasOwnProperty("failuresurface")) {
-                            const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                            sections[i].layers[j].failuresurface.ry = value;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
 
-                        }
-                    }
-                }
-            }
-        }
+        const sectionid = this.state.activesectionid;
+        const layerid = this.state.activelayerid;
 
+        if (!sectionid || !layerid) return;
+
+        const project = gfk.getProjectById.call(this, projectid)
+        if (!project) return;
+
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        const section = project[sectionIndex];
+        if (!section || !section.layers) return;
+
+        const layerIndex = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid);
+        const layer = section.layers[layerIndex];
+        if (!layer) return;
+
+        if (layer.layertype !== "failure") return;
+
+        if (!layer.failure) layer.failure = {};
+
+        layer.failure.ry = value;
+
+        this.props.reduxProject(project);
+
+        this.setState({ render: 'render' });
     }
 
     showFailureSurface() {
@@ -1274,43 +1317,47 @@ class SlopeStability extends Component {
     showSectionIDs() {
         const projectid = this.props.match.params.projectid;
         const gfk = new GFK();
-        const sections = gfk.getSlopebyProjectID.call(this, projectid)
-        let sectionids = [];
-        if (sections) {
-            // eslint-disable-next-line
-            sections.map(section => {
-                sectionids.push(this.showSectionID(section))
 
+        const slope = gfk.getSlopeByProjectID.call(this, projectid);
+        if (!slope || !Array.isArray(slope.sections)) return [];
 
-            })
-        }
-
-        return (sectionids)
-
+        const sectionids = slope.sections.map(section => this.showSectionID(section));
+        return sectionids;
     }
+
 
     removeSection(sectionid) {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeStability.call(this)
-        const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-        if (section) {
-            const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-            sections.splice(i, 1)
-            this.props.reduxSlopeStability(sections)
-            this.setState({ activesectionid: false })
 
-        }
+        // Get projects and current project
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope || !Array.isArray(project.slope.sections)) return;
 
+        // Find section index
+        const sectionIndex = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+        if (sectionIndex === false) return;
+
+        // Remove section
+        project.slope.sections.splice(sectionIndex, 1);
+
+        // Push updated projects to Redux
+        this.props.reduxProjects(projects);
+
+        // Reset active section if it was the one removed
+      
+            this.setState({ activesectionid: false });
+        
     }
+
 
     makeSectionActive(sectionid) {
-        let activesectionid = false;
-        if (!this.state.activesectionid) {
-            activesectionid = sectionid;
-        }
-        this.setState({ activesectionid })
+        this.setState(prevState => ({
+            activesectionid: prevState.activesectionid === sectionid ? false : sectionid
+        }));
     }
+
 
 
 
@@ -1331,7 +1378,7 @@ class SlopeStability extends Component {
             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }} key={section.sectionid} >
                 <div style={{ ...styles.flex5 }}>
 
-                    <span style={{ ...regularFont, ...highlightactive() }} onClick={() => { this.makeSectionActive(section.sectionid) }}>{section.section} Slices: {section.slices}</span>
+                    <span style={{ ...regularFont, ...highlightactive() }} onClick={() => { this.makeSectionActive(section.sectionid) }}>{section.sectionname} Slices: {section.slices}</span>
                 </div>
                 <div style={{ ...styles.flex1 }}>
                     <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => {
@@ -1346,15 +1393,15 @@ class SlopeStability extends Component {
 
     }
 
-    getSection() {
+    getSectionName() {
         const gfk = new GFK();
         let section = "";
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
             const projectid = this.props.match.params.projectid;
-            const getsection = gfk.getSlopebySectionID.call(this, projectid, sectionid)
+            const getsection = gfk.getSlopeBySectionID.call(this, projectid, sectionid)
             if (getsection) {
-                section = getsection.section;
+                section = getsection.sectionname;
             }
 
         } else {
@@ -1364,85 +1411,112 @@ class SlopeStability extends Component {
 
     }
 
-    handleSection(value) {
-        const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        let sections = gfk.getSlopeStability.call(this)
-        const makeid = new MakeID();
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                sections[i].section = value
-                this.props.reduxSlopeStability(sections);
-                this.setState({ render: 'render' })
-            }
-        } else {
-            const slices = this.state.slices;
-            const sectionid = makeid.sectionID.call(this)
-            const newSlope = newSection(sectionid, projectid, value, slices)
-            if (sections) {
-                sections.push(newSlope)
-            } else {
-                sections = [newSlope]
-            }
-            this.props.reduxSlopeStability(sections);
-            this.setState({ activesectionid: sectionid })
+ 
 
+    handleSectionName(value) {
+        const gfk = new GFK();
+        const makeid = new MakeID()
+        const projectid = this.props.match.params.projectid;
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const i = gfk.getProjectKeyById.call(this, projectid);
+
+        if (this.state.activesectionid) {
+            // Update existing section
+            const sectionid = this.state.activesectionid;
+            const j = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+            if (j === false) return;
+
+            projects[i].slope.sections[j].sectionname = value;
+        } else {
+            // Create new section with default slices = 100
+            const sectionid = makeid.sectionID.call(this);
+            const newSection = newSection(sectionid, value, 100);
+            if (!Array.isArray(projects[i].slope.sections)) {
+                projects[i].slope.sections = [];
+            }
+            projects[i].slope.sections.push(newSection);
+
+            // Set the new section as active
+            this.setState({ activesectionid: sectionid });
         }
 
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
     }
+
+
 
     getSlices() {
         const gfk = new GFK();
-        let slices = "";
+        const projectid = this.props.match.params.projectid;
+        let slices = 100; // default numeric value
+
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
-            const projectid = this.props.match.params.projectid;
-            const getsection = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (getsection) {
-                slices = getsection.slices;
+            const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid);
+            if (section && section.hasOwnProperty("slices")) {
+                slices = Number(section.slices) || 100; // convert to number if defined
             }
-
-        } else {
-            slices = this.state.slices;
         }
-        return slices;
 
+        return slices;
     }
 
-    handleSlices(value) {
+    // Retrieve the number of slices for the active section
+    getSlices() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        let sections = gfk.getSlopeStability.call(this)
-        const makeid = new MakeID();
-        if (this.state.activesectionid) {
-            let sectionid = this.state.activesectionid;
-            const getsection = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (getsection) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                sections[i].slices = value
-                this.props.reduxSlopeStability(sections);
-                this.setState({ render: 'render' })
-            }
-        } else {
-            const section = this.state.section;
-            const sectionid = makeid.sectionID.call(this)
-            const newSlope = newSection(sectionid, projectid, section, value)
-            console.log(newSlope)
-            if (sections) {
-                sections.push(newSlope)
-            } else {
-                sections = [newSlope]
-            }
-            console.log(sections)
-            this.props.reduxSlopeStability(sections);
-            this.setState({ activesectionid: sectionid })
+        let slices = "" // default numeric value
 
+        if (this.state.activesectionid) {
+            const sectionid = this.state.activesectionid;
+            const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid);
+            if (section && section.hasOwnProperty("slices")) {
+                slices = Number(section.slices) || ""; // convert to number if defined
+            }
         }
 
+        return slices;
     }
+
+    // Update the number of slices for the active section
+    handleSlices(value) {
+        const gfk = new GFK();
+        const makeid = new MakeID();
+        const projectid = this.props.match.params.projectid;
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const i = gfk.getProjectKeyById.call(this, projectid);
+
+        if (this.state.activesectionid) {
+            // Update existing section
+            const sectionid = this.state.activesectionid;
+            const j = gfk.getSlopeKeyBySectionID.call(this, projectid, sectionid);
+            if (j === false) return;
+
+            projects[i].slope.sections[j].slices = String(value); // store as string
+        } else {
+            // Create new section with default value and slices
+            const sectionid = makeid.sectionID.call(this);
+            const newSectionObj = newSection(sectionid, "", value); // store slices as string
+            if (!Array.isArray(projects[i].slope.sections)) {
+                projects[i].slope.sections = [];
+            }
+            projects[i].slope.sections.push(newSectionObj);
+
+            // Set the new section as active
+            this.setState({ activesectionid: sectionid });
+        }
+
+        this.props.reduxProjects(projects);
+        this.setState({ render: "render" });
+    }
+
 
     showlayerids() {
         const gfk = new GFK();
@@ -1450,7 +1524,7 @@ class SlopeStability extends Component {
         const projectid = this.props.match.params.projectid;
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
+            const section = gfk.getSlopeBySectionID.call(this, projectid, sectionid)
             if (section) {
                 if (section.hasOwnProperty("layers")) {
                     // eslint-disable-next-line
@@ -1463,97 +1537,119 @@ class SlopeStability extends Component {
         return layerids;
     }
 
-    handlelayerid(layerid) {
-        let activelayerid = false;
-        if (!this.state.activelayerid) {
-            activelayerid = layerid;
-        }
-        this.setState({ activelayerid })
-
+    handleLayerID(layerid) {
+        this.setState({
+            activelayerid: this.state.activelayerid ? false : layerid
+        });
     }
 
     removeLayer(layerid) {
+       
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const slopestablity = gfk.getSlopeStability.call(this)
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                console.log(layer)
-                if (layer) {
-                    const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                    slopestablity[i].layers.splice(j, 1)
-                    this.props.reduxSlopeStability(slopestablity)
-                    this.setState({ activelayerid: false })
-                }
-            }
+
+        if (!this.state.activesectionid) return;
+
+        const sectionid = this.state.activesectionid;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope || !Array.isArray(project.slope.sections)) return;
+
+        const sections = project.slope.sections;
+        const sectionIndex = sections.findIndex(sec => sec.sectionid === sectionid);
+        if (sectionIndex === -1) return;
+      
+
+        const section = sections[sectionIndex];
+        if (!Array.isArray(section.layers)) return;
+
+        const layerIndex = section.layers.findIndex(layer => layer.layerid === layerid);
+        if (layerIndex === -1) return;
+
+        // Remove the layer
+        section.layers.splice(layerIndex, 1);
+
+        // Push updated project back to Redux
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex !== -1) {
+            projects[projectIndex] = project;
+            this.props.reduxProjects(projects);
+        }
+
+        // Reset active layer if it was removed
+      
+            this.setState({ activelayerid: false });
+        
+    }
+
+
+    moveLayerUp(layerid) {
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
+        const sectionid = this.state.activesectionid;
+
+        if (!sectionid || !layerid) return;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope || !Array.isArray(project.slope.sections)) return;
+
+        const sectionIndex = project.slope.sections.findIndex(sec => sec.sectionid === sectionid);
+        if (sectionIndex === -1) return;
+
+        const section = project.slope.sections[sectionIndex];
+        if (!Array.isArray(section.layers)) return;
+
+        const layerIndex = section.layers.findIndex(layer => layer.layerid === layerid);
+        if (layerIndex <= 0) return; // already at top or not found
+
+        // Swap with previous layer
+        const temp = section.layers[layerIndex - 1];
+        section.layers[layerIndex - 1] = section.layers[layerIndex];
+        section.layers[layerIndex] = temp;
+
+        // Update Redux
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex !== -1) {
+            projects[projectIndex] = project;
+            this.props.reduxProjects(projects);
         }
     }
 
-    movelayerup(layerid) {
+
+    moveLayerDown(layerid) {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeStability.call(this)
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (section.hasOwnProperty("layers")) {
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    const layercount = section.layers.length;
-                    if (layer) {
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        if (layercount > 1 && j > 0) {
-                            const layer_1 = sections[i].layers[j - 1]
-                            sections[i].layers[j] = layer_1;
-                            sections[i].layers[j - 1] = layer;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
-                        }
+        const sectionid = this.state.activesectionid;
 
-                    }
-                }
+        if (!sectionid || !layerid) return;
 
-            }
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope || !Array.isArray(project.slope.sections)) return;
+
+        const sectionIndex = project.slope.sections.findIndex(sec => sec.sectionid === sectionid);
+        if (sectionIndex === -1) return;
+
+        const section = project.slope.sections[sectionIndex];
+        if (!Array.isArray(section.layers)) return;
+
+        const layerIndex = section.layers.findIndex(layer => layer.layerid === layerid);
+        if (layerIndex === -1 || layerIndex === section.layers.length - 1) return; // already at bottom or not found
+
+        // Swap with next layer
+        const temp = section.layers[layerIndex + 1];
+        section.layers[layerIndex + 1] = section.layers[layerIndex];
+        section.layers[layerIndex] = temp;
+
+        // Update Redux
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex !== -1) {
+            projects[projectIndex] = project;
+            this.props.reduxProjects(projects);
         }
-
-
     }
 
-    movelayerdown(layerid) {
-
-        const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeStability.call(this)
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (section.hasOwnProperty("layers")) {
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                    const layercount = section.layers.length;
-                    if (layer) {
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        if (layercount > 1 && j < layercount - 1) {
-                            const layer_1 = sections[i].layers[j + 1]
-                            sections[i].layers[j] = layer_1;
-                            sections[i].layers[j + 1] = layer;
-                            this.props.reduxSlopeStability(sections)
-                            this.setState({ render: 'render' })
-                        }
-
-                    }
-                }
-
-            }
-        }
-
-    }
 
 
 
@@ -1575,14 +1671,14 @@ class SlopeStability extends Component {
             <div style={{ ...styles.generalContainer }} key={layer.layerid}>
                 <div style={{ ...styles.generalFlex }}>
                     <div style={{ ...styles.flex5 }}>
-                        <span style={{ ...regularFont, ...highlightactive() }} onClick={() => { this.handlelayerid(layer.layerid) }}>
+                        <span style={{ ...regularFont, ...highlightactive() }} onClick={() => { this.handleLayerID(layer.layerid) }}>
                             {layer.layer} Type: {layer.layertype}
                         </span>
 
                     </div>
                     <div style={{ ...styles.flex1 }}>
                         <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
-                            <button style={{ ...styles.generalButton, ...layerarrow }} onClick={() => { this.movelayerup(layer.layerid) }}>{layerUp()}</button>
+                            <button style={{ ...styles.generalButton, ...layerarrow }} onClick={() => { this.moveLayerUp(layer.layerid) }}>{layerUp()}</button>
                         </div>
                         <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
                             <button style={{ ...styles.generalButton, ...layerarrow }} onClick={() => { this.movelayerdown(layer.layerid) }}>{layerDown()}</button>
@@ -1600,170 +1696,150 @@ class SlopeStability extends Component {
             </div>)
     }
 
+    // Get the layer value of the active layer
     getLayer() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        let getlayer = "";
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                if (section.hasOwnProperty("layers")) {
-                    if (this.state.activelayerid) {
-                        const layerid = this.state.activelayerid;
-                        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                        if (layer) {
-                            getlayer = layer.layer;
+        let layerValue = '';
 
-                        }
-                    }
-                }
+        if (this.state.activesectionid && this.state.activelayerid) {
+            const sectionid = this.state.activesectionid;
+            const layerid = this.state.activelayerid;
+            const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer) {
+                layerValue = layer.layer || '';
             }
         }
-        return getlayer;
 
+        return layerValue;
     }
 
-    handleLayer(value) {
-
+    // Get the layer value of the active layer
+    getLayer() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const slopestablity = gfk.getSlopeStability.call(this)
-        const makeid = new MakeID();
-        if (this.state.activesectionid) {
+        let layerValue = '';
+
+        if (this.state.activesectionid && this.state.activelayerid) {
             const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    let layerid = this.state.activelayerid;
-
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-
-                    if (layer) {
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        slopestablity[i].layers[j].layer = value
-                        this.props.reduxSlopeStability(slopestablity)
-                        this.setState({ render: 'render' })
-                    }
-
-                } else {
-                    let layerid = makeid.layerID.call(this)
-                    const layertype = this.state.layertype;
-                    const makeLayer = newLayer(layerid, value, layertype)
-                    if (section.hasOwnProperty("layers")) {
-                        slopestablity[i].layers.push(makeLayer)
-                    } else {
-                        slopestablity[i].layers = [makeLayer]
-                    }
-                    this.props.reduxSlopeStability(slopestablity);
-                    this.setState({ activelayerid: layerid })
-
-
-                }
+            const layerid = this.state.activelayerid;
+            const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer) {
+                layerValue = layer.layer || '';
             }
         }
 
+        return layerValue;
     }
+
+    // Handle setting the layer property
+    handleLayer(value) {
+        const gfk = new GFK();
+        const makeid = new MakeID()
+        const projectid = this.props.match.params.projectid;
+
+        if (!this.state.activesectionid) return; // no section selected
+        const sectionid = this.state.activesectionid;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope || !Array.isArray(project.slope.sections)) return;
+
+        const sectionIndex = project.slope.sections.findIndex(sec => sec.sectionid === sectionid);
+        if (sectionIndex === -1) return;
+        const section = project.slope.sections[sectionIndex];
+
+        if (!Array.isArray(section.layers)) section.layers = [];
+
+        // If active layer exists, update it
+        if (this.state.activelayerid) {
+            const layerIndex = section.layers.findIndex(layer => layer.layerid === this.state.activelayerid);
+            if (layerIndex !== -1) {
+                section.layers[layerIndex].layer = value;
+
+            }
+        } else {
+            // Create new layer
+            const layerid = makeid.layerID.call(this);
+            const layertype = ''
+            const newLayerObj = newLayer(layerid, value, layertype);
+            section.layers.push(newLayerObj);
+
+            // Set the new layer as active
+            this.setState({ activelayerid: layerid });
+        }
+
+        // Update Redux
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex !== -1) {
+            projects[projectIndex] = project;
+            this.props.reduxProjects(projects);
+        }
+
+        this.setState({ render: 'render' });
+    }
+
+
 
     getLayerType() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        let getlayer = "";
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                if (section.hasOwnProperty("layers")) {
-                    if (this.state.activelayerid) {
-                        const layerid = this.state.activelayerid;
-                        const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
-                        if (layer) {
-                            getlayer = layer.layertype;
+        let layertype = '';
 
-                        }
-                    }
-                }
+        if (this.state.activesectionid && this.state.activelayerid) {
+            const sectionid = this.state.activesectionid;
+            const layerid = this.state.activelayerid;
+            const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid);
+            if (layer) {
+                layertype = layer.layertype || '';
             }
         }
-        return getlayer;
 
+        return layertype;
     }
 
     handleLayerType(value) {
-
         const gfk = new GFK();
+        const makeid = new MakeID()
         const projectid = this.props.match.params.projectid;
-        const slopestablity = gfk.getSlopeStability.call(this)
-        const makeid = new MakeID();
-        if (this.state.activesectionid) {
-            const sectionid = this.state.activesectionid;
-            const section = gfk.getSlopebySectionID.call(this, projectid, sectionid)
-            if (section) {
-                const i = gfk.getSlopeKeybySectionID.call(this, projectid, sectionid)
-                if (this.state.activelayerid) {
-                    let layerid = this.state.activelayerid;
 
-                    const layer = gfk.getSlopeLayerByID.call(this, projectid, sectionid, layerid)
+        if (!this.state.activesectionid) return; // no section selected
+        const sectionid = this.state.activesectionid;
 
-                    if (layer) {
-                        const j = gfk.getSlopeLayerKeyByID.call(this, projectid, sectionid, layerid)
-                        slopestablity[i].layers[j].layertype = value
-                        if (value === 'failure') {
-                            let cx = this.state.cx;
-                            let cy = this.state.cy;
-                            let rx = this.state.rx;
-                            let ry = this.state.ry;
-                            const newfailure = failureSurface(cx, cy, rx, ry)
-                            slopestablity[i].layers[j].failuresurface = newfailure;
-                            if (layer.hasOwnProperty("subsurface")) {
-                                delete slopestablity[i].layers[j].subsurface;
-                            }
-                        } else if (value === "subsurface") {
-                            let gamma = this.state.gamma;
-                            let cohesion = this.state.cohesion;
-                            let friction = this.state.friction;
-                            const newSubsurface = subSurface(gamma, cohesion, friction)
-                            slopestablity[i].layers[j].subsurface = newSubsurface;
-                            if (layer.hasOwnProperty("failuresurface")) {
-                                delete slopestablity[i].layers[j].failuresurface
-                            }
-                        }
-                        this.props.reduxSlopeStability(slopestablity)
-                        this.setState({ render: 'render' })
-                    }
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.slope || !Array.isArray(project.slope.sections)) return;
 
-                } else {
-                    let layerid = makeid.layerID.call(this)
-                    const getlayer = this.state.layer;
-                    const makeLayer = newLayer(layerid, getlayer, value)
-                    if (value === 'failure') {
-                        let cx = this.state.cx;
-                        let cy = this.state.cy;
-                        let rx = this.state.rx;
-                        let ry = this.state.ry;
-                        const newfailure = failureSurface(cx, cy, rx, ry)
-                        makeLayer.failuresurface = newfailure;
-                    } else if (value === "subsurface") {
-                        let gamma = this.state.gamma;
-                        let cohesion = this.state.cohesion;
-                        let friction = this.state.friction;
-                        const newSubsurface = subSurface(gamma, cohesion, friction)
-                        makeLayer.subsurface = newSubsurface;
-                    }
-                    if (section.hasOwnProperty("layers")) {
-                        slopestablity[i].layers.push(makeLayer)
-                    } else {
-                        slopestablity[i].layers = [makeLayer]
-                    }
-                    this.props.reduxSlopeStability(slopestablity);
-                    this.setState({ activelayerid: layerid })
+        const sectionIndex = project.slope.sections.findIndex(sec => sec.sectionid === sectionid);
+        if (sectionIndex === -1) return;
+        const section = project.slope.sections[sectionIndex];
 
+        if (!Array.isArray(section.layers)) section.layers = [];
 
-                }
+        // If active layer exists, update its layertype
+        if (this.state.activelayerid) {
+            const layerIndex = section.layers.findIndex(layer => layer.layerid === this.state.activelayerid);
+            if (layerIndex !== -1) {
+                section.layers[layerIndex].layertype = value;
             }
+        } else {
+            // Create a new layer with default layer name and the provided layertype
+            const layerid = makeid.layerID.call(this);
+            const newLayerObj = newLayer(layerid, '', value); // empty string for layer name
+            section.layers.push(newLayerObj);
+
+            // Set the new layer as active
+            this.setState({ activelayerid: layerid });
         }
 
+        // Update Redux
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex !== -1) {
+            projects[projectIndex] = project;
+            this.props.reduxProjects(projects);
+        }
+
+        this.setState({ render: 'render' });
     }
 
     render() {
@@ -1772,7 +1848,7 @@ class SlopeStability extends Component {
         const headerFont = gfk.getHeaderFont.call(this)
         const engineerid = this.props.match.params.engineerid;
         const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid);
+        const project = gfk.getProjectById.call(this, projectid);
         const regularFont = gfk.getRegularFont.call(this)
         const saveprojecticon = gfk.getsaveprojecticon.call(this)
         if (project) {
@@ -1812,8 +1888,8 @@ class SlopeStability extends Component {
                     <div style={{ ...styles.flex1 }}>
                         <div style={{ ...styles.generalContainer }}>
                             <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                value={this.getSection()}
-                                onChange={(event) => { this.handleSection(event.target.value) }} />
+                                value={this.getSectionName()}
+                                onChange={(event) => { this.handleSectionName(event.target.value) }} />
                         </div>
                         <span style={{ ...styles.generalFont, ...regularFont }}>
                             Section Name
@@ -1901,8 +1977,7 @@ class SlopeStability extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser,
-        slopestability: state.slopestability
+        projects: state.projects
     }
 }
 export default connect(mapStateToProps, actions)(SlopeStability);

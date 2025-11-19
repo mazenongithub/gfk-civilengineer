@@ -6,17 +6,17 @@ class SlopeStabilityCalcs {
         const calcs = new SlopeStabilityCalcs();
         let  criticalvalue = 0;
         const extents = calcs.getExtents.call(this,projectid,sectionid)
-        const section = gfk.getSlopebySectionID.call(this,projectid,sectionid)
+        const section = gfk.getSlopeBySectionID.call(this,projectid,sectionid)
         let scale = 0;
         if(section) {
             if(section.hasOwnProperty("layers")) {
                 // eslint-disable-next-line
                 section.layers.map(layer=> {
                     if(layer.hasOwnProperty("failuresurface")) {
-                        const cx = layer.failuresurface.cx;
-                        const rx = layer.failuresurface.rx;
-                        const ry = layer.failuresurface.ry;
-                        const cy = layer.failuresurface.cy;
+                        const cx = layer.failure.cx;
+                        const rx = layer.failure.rx;
+                        const ry = layer.failure.ry;
+                        const cy = layer.failure.cy;
                         const checkx = Number(cx)+ Number(rx)
                         const checky = Number(cy) + Number(ry)
                        
