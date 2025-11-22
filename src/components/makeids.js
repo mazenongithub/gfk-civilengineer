@@ -57,15 +57,15 @@ class MakeID {
 
     }
 
-    sectionID() {
+    sectionID(projectid) {
         const gfk = new GFK();
         let sectionid = false;
         while (!sectionid) {
             sectionid = makeID(16)
-            const sections = gfk.getSlopeStability.call(this)
-            if (sections) {
+            const slope = gfk.getSlopeByProjectID.call(this, projectid)
+            if (slope.sections) {
                 // eslint-disable-next-line
-                sections.map(section => {
+                slope.sections.map(section => {
                     if (section.sectionid === sectionid) {
                         sectionid = false;
                     }

@@ -5,7 +5,7 @@ import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
 import { saveSection, removeIconSmall } from './svg';
-import { LoadZoneCharts, LoadPTSlab, HandlePTSlab, DeletePTSlab } from './actions/api'
+import { LoadZoneCharts, LoadPTSlab, SavePTSlab, DeletePTSlab } from './actions/api'
 import MakeID from './makeids';
 import { PTSlabSection, PTSlabLayer } from './functions'
 import SoilClassification from './soilclassification';
@@ -21,7 +21,7 @@ class PTSlab extends Component {
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
-       
+
 
 
 
@@ -727,43 +727,81 @@ class PTSlab extends Component {
 
 
     async saveSection() {
+          const gfk = new GFK();
+          const projectid = this.props.match.params.projectid;
+  
+          const project = gfk.getProjectById.call(this, projectid);
+          if (!project) return;
+  
+          
+          if (!project.ptslab) return;
+          const ptslab = project.ptslab;
+          console.log(ptslab)
+          try {
+              // Send ptslab to backend
+              const values = { projectid, ptslab };
+        
+              const response = await SavePTSlab(values);
+              console.log(response)
+              // Extract response properties safely
+              const message = response?.message;
+              const returnedPTSlabObj = response?.ptslab
+  
+
+              if (!returnedPTSlabObj) return;
+  
+              const returnedProjectId = returnedPTSlabObj.projectid;
+             
+  
+              // Update projects in Redux
+              const projects = gfk.getProjects.call(this);
+              const index = gfk.getProjectKeyById.call(this, returnedProjectId);
+  
+              if (index !== false && projects[index]) {
+                  projects[index].ptslab = returnedPTSlabObj;
+                  this.props.reduxProjects(projects);
+                  this.setState({ message });
+              }
+  
+  
+          } catch (err) {
+              alert(err?.errorMessage || err?.message || String(err));
+          }
+
+        
+
+
+
+
+    }
+
+    loadslabids() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectidl
-        const ptslab = gfk.getPTSlabByProjectID.call(this,projectid)
-        const response = await HandlePTSlab({ ptslab })
-       
+        const projectid = this.props.match.params.projectid;
 
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab || !Array.isArray(project.ptslab.sections)) {
+            return [];
+        }
 
+        const sections = project.ptslab.sections;
+        const sectionids = [];
 
+        sections.forEach(section => {
+            sectionids.push(this.showslabid(section));
+        });
+
+        return sectionids;
     }
 
-   loadslabids() {
-    const gfk = new GFK();
-    const projectid = this.props.match.params.projectid;
 
-    const project = gfk.getProjectById.call(this, projectid);
-    if (!project || !project.ptslab || !Array.isArray(project.ptslab.sections)) {
-        return [];
+    handleSectionId(sectionid) {
+        const active = this.state.activesectionid;
+
+        this.setState({
+            activesectionid: active === sectionid ? false : sectionid
+        });
     }
-
-    const sections = project.ptslab.sections;
-    const sectionids = [];
-
-    sections.forEach(section => {
-        sectionids.push(this.showslabid(section));
-    });
-
-    return sectionids;
-}
-
-
-  handleSectionId(sectionid) {
-    const active = this.state.activesectionid;
-
-    this.setState({
-        activesectionid: active === sectionid ? false : sectionid
-    });
-}
 
 
     showslabid(ptslab) {
@@ -805,38 +843,38 @@ class PTSlab extends Component {
     }
 
     removeSection(sectionid) {
-    const gfk = new GFK();
-    const projectid = this.props.match.params.projectid;
-    const projects = gfk.getProjects.call(this);
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
+        const projects = gfk.getProjects.call(this);
 
-    // Find project index
-    const i = gfk.getProjectKeyById.call(this, projectid);
-    if (i === false) return false;
+        // Find project index
+        const i = gfk.getProjectKeyById.call(this, projectid);
+        if (i === false) return false;
 
-    const project = projects[i];
+        const project = projects[i];
 
-    // Ensure ptslab exists
-    if (!project.ptslab || !Array.isArray(project.ptslab.sections)) return false;
+        // Ensure ptslab exists
+        if (!project.ptslab || !Array.isArray(project.ptslab.sections)) return false;
 
-    const sections = project.ptslab.sections;
+        const sections = project.ptslab.sections;
 
-    // Find section index
-    const j = sections.findIndex(sec => sec.sectionid === sectionid);
-    if (j === -1) return false;
+        // Find section index
+        const j = sections.findIndex(sec => sec.sectionid === sectionid);
+        if (j === -1) return false;
 
-    // Remove the section
-    sections.splice(j, 1);
+        // Remove the section
+        sections.splice(j, 1);
 
-    // Update Redux
-    this.props.reduxProjects(projects);
+        // Update Redux
+        this.props.reduxProjects(projects);
 
-    // Clear active section if it was removed
-    if (this.state.activesectionid === sectionid) {
-        this.setState({ activesectionid: false });
+        // Clear active section if it was removed
+        if (this.state.activesectionid === sectionid) {
+            this.setState({ activesectionid: false });
+        }
+
+        return true;
     }
-
-    return true;
-}
 
 
     showlayerids() {
@@ -845,7 +883,7 @@ class PTSlab extends Component {
         const projectid = this.props.match.params.projectid;
         if (this.state.activesectionid) {
             const sectionid = this.state.activesectionid;
-            const layers = gfk.getPTSlabLayersbysectionID.call(this,projectid, sectionid)
+            const layers = gfk.getPTSlabLayersbysectionID.call(this, projectid, sectionid)
             if (layers) {
                 // eslint-disable-next-line
                 layers.map(layer => {
@@ -893,110 +931,81 @@ class PTSlab extends Component {
 
     }
 
-   removeLayer(layerid) {
-    const gfk = new GFK();
-    const projects = gfk.getProjects.call(this);
-    const projectid = this.props.match.params.projectid;
-    const sectionid = this.state.activesectionid;
-    const project = gfk.getProjectById.call(this, projectid);
-    if (!project || !project.ptslab || !Array.isArray(project.ptslab.sections)) return;
+    removeLayer(layerid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+        const projectid = this.props.match.params.projectid;
+        const sectionid = this.state.activesectionid;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !project.ptslab || !Array.isArray(project.ptslab.sections)) return;
 
-    const i = gfk.getProjectKeyById.call(this, projectid);
-    const section = project.ptslab.sections.find(sec => sec.sectionid === sectionid);
-    if (!section || !Array.isArray(section.layers)) return;
+        const i = gfk.getProjectKeyById.call(this, projectid);
+        const section = project.ptslab.sections.find(sec => sec.sectionid === sectionid);
+        if (!section || !Array.isArray(section.layers)) return;
 
-    const layerIndex = section.layers.findIndex(layer => layer.layerid === layerid);
-    if (layerIndex === -1) return;
+        const layerIndex = section.layers.findIndex(layer => layer.layerid === layerid);
+        if (layerIndex === -1) return;
 
-    // Remove the layer
-    projects[i].ptslab.sections.find(sec => sec.sectionid === sectionid)
-                              .layers.splice(layerIndex, 1);
+        // Remove the layer
+        projects[i].ptslab.sections.find(sec => sec.sectionid === sectionid)
+            .layers.splice(layerIndex, 1);
 
-    this.props.reduxProjects(projects);
-    this.setState({ activelayerid: false, render: 'render' });
-}
+        this.props.reduxProjects(projects);
+        this.setState({ activelayerid: false, render: 'render' });
+    }
 
 
     handleLayerID(layerid) {
-    this.setState(prevState => ({
-        activelayerid: prevState.activelayerid === layerid ? false : layerid
-    }));
-}
+        this.setState(prevState => ({
+            activelayerid: prevState.activelayerid === layerid ? false : layerid
+        }));
+    }
 
 
     getPISamples() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const borings = gfk.getBoringsByProjectId.call(this, projectid)
-        const sampleids = [];
-        let showoptions = [];
 
-        const checksampleid = (sampleids, checksampleid) => {
-            let check = false;
-            // eslint-disable-next-line
-            sampleids.map(sampleid => {
-                if (sampleid.sampleid === checksampleid) {
-                    check = true;
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (!borings) return [];
+
+        const sampleSet = new Set();   // Track unique sample IDs
+        const showoptions = [];
+
+        // Step 1: Collect unique sample IDs
+        for (const boring of borings) {
+            const { boringid } = boring;
+            const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid);
+
+            if (!samples) continue;
+
+            for (const sample of samples) {
+                const hasPI = Number(sample.ll) > 0 && Number(sample.pi) > 0;
+                const hasSieve = !!sample.sieve;
+
+                if (hasPI || hasSieve) {
+                    sampleSet.add(sample.sampleid);
                 }
-            })
-
-            return check;
-
+            }
         }
 
-        if (borings) {
-            // eslint-disable-next-line
-            borings.map(boring => {
-                const boringid = boring.boringid;
-                const boringnumber = boring.boringnumber;
-                const samples = gfk.getSamplesByBoringId.call(this,projectid, boringid)
-                if (samples) {
-                    // eslint-disable-next-line
-                    samples.map(sample => {
-                        if (Number(sample.ll) > 0 && Number(sample.pi) > 0) {
+        // Step 2: Build showoptions for each sample in each boring
+        for (const boring of borings) {
+            const { boringid, boringnumber } = boring;
 
-                            let check = checksampleid(sampleids, sample.sampleid)
-                            if (!check) {
-                                sampleids.push({ sampleid: sample.sampleid })
+            for (const sampleid of sampleSet) {
+                const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid);
+                if (!sample) continue;
 
-                            }
+                const label = `${boringnumber}-${sample.sampleset}(${sample.samplenumber})${sample.depth}`;
 
-
-
-                        }
-                        const sieve = gfk.getsievekeybysampleid.call(this, boringid, sample.sampleid)
-                        if (sieve) {
-
-                            let check = checksampleid(sampleids, sample.sampleid)
-                            if (!check) {
-                                sampleids.push({ sampleid: sample.sampleid })
-
-                            }
-
-
-                        }
-                    })
-
-                }
-
-                // eslint-disable-next-line
-                sampleids.map(id => {
-                    const getsample = gfk.getSampleById.call(this, projectid, boringid, id.sampleid)
-                    const label = `${boringnumber}-${getsample.sampleset}(${getsample.samplenumber})${getsample.depth}`
-                    showoptions.push(this.showPISamples(id.sampleid, label))
-
-
-                })
-
-
-
-            })
-
+                showoptions.push(this.showPISamples(sampleid, label));
+            }
         }
 
         return showoptions;
-
     }
+
 
     showPISamples(sampleid, label) {
         return (<option value={sampleid}>{label}</option>)
@@ -1346,7 +1355,7 @@ class PTSlab extends Component {
                             </div>
                             <div style={{ ...styles.flex3, ...styles.alignCenter }}>
                                 <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this. getTopLayer()}
+                                    value={this.getTopLayer()}
                                     onChange={event => { this.handleTopLayer(event.target.value) }}
                                 />
 
@@ -1480,7 +1489,7 @@ class PTSlab extends Component {
 
 function mapStateToProps(state) {
     return {
-        projects:state.projects,
+        projects: state.projects,
         zonecharts: state.zonecharts,
         ptslab: state.ptslab
     }

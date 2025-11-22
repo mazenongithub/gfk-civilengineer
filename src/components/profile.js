@@ -9,7 +9,7 @@ class Profile {
     getphoneNumber() {
         const gfk = new GFK();
         let phonenumber = '';
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             phonenumber = myuser.phonenumber;
         }
@@ -19,7 +19,7 @@ class Profile {
 
     handlephoneNumber(phonenumber) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             myuser.phonenumber = phonenumber;
             this.props.reduxUser(myuser)
@@ -33,7 +33,7 @@ class Profile {
     getemailAddress() {
         const gfk = new GFK();
         let emailaddress = '';
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             emailaddress = myuser.emailaddress;
         }
@@ -43,7 +43,7 @@ class Profile {
 
     handleemailAddress(emailaddress) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             myuser.emailaddress = emailaddress;
             this.props.reduxUser(myuser)
@@ -57,7 +57,7 @@ class Profile {
     getlastName() {
         const gfk = new GFK();
         let lastname = '';
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             lastname = myuser.lastname;
         }
@@ -67,7 +67,7 @@ class Profile {
 
     handlelastName(lastname) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             myuser.lastname = lastname;
             this.props.reduxUser(myuser)
@@ -81,7 +81,7 @@ class Profile {
     getfirstName() {
         const gfk = new GFK();
         let firstname = '';
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             firstname = myuser.firstname;
         }
@@ -91,7 +91,7 @@ class Profile {
 
     handlefirstName(firstname) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             myuser.firstname = firstname;
             this.props.reduxUser(myuser)
@@ -105,7 +105,7 @@ class Profile {
     getProfile() {
         const gfk = new GFK();
         let profile = '';
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             profile = myuser.engineerid;
         }
@@ -115,7 +115,7 @@ class Profile {
 
     handleProfile(profile) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
+        const myuser = gfk.getUser.call(this)
         if (myuser) {
             myuser.engineerid = profile;
             this.props.reduxUser(myuser)

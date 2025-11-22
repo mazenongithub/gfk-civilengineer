@@ -53,14 +53,17 @@ class GFK {
             return ({ width: '209px', height: '51px' })
         }
     }
-    getuser() {
-        let myuser = false;
-        if (this.props.myuser) {
-            myuser = this.props.myuser;
+    getUser() {
+        const user = this.props.myuser;
 
+        // Must exist AND have a valid _id
+        if (user && user._id) {
+            return user;
         }
-        return myuser;
+
+        return false;
     }
+
 
     getSlices(projectid, sectionid) {
         const gfk = new GFK();
@@ -1111,62 +1114,49 @@ class GFK {
         return key;
 
     }
+
+
     async saveallborings() {
         const gfk = new GFK();
-        let myuser = gfk.getuser.call(this)
         const projectid = this.props.match.params.projectid;
-        if (myuser) {
-            let borings = gfk.getboringsbyprojectid.call(this, projectid)
-            console.log(borings)
 
-            if (borings) {
-                const i = gfk.getboringskeybyprojectid.call(this, projectid)
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                try {
-                    let engineerid = this.props.match.params.engineerid;
-                    let projectid = this.props.match.params.projectid;
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (!borings) return;
 
-                    console.log(borings)
-                    let response = await SaveBorings(engineerid, projectid, borings)
-                    console.log(response)
-                    if (response.hasOwnProperty("boringsdb")) {
-                        const getborings = response.boringsdb.borings;
+        try {
+            // Send borings to backend
+            const values = { projectid, borings };
+            const response = await SaveBorings(values);
+            console.log(response)
+            // Extract response properties safely
+            const message = response?.message;
+            const returnedBoringsObj = response?.borings.borings;
 
-                        const myuser = gfk.getuser.call(this)
-                        // eslint-disable-next-line
-                        myuser.borings[i] = getborings
+            if (!returnedBoringsObj) return;
 
-                        this.props.reduxUser(myuser)
+            const returnedProjectId = returnedBoringsObj.projectid;
+            const returnedBorings = returnedBoringsObj.borings;
 
+            // Update projects in Redux
+            const projects = gfk.getProjects.call(this);
+            const index = gfk.getProjectKeyById.call(this, returnedProjectId);
 
-                    }
-
-                    let message = '';
-
-                    if (response.hasOwnProperty("message")) {
-                        message = `${response.message} last updated ${inputUTCStringForLaborID(response.lastupdated)}`
-
-                    }
-
-                    this.setState({ message })
-
-                    // this.props.reduxUser(myuser)
-
-
-                } catch (err) {
-                    alert(err)
-                }
-
-
-
-
-
-
+            if (index !== false && projects[index]) {
+                projects[index].borings = returnedBorings;
+                this.props.reduxProjects(projects);
+                this.setState({ message });
             }
 
+          
+        } catch (err) {
+            alert(err?.errorMessage || err?.message || String(err));
         }
-
     }
+
+
 
 
 

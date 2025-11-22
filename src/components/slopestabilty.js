@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
-import { LoadSlopeStability, HandleSlopeStability } from './actions/api';
+import { LoadSlopeStability, SaveSlope } from './actions/api';
 import SlopeStabilityCalcs from './slopestabilitycalcs';
 import { removeIconSmall, layerDown, layerUp, saveProjectIcon } from './svg';
 import { newSection, newLayer, subSurface, failureSurface, newPoint, inputUTCStringForLaborID } from './functions';
@@ -36,18 +36,48 @@ class SlopeStability extends Component {
     }
 
     async saveSlopeStability() {
-        const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const sections = gfk.getSlopeByProjectID.call(this, projectid)
-        if (sections) {
-            try {
-                let response = await HandleSlopeStability(projectid, sections)
-                console.log(response)
+      
+   const gfk = new GFK();
+          const projectid = this.props.match.params.projectid;
+  
+          const project = gfk.getProjectById.call(this, projectid);
+          if (!project) return;
+  
+          
+          if (!project.slope) return;
+          const slope = project.slope;
+          console.log(slope)
+          try {
+              // Send slope to backend
+              const values = { projectid, slope };
+              console.log(values)
+              const response = await SaveSlope(values);
+              console.log(response)
+              // Extract response properties safely
+              const message = response?.message;
+              const returnedSlopeObj = response?.slope
+  
 
-            } catch (err) {
-                alert(err)
-            }
-        }
+              if (!returnedSlopeObj) return;
+  
+              const returnedProjectId = returnedSlopeObj.projectid;
+             
+  
+              // Update projects in Redux
+              const projects = gfk.getProjects.call(this);
+              const index = gfk.getProjectKeyById.call(this, returnedProjectId);
+  
+              if (index !== false && projects[index]) {
+                  projects[index].slope = returnedSlopeObj;
+                  this.props.reduxProjects(projects);
+                  this.setState({ message });
+              }
+  
+  
+          } catch (err) {
+              alert(err?.errorMessage || err?.message || String(err));
+          }
+
 
     }
 
@@ -1432,12 +1462,12 @@ class SlopeStability extends Component {
             projects[i].slope.sections[j].sectionname = value;
         } else {
             // Create new section with default slices = 100
-            const sectionid = makeid.sectionID.call(this);
-            const newSection = newSection(sectionid, value, 100);
+            const sectionid = makeid.sectionID.call(this, projectid);
+            const newsection = newSection(sectionid, value, 100);
             if (!Array.isArray(projects[i].slope.sections)) {
                 projects[i].slope.sections = [];
             }
-            projects[i].slope.sections.push(newSection);
+            projects[i].slope.sections.push(newsection);
 
             // Set the new section as active
             this.setState({ activesectionid: sectionid });
@@ -1502,7 +1532,7 @@ class SlopeStability extends Component {
             projects[i].slope.sections[j].slices = String(value); // store as string
         } else {
             // Create new section with default value and slices
-            const sectionid = makeid.sectionID.call(this);
+            const sectionid = makeid.sectionID.call(this, projectid);
             const newSectionObj = newSection(sectionid, "", value); // store slices as string
             if (!Array.isArray(projects[i].slope.sections)) {
                 projects[i].slope.sections = [];

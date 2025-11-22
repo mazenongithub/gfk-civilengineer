@@ -594,35 +594,40 @@ class DateReport {
         }
         return gridcalender;
     }
-    showgrid() {
-        const gfk = new GFK();
-        const Datein = new DateReport();
-        let showgrid = [];
-const projectid = this.props.match.params.projectid;
-        // begin show grid
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
-            let timein = fieldreport.datereport;
+   showgrid() {
+    const gfk = new GFK();
+    const Datein = new DateReport();
+    const showgrid = [];
+    const projectid = this.props.match.params.projectid;
 
-            let datereport = new Date(`${timein.replace(/-/g, '/')} UTC`);
+    let datereport = null;
 
-            showgrid.push(Datein.showgridcalender.call(this, datereport))
+    // If a field report is selected
+    if (this.state.activefieldid) {
+        const fieldid = this.state.activefieldid;
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
 
+        // Validate fieldreport and date
+        if (fieldreport && typeof fieldreport.datereport === "string") {
+            // Convert YYYY-MM-DD → YYYY/MM/DD for Safari compatibility
+            const safeDate = fieldreport.datereport.replace(/-/g, "/");
+            datereport = new Date(`${safeDate} 00:00`);
         }
-        else {
-            if (this.state.datereport) {
-
-                let datereport = this.state.datereport;
-
-                showgrid.push(Datein.showgridcalender.call(this, datereport))
-            }
-        }
-
-        return showgrid;
-
-
     }
+
+    // Fallback: use component state date
+    if (!datereport && this.state.datereport) {
+        datereport = new Date(this.state.datereport);
+    }
+
+    // Final fallback: no date → return empty
+    if (!datereport) return showgrid;
+
+    // Generate the grid
+    showgrid.push(Datein.showgridcalender.call(this, datereport));
+
+    return showgrid;
+}
 
     handleopendatemenu() {
         if (this.state.calender === 'open') {
@@ -826,24 +831,39 @@ const projectid = this.props.match.params.projectid;
 
     }
 
-    showdateforcalendar() {
-        const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        if (this.state.activefieldid) {
+   showdateforcalendar() {
+    const gfk = new GFK();
+    const projectid = this.props.match.params.projectid;
 
-            const fieldid = this.state.activefieldid;
-            const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
-
-            let timein = fieldreport.datereport;
-            let datereport = new Date(`${timein.replace(/-/g, '/')}-00:00`);
-            return (formatDateforCalendarDisplay(datereport))
-        }
-        else
-
-            return (formatDateforCalendarDisplay(this.state.datereport))
-
-
+    // If no active field ID → default to component state
+    if (!this.state.activefieldid) {
+        return formatDateforCalendarDisplay(this.state.datereport);
     }
+
+    // Try to fetch the field report
+    const fieldid = this.state.activefieldid;
+    const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+
+    if (!fieldreport || !fieldreport.datereport) {
+        return formatDateforCalendarDisplay(this.state.datereport);
+    }
+
+    let timein = fieldreport.datereport;
+
+    // Ensure it's a string before using replace
+    if (typeof timein !== "string") {
+        return formatDateforCalendarDisplay(this.state.datereport);
+    }
+
+    // Convert YYYY-MM-DD → YYYY/MM/DD for iOS Safari compatibility
+    const safeDate = timein.replace(/-/g, "/");
+
+    // Build the final Date object
+    const datereport = new Date(`${safeDate} 00:00`);
+
+    return formatDateforCalendarDisplay(datereport);
+}
+
     showdatemenu() {
         const styles = MyStylesheet();
         const Datein = new DateReport();

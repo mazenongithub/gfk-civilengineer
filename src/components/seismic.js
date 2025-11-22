@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
-import { LoadSeismic, HandleSeismic } from './actions/api';
+import { LoadSeismic, SaveSeismic } from './actions/api';
 import { newSeismic, SeismicPoint, newSeismicPoint, newStrain } from './functions';
 import { removeIconSmall, saveProjectIcon } from './svg';
 import MakeID from './makeids';
@@ -897,97 +897,97 @@ class Seismic extends Component {
         return options;
     }
 
-handleSampleID(sampleid) {
-    const projectid = this.props.match.params.projectid;
-    const makeid = new MakeID();
-    const gfk = new GFK();
+    handleSampleID(sampleid) {
+        const projectid = this.props.match.params.projectid;
+        const makeid = new MakeID();
+        const gfk = new GFK();
 
-    let depth = 0, pi = 0, spt = 0, fines = 0, ll = 0;
+        let depth = 0, pi = 0, spt = 0, fines = 0, ll = 0;
 
-    const netwgt = sample => {
-        let wgt = Number(sample.drywgt) - Number(sample.tarewgt);
-        return Number(wgt).toFixed(1);
-    };
+        const netwgt = sample => {
+            let wgt = Number(sample.drywgt) - Number(sample.tarewgt);
+            return Number(wgt).toFixed(1);
+        };
 
-    // Get the sample and calculate fines
-    const boring = gfk.getBoringfromSampleID.call(this, projectid, sampleid);
-    const sample = gfk.getSampleById.call(this, projectid, boring.boringid, sampleid);
+        // Get the sample and calculate fines
+        const boring = gfk.getBoringfromSampleID.call(this, projectid, sampleid);
+        const sample = gfk.getSampleById.call(this, projectid, boring.boringid, sampleid);
 
-    if (sample) {
-        console.log(sample)
-        depth = Number(sample.depth);
-        pi = Number(sample.pi);
-        spt = Number(sample.spt);
-        ll = Number(sample.ll);
+        if (sample) {
+            console.log(sample)
+            depth = Number(sample.depth);
+            pi = Number(sample.pi);
+            spt = Number(sample.spt);
+            ll = Number(sample.ll);
 
-        const sieve = gfk.getSieveBySampleId.call(this, projectid, boring.boringid, sampleid);
-        const soilclassification = new SoilClassification(
-            netwgt(sample),
-            ll,
-            pi,
-            sieve.wgt34,
-            sieve.wgt38,
-            sieve.wgt4,
-            sieve.wgt10,
-            sieve.wgt30,
-            sieve.wgt40,
-            sieve.wgt100,
-            sieve.wgt200
-        );
-        fines = soilclassification.getFines();
+            const sieve = gfk.getSieveBySampleId.call(this, projectid, boring.boringid, sampleid);
+            const soilclassification = new SoilClassification(
+                netwgt(sample),
+                ll,
+                pi,
+                sieve.wgt34,
+                sieve.wgt38,
+                sieve.wgt4,
+                sieve.wgt10,
+                sieve.wgt30,
+                sieve.wgt40,
+                sieve.wgt100,
+                sieve.wgt200
+            );
+            fines = soilclassification.getFines();
+        }
+
+        // Get projects and ensure project exists
+        const projects = gfk.getProjects.call(this);
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const i = gfk.getProjectKeyById.call(this, projectid);
+
+        // Ensure seismic object and points array exist
+        if (!projects[i].seismic) projects[i].seismic = {};
+        if (!Array.isArray(projects[i].seismic.points)) projects[i].seismic.points = [];
+
+        const seismic = projects[i].seismic;
+
+        if (this.state.activepointid) {
+            // Update existing point
+            const pointid = this.state.activepointid;
+            const j = gfk.getPointKeybyID.call(this, projectid, pointid);
+            if (j === false) return;
+
+            seismic.points[j].sampleid = sampleid;
+            seismic.points[j].depth = depth;
+            seismic.points[j].pi = pi;
+            seismic.points[j].spt = spt;
+            seismic.points[j].fines = fines;
+        } else {
+            // Create new point and append to seismic.points
+            const pointid = makeid.seismicpointid.call(this, projectid);
+            console.log(pointid, depth, pi, fines, spt, sampleid)
+            const newPoint = SeismicPoint(pointid, depth, pi, fines, spt, sampleid);
+            seismic.points.push(newPoint);
+
+            // Set new active point
+            this.setState({ activepointid: pointid });
+        }
+
+        // Push updated projects to Redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' });
     }
 
-    // Get projects and ensure project exists
-    const projects = gfk.getProjects.call(this);
-    const project = gfk.getProjectById.call(this, projectid);
-    if (!project) return;
 
-    const i = gfk.getProjectKeyById.call(this, projectid);
-
-    // Ensure seismic object and points array exist
-    if (!projects[i].seismic) projects[i].seismic = {};
-    if (!Array.isArray(projects[i].seismic.points)) projects[i].seismic.points = [];
-
-    const seismic = projects[i].seismic;
-
-    if (this.state.activepointid) {
-        // Update existing point
+    getSampleID() {
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
         const pointid = this.state.activepointid;
-        const j = gfk.getPointKeybyID.call(this, projectid, pointid);
-        if (j === false) return;
 
-        seismic.points[j].sampleid = sampleid;
-        seismic.points[j].depth = depth;
-        seismic.points[j].pi = pi;
-        seismic.points[j].spt = spt;
-        seismic.points[j].fines = fines;
-    } else {
-        // Create new point and append to seismic.points
-        const pointid = makeid.seismicpointid.call(this, projectid);
-        console.log(pointid, depth, pi, fines, spt, sampleid)
-        const newPoint = SeismicPoint(pointid, depth, pi, fines, spt, sampleid);
-        seismic.points.push(newPoint);
+        if (!pointid) return '';
 
-        // Set new active point
-        this.setState({ activepointid: pointid });
+        const point = gfk.getPointbyID.call(this, projectid, pointid);
+        return point?.sampleid || '';
     }
-
-    // Push updated projects to Redux
-    this.props.reduxProjects(projects);
-    this.setState({ render: 'render' });
-}
-
-
-   getSampleID() {
-    const gfk = new GFK();
-    const projectid = this.props.match.params.projectid;
-    const pointid = this.state.activepointid;
-
-    if (!pointid) return '';
-
-    const point = gfk.getPointbyID.call(this, projectid, pointid);
-    return point?.sampleid || '';
-}
 
 
     getOverBurden() {
@@ -1169,12 +1169,41 @@ handleSampleID(sampleid) {
 
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
+
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
         const seismic = gfk.getSeismicByProjectID.call(this, projectid)
-        if (seismic) {
-            const i = gfk.getSeismicKeybyProjectID.call(this, projectid)
-            let response = await HandleSeismic({ seismic })
+        if (!seismic) return;
+
+        try {
+            // Send seismic to backend
+            const values = { projectid, seismic };
+      
+            const response = await SaveSeismic(values);
             console.log(response)
-         
+            // Extract response properties safely
+            const message = response?.message;
+            const returnedSeismicObj = response?.seismic;
+
+            if (!returnedSeismicObj) return;
+
+            const returnedProjectId = returnedSeismicObj.projectid;
+           
+
+            // Update projects in Redux
+            const projects = gfk.getProjects.call(this);
+            const index = gfk.getProjectKeyById.call(this, returnedProjectId);
+
+            if (index !== false && projects[index]) {
+                projects[index].seismic = returnedSeismicObj;
+                this.props.reduxProjects(projects);
+                this.setState({ message });
+            }
+
+
+        } catch (err) {
+            alert(err?.errorMessage || err?.message || String(err));
         }
     }
 
@@ -1384,7 +1413,7 @@ handleSampleID(sampleid) {
 
 function mapStateToProps(state) {
     return {
-        projects:state.projects
+        projects: state.projects
     }
 }
 export default connect(mapStateToProps, actions)(Seismic);

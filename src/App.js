@@ -1,97 +1,203 @@
 import React, { Component } from 'react';
 import './App.css';
+import './components/landing.css'
 import * as actions from './components/actions';
 import { connect } from 'react-redux';
 import { MyStylesheet } from './components/styles'
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import FieldReports from './components/fieldreports';
-import Borings from './components/borings';
 import Profile from './components/profile';
-import Samples from './components/samples';
-import Sieve from './components/sieve';
-import Unconfined from './components/unconfined';
 import Login from './components/login';
-import Timesheet from './components/timesheet'
-import {LoadProjects } from './components/actions/api'
+import { CheckUser, LogoutUser } from './components/actions/api'
 import Projects from './components/projects';
 import ViewProject from './components/viewproject';
-import ViewFieldReport from './components/viewfieldreport';
-import LogDraft from './components/logdraft'
-import LabSummary from './components/labsummary';
-import PTSlab from './components/ptslab';
-import Seismic from './components/seismic'
-import SlopeStability from './components/slopestabilty'
+import GFK from './components/gfk'
+import { Link } from 'react-router-dom';
+
 
 class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { render: '', width: 0, height: 0 }
+    this.state = { render: '', width: 0, height: 0, open: false }
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
-}
-componentDidMount() {
+  }
+  componentDidMount() {
     window.addEventListener('resize', this.updateWindowDimensions);
     this.updateWindowDimensions();
     this.checkUser()
-}
-
-componentWillUnmount() {
-    window.removeEventListener('resize', this.updateWindowDimensions);
-}
-
-updateWindowDimensions() {
-    this.setState({ width: window.innerWidth, height: window.innerHeight });
-}
-  
-async checkUser() {
-  try {
-    const response = await LoadProjects();
-
-    if (response?.projects?.length) {
-      this.props.reduxProjects(response.projects);
-      this.setState({ render: 'render' });
-    } else {
-      console.warn('⚠️ No projects found for this user.');
-    }
-
-  } catch (err) {
-    console.error('❌ Error checking user:', err);
-    alert(typeof err === 'string' ? err : err.message || 'Failed to load projects.');
   }
-}
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateWindowDimensions);
+  }
+
+  updateWindowDimensions() {
+    this.setState({ width: window.innerWidth, height: window.innerHeight });
+  }
+
+  loginLink() {
+    const gfk = new GFK();
+    const user = gfk.getUser.call(this);
+
+    return user && user._id ? (
+      <a onClick={() => this.logout()}>Logout</a>
+    ) : (
+      <Link to="/access/login">Login</Link>
+    );
+  }
+
+
+  async logout() {
+    try {
+      const gfk = new GFK();
+      const user = gfk.getUser.call(this);
+
+      if (!user || !user.engineerid) return;
+
+      try {
+        const response = await LogoutUser(user.engineerid);
+
+        if (response?.message) {
+          // Clear Redux user state
+          this.props.reduxUser(null);  // You probably want to reset user, not set message
+          this.setState({ message: response.message });
+
+          // Optionally show success message
+
+        }
+      } catch (err) {
+        alert(err.errorMessage || err.message || String(err));
+      }
+    } catch (err) {
+      console.error("Unexpected logout error:", err);
+    }
+  }
+
+
+
+
+
+
+  openMenu() {
+    this.setState({ open: true });
+  }
+
+  closeMenu() {
+    this.setState({ open: false });
+  };
+
+  async checkUser() {
+    try {
+      const response = await CheckUser();
+
+      // Update engineer
+      if (response?.engineer) {
+        this.props.reduxUser(response.engineer);
+      } else {
+        console.warn("⚠️ No engineer returned.");
+      }
+
+      // Update projects
+      if (Array.isArray(response?.projects) && response.projects.length > 0) {
+        this.props.reduxProjects(response.projects);
+      } else {
+        console.warn("⚠️ No projects found for this engineer.");
+      }
+
+      // Trigger render update
+      this.setState({ render: 'render' });
+
+    } catch (err) {
+      console.error("❌ Error checking user:", err);
+      alert(
+        typeof err === "string"
+          ? err
+          : err.message || "Failed to verify user."
+      );
+    }
+  }
+
+  showApp() {
+    const styles = MyStylesheet()
+    const { open } = this.state;
+    return (
+
+      <div style={{ ...styles.generalContainer }}>
+
+        <div style={{ ...styles.generalContainer }}>
+          <nav className="navbar">
+            <div className="nav-logo">GeoApp</div>
+
+            {/* Desktop Links */}
+            <div className="nav-links">
+              <a href="#">Home</a>
+              <a href="#">Features</a>
+              <a href="#">Pricing</a>
+              {this.loginLink()}
+            </div>
+
+            {/* Hamburger */}
+            <button className="nav-hamburger" onClick={() => { this.openMenu() }}>
+              ☰
+            </button>
+          </nav>
+
+          {/* Overlay */}
+          {open && <div className="overlay" onClick={() => { this.closeMenu() }}></div>}
+
+          {/* Mobile Drawer */}
+          <div className={`mobile-menu ${open ? "open" : ""}`}>
+            <button className="close-btn" onClick={() => { this.closeMenu() }}>×</button>
+
+            <a href="#" onClick={() => { this.closeMenu() }}>Home</a>
+            <a href="#" oonClick={() => { this.closeMenu() }}>Features</a>
+            <a href="#" onClick={() => { this.closeMenu() }}>Pricing</a>
+            {this.loginLink()}
+          </div>
+
+        </div>
+
+
+      </div>)
+
+  }
+
 
   render() {
     const styles = MyStylesheet();
     const profile = new Profile();
+    const gfk = new GFK();
+    const regularFont = gfk.getRegularFont.call(this)
 
     const showprofile = () => {
-      return(profile.showprofile.call(this))
+      return (profile.showprofile.call(this))
     }
-   
 
-    return (<BrowserRouter>
+
+    return (
+
       <div style={{ ...styles.generalContainer }}>
-        <Switch>
-          <Route exact path="/" render={showprofile} />
-          <Route exact path="/engineer/login" component={Login} />
-          <Route exact path="/:engineerid" render={showprofile} />
-          <Route exact path="/:engineerid/projects" component={Projects} />
-          <Route exact path="/:engineerid/projects/:projectid" component={ViewProject} />
-          <Route exact path="/:engineerid/projects/:projectid/fieldreports" component={FieldReports} />
-          <Route exact path="/:engineerid/projects/:projectid/fieldreports/:fieldid" component={ViewFieldReport} />
-          <Route exact path="/:engineerid/projects/:projectid/timesheet" component={Timesheet} />
-          <Route exact path="/:engineerid/projects/:projectid/borings" component={Borings} />
-          <Route exact path="/:engineerid/projects/:projectid/labsummary" component={LabSummary} />
-          <Route exact path="/:engineerid/projects/:projectid/ptslab" component={PTSlab} />
-          <Route exact path="/:engineerid/projects/:projectid/seismic" component={Seismic} />
-          <Route exact path="/:engineerid/projects/:projectid/slopestability" component={SlopeStability} />
-          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/logdraft" component={LogDraft} />
-          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples" component={Samples} />
-          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/sieve" component={Sieve} />
-          <Route exact path="/:engineerid/projects/:projectid/borings/:boringid/samples/:sampleid/unconfined" component={Unconfined} />
-        </Switch>
-      </div>
-    </BrowserRouter>);
+        {/* Landing Page Content */}
+        <div className="landing-content">
+          <BrowserRouter>
+            {this.showApp()}
+            <div style={{ ...styles.generalContainer }}>
+              <Switch>
+                <Route exact path="/" render={showprofile} />
+                <Route exact path="/access/login" component={Login} />
+                <Route exact path="/:engineerid" render={showprofile} />
+                <Route exact path="/:engineerid/projects" component={Projects} />
+                <Route path="/:engineerid/projects/:projectid" component={ViewProject} />
+              </Switch>
+            </div>
+          </BrowserRouter>
+        </div>
+
+    
+
+
+
+      </div>);
   }
 
 }
@@ -99,7 +205,7 @@ async checkUser() {
 function mapStateToProps(state) {
   return {
     myuser: state.myuser,
-    projects:state.projects
+    projects: state.projects
   }
 }
 

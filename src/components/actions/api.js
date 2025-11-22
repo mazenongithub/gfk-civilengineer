@@ -1,28 +1,55 @@
-export async function LogoutUser(values) {
+export async function LogoutUser(engineerid) {
+    if (!engineerid) {
+        throw new Error("Missing engineer ID for logout.");
+    }
 
-    var APIURL = `https://civilengineer.io/gfk/api/logout.php`
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${engineerid}/logout`;
 
-    return fetch(APIURL, {
-        credentials: "include"
-    })
-        .then(resp => {
+    try {
+        const resp = await fetch(APIURL, {
+            credentials: "include"
+        });
 
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Logout failed";
+        }
 
-            return resp.json();
-        })
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.message || "Server error during logout";
+    }
 }
+
+export async function EngineerLogin(values) {
+  const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/users/clientlogin`;
+
+  try {
+    const resp = await fetch(APIURL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(values),
+    });
+
+    // Handle client errors (400–499)
+    if (!resp.ok) {
+      const errorData = await resp.json().catch(() => ({}));
+      const message = errorData.message || `Request failed with status ${resp.status}`;
+      throw new Error(message);
+    }
+
+    return await resp.json();
+  } catch (err) {
+    throw err;
+  }
+}
+
 export async function LoginUser(values) {
 
     var APIURL = `https://civilengineer.io/gfk/api/login.php`
@@ -225,27 +252,29 @@ export async function LoadProject(projectid) {
 }
 
 
-export async function CheckUserLogin() {
-    let APIURL = `http://civilengineer.io/gfk/api/loadprofile.php?engineerid=mazen`
+export async function CheckUser() {
+  const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/checkuser`;
 
-    return fetch(APIURL, { credentials: 'include' }).then(resp => {
+  try {
+    const resp = await fetch(APIURL, {
+      credentials: 'include'
+    });
 
-        if (!resp.ok) {
-            if (resp.status >= 400 && resp.status < 500) {
-                return resp.json().then(data => {
+    if (!resp.ok) {
+      if (resp.status >= 400 && resp.status < 500) {
+        const data = await resp.json().catch(() => ({}));
+        throw new Error(data.message || "Client-side error");
+      } else {
+        throw new Error("Please try again later, server is not responding");
+      }
+    }
 
-                    throw data.message;
-                })
-            }
-            else {
-                let err = { errorMessage: 'Please try again later, server is not responding' };
-                throw err;
-            }
-        }
-
-        return resp.json();
-    })
+    return await resp.json();
+  } catch (err) {
+    throw err;
+  }
 }
+
 
 export async function DeletePTSlab(section_id, layer_id) {
     const values = { section_id, layer_id }
@@ -379,67 +408,154 @@ export async function HandlePTSlab(ptslab) {
         })
 }
 
-export async function SaveBorings(engineerid, projectid, borings) {
-    const values = { engineerid, projectid, borings }
-    var APIURL = `https://civilengineer.io/gfk/api/saveborings.php`
+export async function SaveBorings(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/saveborings`;
 
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
 
-        body: JSON.stringify(values)
-    })
-        .then(resp => {
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save borings";
+        }
 
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
+        return await resp.json();
 
-            return resp.json();
-        })
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+              err.message ||
+              "Server error while saving borings";
+    }
 }
 
-export async function SaveFieldReport(fieldreport) {
-    const values = { fieldreport }
-    var APIURL = `https://civilengineer.io/gfk/api/handlefieldreport.php`
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
 
-        body: JSON.stringify(values)
-    })
-        .then(resp => {
+export async function SaveFieldReports(values) {
+  const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savefieldreports`;
 
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        throw data.message
-                    })
-                }
-                else {
-                    let err = 'Request failed or Server is not responding';
-                    throw err;
-                }
-            }
+  try {
+    const response = await fetch(APIURL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(values),
+    });
 
-            return resp.json();
-        })
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      const message =
+        data.message || 'Request failed or server is not responding';
+      throw new Error(message);
+    }
+
+    return await response.json();
+
+  } catch (err) {
+    throw err instanceof Error ? err : new Error(String(err));
+  }
 }
+
+
+export async function SaveSeismic(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/saveseismic`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
+
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save seismic";
+        }
+
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+              err.message ||
+              "Server error while saving seismic";
+    }
+}
+
+export async function SavePTSlab(values) {
+
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/saveptslab`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
+
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save ptslab";
+        }
+
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+              err.message ||
+              "Server error while saving ptslab";
+    }
+}
+
+
+export async function SaveSlope(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/saveslope`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
+
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save slope";
+        }
+
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+              err.message ||
+              "Server error while saving slope";
+    }
+}
+
+
 
 export async function UploadGraphicLog(formData) {
 

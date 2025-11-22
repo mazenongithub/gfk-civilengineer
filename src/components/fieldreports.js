@@ -7,7 +7,7 @@ import DateReport from './datereport';
 import CurveID from './curveid';
 import { removeIconSmall, saveReport, uploadImage, goToIcon } from './svg';
 import { fieldReport, makeDatefromObj, makeUTCStringCurrentTime, compactionTest, milestoneformatdatestring, inputUTCStringForLaborID, sorttimesdesc, CreateImage } from './functions';
-import { SaveFieldReport, UploadFieldImage } from './actions/api'
+import { SaveFieldReports, UploadFieldImage } from './actions/api'
 import { Link } from 'react-router-dom';
 import MakeID from './makeids';
 
@@ -1037,27 +1037,42 @@ class FieldReports extends Component {
     async savereport() {
 
         const gfk = new GFK();
-        const projects = gfk.getProjects.call(this)
         const projectid = this.props.match.params.projectid;
-        const project = gfk.getProjectById.call(this,projectid)
-        const i = gfk.getProjectKeyById.call(this,projectid)
-        if (this.state.activefieldid) {
-            const fieldid = this.state.activefieldid;
-            const fieldreports = gfk.getfieldreportbyid.call(this, projectid,  fieldid)
-            if (fieldreports) {
 
-                try {
-                  
-                    let response = await SaveFieldReport(fieldreports);
-                    console.log(response)
-                   
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-                } catch (err) {
-                    alert(err)
-                }
+        const fieldreports = gfk.getfieldreports.call(this, projectid)
+        if (!fieldreports) return;
 
+        try {
+            // Send fieldreports to backend
+            const values = { projectid, fieldreports };
+            console.log(values)
+            const response = await SaveFieldReports(values);
+            console.log(response)
+            // Extract response properties safely
+            const message = response?.message;
+            const returnedFieldReportsObj = response?.fieldreports;
+
+            if (!returnedFieldReportsObj) return;
+
+            const returnedProjectId = returnedFieldReportsObj.projectid;
+            const returnedFieldReports = returnedFieldReportsObj.fieldreports
+
+            // Update projects in Redux
+            const projects = gfk.getProjects.call(this);
+            const index = gfk.getProjectKeyById.call(this, returnedProjectId);
+
+            if (index !== false && projects[index]) {
+                projects[index].fieldreports = returnedFieldReports;
+                this.props.reduxProjects(projects);
+                this.setState({ message });
             }
 
+          
+        } catch (err) {
+            alert(err?.errorMessage || err?.message || String(err));
         }
 
 

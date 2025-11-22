@@ -5,6 +5,20 @@ import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
 import { LoadProject } from './actions/api';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import FieldReports from './fieldreports';
+import Borings from './borings';
+import Samples from './samples';
+import Sieve from './sieve';
+import Unconfined from './unconfined';
+import Timesheet from './timesheet'
+import ViewFieldReport from './viewfieldreport';
+import LogDraft from './logdraft'
+import LabSummary from './labsummary';
+import PTSlab from './ptslab';
+import Seismic from './seismic'
+import SlopeStability from './slopestabilty'
+
 
 class ViewProject extends Component {
 
@@ -84,11 +98,11 @@ class ViewProject extends Component {
             allProjects[index] = {
                 ...allProjects[index],
                 borings: result.borings,
-                fieldreports:result.fieldreports,
-                compactioncurves:result.compactioncurves,
-                seismic:result.seismic,
-                ptslab:result.ptslab,
-                slope:result.slope
+                fieldreports: result.fieldreports,
+                compactioncurves: result.compactioncurves,
+                seismic: result.seismic,
+                ptslab: result.ptslab,
+                slope: result.slope
             };
 
             // Update Redux store or local state
@@ -153,6 +167,107 @@ class ViewProject extends Component {
 
     }
 
+    showViewProject() {
+
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const engineerid = this.props.match.params.engineerid;
+        const projectid = this.props.match.params.projectid;
+        const regularFont = gfk.getRegularFont.call(this)
+        const headerFont = gfk.getHeaderFont.call(this)
+        const project = gfk.getProjectById.call(this, projectid)
+
+        return (<div style={{ ...styles.generalContainer }}>
+            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                <Link
+                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                    to={`/${engineerid}`}>
+                    /{engineerid}
+                </Link>
+            </div>
+            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                <Link
+                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                    to={`/${engineerid}/projects`}>
+                    /projects
+                </Link>
+            </div>
+            <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                <Link
+                    style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                    to={`/${engineerid}/projects/${projectid}`}>
+                    /{project.projectnumber} - {project.title}
+                </Link>
+            </div>
+
+            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+                <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont, ...styles.minHeight150 }}
+                    value={this.getScopeofWork()}
+                    onChange={event => { this.handleScopeofWork(event.target.value) }}>
+
+                </textarea>
+                <div style={{ ...styles.generalContainer }}>
+                    <span style={{ ...styles.generalFont, ...regularFont }}>Scope of Work</span>
+                </div>
+            </div>
+
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/borings`}>
+                        /Borings
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/fieldreports`}>
+                        /FieldReports
+                    </Link>
+                </div>
+            </div>
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/labsummary`}>
+                        /Lab Summary
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/ptslab`}>
+                        /PTSlab
+                    </Link>
+                </div>
+            </div>
+
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/seismic`}>
+                        /Seismic
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/slopestability`}>
+                        /Slope Stability
+                    </Link>
+                </div>
+            </div>
+
+
+
+
+        </div>)
+
+    }
+
 
 
 
@@ -164,99 +279,36 @@ class ViewProject extends Component {
         const regularFont = gfk.getRegularFont.call(this)
         const headerFont = gfk.getHeaderFont.call(this)
         const project = gfk.getProjectById.call(this, projectid)
-
+        const { match } = this.props;
+        const path = match.path;
         if (project) {
 
             return (
+
                 <div style={{ ...styles.generalContainer }}>
-                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                        <Link
-                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                            to={`/${engineerid}`}>
-                            /{engineerid}
-                        </Link>
-                    </div>
-                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                        <Link
-                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                            to={`/${engineerid}/projects`}>
-                            /projects
-                        </Link>
-                    </div>
-                    <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
-                        <Link
-                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                            to={`/${engineerid}/projects/${projectid}`}>
-                            /{project.projectnumber} - {project.title}
-                        </Link>
-                    </div>
 
-                    <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
-                        <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont, ...styles.minHeight150 }}
-                            value={this.getScopeofWork()}
-                            onChange={event => { this.handleScopeofWork(event.target.value) }}>
+                    <BrowserRouter>
 
-                        </textarea>
                         <div style={{ ...styles.generalContainer }}>
-                            <span style={{ ...styles.generalFont, ...regularFont }}>Scope of Work</span>
+                            <Switch>
+                                <Route exact path={path} render={() => this.showViewProject()} />
+                                <Route exact path={`${path}/fieldreports`} component={FieldReports} />
+                                <Route exact path={`${path}/fieldreports/:fieldid`}component={ViewFieldReport} />
+                                <Route exact path={`${path}/timesheet`} component={Timesheet} />
+                                <Route exact path={`${path}/borings`} component={Borings} />
+                                <Route exact path={`${path}/labsummary`} component={LabSummary} />
+                                <Route exact path={`${path}/ptslab`} component={PTSlab} />
+                                <Route exact path={`${path}/seismic`} component={Seismic} />
+                                <Route exact path={`${path}/slopestability`} component={SlopeStability} />
+                                <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
+                                <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />
+                                <Route exact path={`${path}/borings/:boringid/samples/:sampleid/sieve`} component={Sieve} />
+                                <Route exact path={`${path}/borings/:boringid/samples/:sampleid/unconfined`} component={Unconfined} />
+                            </Switch>
                         </div>
-                    </div>
-
-                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                            <Link
-                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}/projects/${projectid}/borings`}>
-                                /Borings
-                            </Link>
-                        </div>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                            <Link
-                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}/projects/${projectid}/fieldreports`}>
-                                /FieldReports
-                            </Link>
-                        </div>
-                    </div>
-                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                            <Link
-                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}/projects/${projectid}/labsummary`}>
-                                /Lab Summary
-                            </Link>
-                        </div>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                            <Link
-                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}/projects/${projectid}/ptslab`}>
-                                /PTSlab
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                            <Link
-                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}/projects/${projectid}/seismic`}>
-                                /Seismic
-                            </Link>
-                        </div>
-                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                            <Link
-                                style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}/projects/${projectid}/slopestability`}>
-                                /Slope Stability
-                            </Link>
-                        </div>
-                    </div>
-
-
-
+                    </BrowserRouter>
 
                 </div>
-
 
 
             )
