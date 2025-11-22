@@ -34,7 +34,7 @@ class Samples extends Component {
         const { projectid, boringid } = this.props.match.params;
 
         const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid);
-    
+
         if (!Array.isArray(samples) || samples.length === 0) return [];
 
         return samples.map(sample => this.showsampleid(sample));
@@ -108,7 +108,7 @@ class Samples extends Component {
         const removeIcon = gfk.getremoveicon.call(this);
         const projectid = this.props.match.params.projectid;
         const boringid = this.props.match.params.boringid;
-        const myuser = gfk.getuser.call(this);
+        const myuser = gfk.getUser.call(this);
         const headerFont = gfk.getHeaderFont.call(this)
 
 
@@ -708,9 +708,9 @@ class Samples extends Component {
             projects[projectIndex].borings[boringIndex].samples = [newSample];
         }
 
- 
 
-       // this.props.reduxProjects(projects);
+
+        // this.props.reduxProjects(projects);
 
         // Reset state + activate the new sample
         this.setState({
@@ -2645,7 +2645,7 @@ class Samples extends Component {
     generateRemarks() {
         let remarks = '';
         const gfk = new GFK();
-        const {projectid, boringid} = this.props.match.params;
+        const { projectid, boringid } = this.props.match.params;
         const boring = gfk.getBoringById.call(this, projectid, boringid)
         if (boring) {
 
@@ -2662,7 +2662,7 @@ class Samples extends Component {
 
 
                 const unconfined = gfk.getUnconfinedTestById.call(this, boringid, sampleid)
-             
+
                 if (unconfined) {
 
 
@@ -2687,9 +2687,9 @@ class Samples extends Component {
 
     getSieveTest() {
         const gfk = new GFK();
-
+        const {projectid, boringid} = this.props.match.params
         const sampleid = this.state.activesampleid;
-        const sample = gfk.getsamplebyid.call(this, sampleid)
+        const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
         let description = '';
         if (sample) {
             description += sample.description;
@@ -2991,154 +2991,158 @@ class Samples extends Component {
         if (project) {
             const engineerid = 'mazen';
             const goIconWidth = gfk.getgotoicon.call(this)
+            if (boring) {
 
-            return (
-                <div style={{ ...styles.generalFlex }}>
-                    <div style={{ ...styles.flex1 }}>
+                return (
+                    <div style={{ ...styles.generalFlex }}>
+                        <div style={{ ...styles.flex1 }}>
 
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
-                            <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <Link
-                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                        to={`/${engineerid}`}>
-                                        /{engineerid}
-                                    </Link>
+                            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, }}>
+                                <div style={{ ...styles.flex1, ...styles.alignCenter, ...headerFont, ...styles.boldFont }}>
+                                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                        <Link
+                                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                            to={`/${engineerid}`}>
+                                            /{engineerid}
+                                        </Link>
+                                    </div>
+                                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                        <Link
+                                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                            to={`/${engineerid}/projects`}>
+                                            /projects
+                                        </Link>
+                                    </div>
+                                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                        <Link
+                                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                            to={`/${engineerid}/projects/${projectid}`}>
+                                            /{project.projectnumber} - {project.title}
+                                        </Link>
+                                    </div>
+
+                                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                        <Link
+                                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                                            to={`/${engineerid}/projects/${projectid}/borings`}>
+                                            /Borings
+                                        </Link>
+                                    </div>
+
+                                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                        <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} - Samples</Link>
+                                    </div>
+
+
+
+
                                 </div>
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <Link
-                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                        to={`/${engineerid}/projects`}>
-                                        /projects
-                                    </Link>
-                                </div>
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <Link
-                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                        to={`/${engineerid}/projects/${projectid}`}>
-                                        /{project.projectnumber} - {project.title}
-                                    </Link>
-                                </div>
+                            </div>
 
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <Link
-                                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                        to={`/${engineerid}/projects/${projectid}/borings`}>
-                                        /Borings
-                                    </Link>
+                            {samples_1()}
+                            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                    Sample Diameter <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getDiameter()}
+                                        onChange={event => { this.handleDiameter(event.target.value) }} />
+                                </div>
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                    Sample Length <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getSampleLength()}
+                                        onChange={event => { this.handleSampleLength(event.target.value) }} />
                                 </div>
 
-                                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                                    <Link style={{ ...styles.generalLink, ...styles.boldFont, ...styles.headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} - Samples</Link>
+                            </div>
+                            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                    Tare No <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getTareNo()}
+                                        onChange={event => { this.handleTareNo(event.target.value) }}
+                                    />
+                                </div>
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                    Tare Wgt <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getTareWgt()}
+                                        onChange={event => { this.handleTareWgt(event.target.value) }}
+                                    />
                                 </div>
 
-
-
-
                             </div>
-                        </div>
-
-                        {samples_1()}
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                Sample Diameter <br />
-                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getDiameter()}
-                                    onChange={event => { this.handleDiameter(event.target.value) }} />
-                            </div>
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                Sample Length <br />
-                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getSampleLength()}
-                                    onChange={event => { this.handleSampleLength(event.target.value) }} />
-                            </div>
-
-                        </div>
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                Tare No <br />
-                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getTareNo()}
-                                    onChange={event => { this.handleTareNo(event.target.value) }}
-                                />
-                            </div>
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                Tare Wgt <br />
-                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getTareWgt()}
-                                    onChange={event => { this.handleTareWgt(event.target.value) }}
-                                />
-                            </div>
-
-                        </div>
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
 
 
-                                Wet Wgt <br />
-                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getWetWgt()}
-                                    onChange={event => { this.handleWetWgt(event.target.value) }}
-                                />
-                            </div>
-
-                            <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
-                                Wet Wgt 2 <br />
-                                <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
-                                    value={this.getWetWgt_2()}
-                                    onChange={event => { this.handleWetWgt_2(event.target.value) }}
-                                />
-
-
-
-                            </div>
-
-                        </div>
-
-                        {samples_2()}
-                        {samples_3()}
-
-                        <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                            <div style={{ ...styles.generalFlex }}>
-                                <div style={{ ...styles.flex1, ...regularFont, }}>
-                                    <span style={{ ...regularFont }}>Description</span>
+                                    Wet Wgt <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getWetWgt()}
+                                        onChange={event => { this.handleWetWgt(event.target.value) }}
+                                    />
                                 </div>
-                                {showsievebutton()}
+
+                                <div style={{ ...styles.flex1, ...styles.addLeftMargin }}>
+                                    Wet Wgt 2 <br />
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont, ...styles.alignCenter }}
+                                        value={this.getWetWgt_2()}
+                                        onChange={event => { this.handleWetWgt_2(event.target.value) }}
+                                    />
+
+
+
+                                </div>
+
                             </div>
+
+                            {samples_2()}
+                            {samples_3()}
+
+                            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                                <div style={{ ...styles.generalFlex }}>
+                                    <div style={{ ...styles.flex1, ...regularFont, }}>
+                                        <span style={{ ...regularFont }}>Description</span>
+                                    </div>
+                                    {showsievebutton()}
+                                </div>
+                                <div style={{ ...styles.generalContainer }}>
+                                    <input type="text" style={{ ...styles.generalField, ...regularFont }}
+                                        value={this.getDescription()}
+                                        onChange={event => { this.handleDescription(event.target.value) }}
+                                    />
+                                </div>
+
+                            </div>
+
+                            {showgraphiclog()}
+
+                            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
+                                {this.state.message}
+                            </div>
+
+                            {gfk.showsaveboring.call(this)}
+
+                            {this.showsampleids()}
+
                             <div style={{ ...styles.generalContainer }}>
-                                <input type="text" style={{ ...styles.generalField, ...regularFont }}
-                                    value={this.getDescription()}
-                                    onChange={event => { this.handleDescription(event.target.value) }}
-                                />
+                                <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                                    to={`/${engineerid}/projects/${projectid}/borings/${boringid}/logdraft`}>
+                                    <button style={{ ...styles.generalButton, ...goIconWidth }}>
+                                        {goToIcon()}
+                                    </button>
+                                    <span style={{ ...styles.generalFont, ...regularFont }}>View LogDraft</span>
+                                </Link>
                             </div>
 
+
                         </div>
-
-                        {showgraphiclog()}
-
-                        <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
-                            {this.state.message}
-                        </div>
-
-                        {gfk.showsaveboring.call(this)}
-
-                        {this.showsampleids()}
-
-                        <div style={{ ...styles.generalContainer }}>
-                            <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
-                                to={`/${engineerid}/projects/${projectid}/borings/${boringid}/logdraft`}>
-                                <button style={{ ...styles.generalButton, ...goIconWidth }}>
-                                    {goToIcon()}
-                                </button>
-                                <span style={{ ...styles.generalFont, ...regularFont }}>View LogDraft</span>
-                            </Link>
-                        </div>
-
-
                     </div>
-                </div>
-            )
+                )
 
+            } else {
+                return (<span>&nbsp;</span>)
+            }
         } else {
             return (<span>&nbsp;</span>)
         }
@@ -3148,7 +3152,8 @@ class Samples extends Component {
 
 function mapStateToProps(state) {
     return {
-        projects: state.projects
+        projects: state.projects,
+        myuser: state.myuser
     }
 }
 export default connect(mapStateToProps, actions)(Samples);

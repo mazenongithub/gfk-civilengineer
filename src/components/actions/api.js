@@ -558,31 +558,35 @@ export async function SaveSlope(values) {
 
 
 export async function UploadGraphicLog(formData) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/uploadgraphiclog`;
 
-    var APIURL = `https://civilengineer.io/gfk/api/uploadgraphiclog.php`
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        body: formData
-    })
-        .then(resp => {
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+        });
 
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
+        // Handle non-OK responses
+        if (!resp.ok) {
+            const errorData = await resp.json().catch(() => null);
 
-                        throw data.message;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
+            if (resp.status >= 400 && resp.status < 500 && errorData?.message) {
+                throw new Error(errorData.message);
             }
 
-            return resp.json();
-        })
+            throw new Error("Please try again later, server is not responding");
+        }
+
+        // Return successful response
+        return await resp.json();
+
+    } catch (error) {
+        // Normalize error object
+        return Promise.reject(error.message || "Unexpected error occurred");
+    }
 }
+
 export async function SaveTime(values) {
     var APIURL = `https://civilengineer.io/gfk/api/savetime.php`
     return fetch(APIURL, {

@@ -40,10 +40,11 @@ class GraphicLog {
 
     getimages() {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this);
+        const myuser = gfk.getUser.call(this);
         const styles = MyStylesheet();
         const regularFont = gfk.getRegularFont.call(this);
         const graphiclog = new GraphicLog();
+        console.log(process.env.REACT_APP_SERVER_API)
 
         let myimages = [];
         const imageContainer = () => {
@@ -60,12 +61,12 @@ class GraphicLog {
                 return (<div style={{ ...styles.generalFlex }} onClick={() => { graphiclog.updateactiveimage.call(this, image.graphiclog) }} key={image.sampleid}>
                     <div style={{ ...styles.flex1 }}>
                         <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
-                            <img src={image.graphiclog} alt={image.description} />
+                            <img src={`${process.env.REACT_APP_SERVER_API}${image.graphiclog}`} alt={image.description} />
                         </div>
                     </div>
                     <div style={{ ...styles.flex5 }}>
                         <div style={{ ...styles.generalContainer, ...regularFont, ...styles.generalFont }}>
-                            {image.graphiclog}
+                            {process.env.REACT_APP_SERVER_API}{image.graphiclog}
                         </div>
                         <div style={{ ...styles.generalContainer, ...regularFont, ...styles.generalFont }}>
                             Project Number {image.projectnumber} {image.description}
@@ -79,12 +80,12 @@ class GraphicLog {
                     <div style={{ ...styles.generalFlex }} onClick={() => { graphiclog.updateactiveimage.call(this, image.graphiclog) }}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...styles.alignRight }}>
-                                <img src={image.graphiclog} alt={image.description} />
+                                <img src={`${process.env.REACT_APP_SERVER_API}${image.graphiclog}`} alt={image.description} />
                             </div>
                         </div>
                         <div style={{ ...styles.flex3 }}>
                             <div style={{ ...styles.generalContainer, ...regularFont, ...styles.generalFont }}>
-                                {image.graphiclog}
+                               {process.env.REACT_APP_SERVER_API}{image.graphiclog}
                             </div>
                             <div style={{ ...styles.generalContainer, ...regularFont, ...styles.generalFont }}>
                                 Project Number {image.projectnumber} {image.description}
@@ -98,12 +99,12 @@ class GraphicLog {
                     <div style={{ ...styles.generalFlex }} onClick={() => { graphiclog.updateactiveimage.call(this, image.graphiclog) }} key={image.sampleid}>
                         <div style={{ ...styles.flex1 }}>
                             <div style={{ ...styles.generalContainer, ...imageContainer(), ...styles.alignRight }}>
-                                <img src={image.graphiclog} alt={image.description} />
+                                <img src={`${process.env.REACT_APP_SERVER_API}${image.graphiclog}`} alt={image.description} />
                             </div>
                         </div>
                         <div style={{ ...styles.flex2 }}>
                             <div style={{ ...styles.generalContainer, ...regularFont, ...styles.generalFont }}>
-                                {image.graphiclog}
+                                {process.env.REACT_APP_SERVER_API}{image.graphiclog}
                             </div>
                             <div style={{ ...styles.generalContainer, ...regularFont, ...styles.generalFont }}>
                                 Project Number {image.projectnumber} {image.description}
@@ -157,42 +158,58 @@ class GraphicLog {
         }
         return myimages;
     }
-    async uploadnewimage() {
-        const gfk = new GFK();
-        const projects = gfk.getProjects.call(TouchList)
-        const { projectid, boringid } = this.props.match.params
-        const project = gfk.getProjectById.call(this, projectid)
-        if (project) {
-            const i = gfk.getProjectKeyById.call(this, projectid)
-            const boring = gfk.getBoringById.call(this, projectid, boringid)
-            if (boring) {
-                const j = gfk.getBoringKeyById.call(this, projectid, boringid)
+   async uploadnewimage() {
+    const gfk = new GFK();
+    const { projectid, boringid } = this.props.match.params;
 
-                if (this.state.activesampleid) {
-                    const sampleid = this.state.activesampleid;
-                    const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid)
-                    if (sample) {
-                        const k = gfk.getSampleKeyById.call(this, projectid, boringid, sampleid)
-                        let formData = new FormData();
-                        let myfile = document.getElementById("graphic-log");
-                        formData.append("graphiclog", myfile.files[0]);
-                        formData.append("sample", JSON.stringify(sample))
-                        let response = await UploadGraphicLog(formData);
-                        if (response.hasOwnProperty("sample")) {
-                          
-                            projects[i].borings[j].samples[k] = sample;
-                            this.props.reduxProjects(projects)
-                            this.setState({ render: 'render' })
+    // Validate required fields early
+    const project = gfk.getProjectById.call(this, projectid);
+    if (!project) return alert("Project not found");
 
-                        }
+    const boring = gfk.getBoringById.call(this, projectid, boringid);
+    if (!boring) return alert("Boring not found");
 
-                    }
-                }
+    const sampleid = this.state.activesampleid;
+    if (!sampleid) return alert("No active sample selected");
 
-            }
+    const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid);
+    if (!sample) return alert("Sample not found");
 
+    // Get the file input
+    const fileInput = document.getElementById("graphic-log");
+    if (!fileInput?.files?.length) return alert("Please select an image");
+
+    // Build FormData
+    const formData = new FormData();
+    formData.append("graphiclog", fileInput.files[0]);
+    formData.append("projectid", projectid);
+    formData.append("boringid", boringid);
+    formData.append("sampleid", sampleid);
+
+    try {
+        const response = await UploadGraphicLog(formData);
+        console.log(response)
+        if (!response?.borings) {
+            return alert("Upload failed: missing returned borings.");
         }
+
+        // Update projects in Redux
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        const {borings} = response.borings
+        if (projectIndex !== false && projects[projectIndex]) {
+            projects[projectIndex].borings = borings;
+            this.props.reduxProjects(projects);
+        }
+
+        this.setState({ message: response.message });
+
+    } catch (err) {
+        console.error("Upload error:", err);
+        alert(err);
     }
+}
+
 
     showgraphiclog() {
         const styles = MyStylesheet();
