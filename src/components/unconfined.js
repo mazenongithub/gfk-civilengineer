@@ -143,14 +143,14 @@ class Unconfined extends Component {
 
             if (project) {
                 const i = gfk.getProjectKeyById.call(this, projectid);
-                const boring = gfk.getBoringById.call(this, boringid);
+                const boring = gfk.getBoringById.call(this, projectid, boringid);
 
                 if (boring) {
                     const j = gfk.getBoringKeyById.call(this, projectid, boringid);
                     const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid);
 
                     if (sample) {
-                        const k = gfk.getSampleKeyById.call(this, boringid, sampleid);
+                        const k = gfk.getSampleKeyById.call(this, projectid, boringid, sampleid);
 
                         if (sample.hasOwnProperty("unconfined")) {
 
@@ -198,7 +198,7 @@ class Unconfined extends Component {
 
         const projectKey = gfk.getProjectKeyById.call(this, projectid);
 
-        const boring = gfk.getBoringById.call(this, boringid);
+        const boring = gfk.getBoringById.call(this, projectid, boringid);
         if (!boring) return;
 
         const boringKey = gfk.getBoringKeyById.call(this, projectid, boringid);
@@ -206,7 +206,7 @@ class Unconfined extends Component {
         const sample = gfk.getSampleById.call(this, projectid, boringid, sampleid);
         if (!sample) return;
 
-        const sampleKey = gfk.getSampleKeyById.call(this, boringid, sampleid);
+        const sampleKey = gfk.getSampleKeyById.call(this, projectid, boringid, sampleid);
 
         // must have unconfined array
         if (!sample.unconfined) return;
@@ -291,7 +291,7 @@ class Unconfined extends Component {
         return (<div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }} key={data.unid}>
             <span style={{ ...activeid() }}
                 onClick={() => { this.makeTestIdActive(data.unid) }}> Displacement {data.displacement} Loading Reading:{data.loadreading} Lbs:{this.loadLbs(data.loadreading)}lbs Stress: {Math.round(stress())}psf Strain: {Number(strain()).toFixed(3)}</span>
-            <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removetestdata(data.unid) }}>
+            <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeTestData(data.unid) }}>
                 {removeIconSmall()}
             </button>
         </div>)
@@ -683,6 +683,8 @@ class Unconfined extends Component {
             }
         }
         if (project) {
+
+            if(boring) {
             
             const engineerid = 'mazen'
             return (
@@ -752,6 +754,10 @@ class Unconfined extends Component {
                     </div>
                 </div>
             )
+
+        } else {
+         return (<span>&nbsp;</span>)   
+        }
         } else {
             return (<span>&nbsp;</span>)
         }
@@ -762,7 +768,8 @@ class Unconfined extends Component {
 
 function mapStateToProps(state) {
     return {
-        projects: state.projects
+        projects: state.projects,
+        myuser:state.myuser
     }
 }
 export default connect(mapStateToProps, actions)(Unconfined);

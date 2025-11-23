@@ -1075,7 +1075,7 @@ class GFK {
     }
     unconfinedTestDataById(projectId, boringId, sampleId, unid) {
         const gfk = new GFK();
-        const tests = gfk.getUnconfinedTestById(projectId, boringId, sampleId);
+        const tests = gfk.getUnconfinedTestById.call(this,projectId, boringId, sampleId);
 
         if (!Array.isArray(tests)) return false;
 
@@ -1084,7 +1084,7 @@ class GFK {
     }
     unconfinedTestDataKeyById(projectId, boringId, sampleId, unid) {
         const gfk = new GFK();
-        const tests = gfk.getUnconfinedTestById(projectId, boringId, sampleId);
+        const tests = gfk.getUnconfinedTestById.call(this,projectId, boringId, sampleId);
 
         if (!Array.isArray(tests)) return false;
 

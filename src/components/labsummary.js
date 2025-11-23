@@ -31,7 +31,7 @@ class LabSummary extends Component {
     showrows() {
         const gfk = new GFK();
         const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid)
+        const project = gfk.getProjectById.call(this, projectid)
         const unconfinedcalcs = new UnconfinedCalcs();
         let sampleno = '';
         let depth = '';
@@ -45,18 +45,18 @@ class LabSummary extends Component {
         let rows = [];
 
         if (project) {
-            const borings = gfk.getboringsbyprojectid.call(this, projectid)
+            const borings = gfk.getBoringsByProjectId.call(this, projectid)
             if (borings) {
                 // eslint-disable-next-line 
                 borings.map(boring => {
                     const boringid = boring.boringid;
                     const boringnumber = boring.boringnumber;
-                    const samples = gfk.getsamplesbyboringid.call(this, boringid)
+                    const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid)
                     if (samples) {
                         // eslint-disable-next-line 
                         samples.map(sample => {
 
-                            console.log(sample)
+                      
                             const sampleid = sample.sampleid;
                             sampleno = `${boringnumber}-${sample.sampleset}(${sample.samplenumber})`
                             depth = sample.depth;
@@ -73,17 +73,18 @@ class LabSummary extends Component {
                                 pi = '';
                             }
 
-                            const unconfined = gfk.getunconfinedtestbyid.call(this,boringid, sampleid);
-                            if (unconfined) {
-                                maxstress = unconfinedcalcs.getMaxStress.call(this, boringid, sampleid)
-                                maxstrain = unconfinedcalcs.getMaxStrain.call(this, boringid, sampleid)
+                            const unconfined = gfk.getUnconfinedTestById.call(this,projectid, boringid, sampleid);
+                           
+                                maxstress = unconfinedcalcs.getMaxStress.call(this, projectid,boringid, sampleid)
+                                maxstrain = unconfinedcalcs.getMaxStrain.call(this, projectid, boringid, sampleid)
 
-                            } else {
+                                if(!maxstress || !maxstrain) {
                                 maxstress = '';
                                 maxstrain = '';
-                            }
+                                }
+                            
 
-                            const sieve = gfk.getsievebysampleid.call(this, boringid, sampleid)
+                            const sieve = gfk.getSieveBySampleId.call(this, projectid, boringid, sampleid)
 
                             if (sieve) {
                                 const netwgt = Number(sample.drywgt) - Number(sample.tarewgt);
@@ -159,7 +160,7 @@ class LabSummary extends Component {
         const engineerid = this.props.match.params.engineerid;
         const projectid = this.props.match.params.projectid;
         const regularFont = gfk.getRegularFont.call(this)
-        const project = gfk.getprojectbyid.call(this, projectid)
+        const project = gfk.getProjectById.call(this, projectid)
 
         if (project) {
 
@@ -168,7 +169,7 @@ class LabSummary extends Component {
                 <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                     <Link
                         style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}`}>
+                        to={`/${engineerid}/profile`}>
                         /{engineerid}
                     </Link>
                 </div>
@@ -233,6 +234,7 @@ class LabSummary extends Component {
 
 function mapStateToProps(state) {
     return {
+        projects:state.projects,
         myuser: state.myuser
     }
 }
