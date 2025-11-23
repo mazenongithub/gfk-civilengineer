@@ -1,28 +1,29 @@
 import GFK from './gfk';
+import ZoneCharts from './zonecharts';
 class PTSlabCalcs {
 
     calcEdgeLiftym(gammahswellavg) {
         gammahswellavg = Number(gammahswellavg)
-       let edgelift = gammahswellavg*40.2
-       edgelift = Number(edgelift).toFixed(2)
-       return edgelift;
+        let edgelift = gammahswellavg * 40.2
+        edgelift = Number(edgelift).toFixed(2)
+        return edgelift;
     }
     calcCenterLiftym(gammahshrinkavg) {
-       let centerlift =gammahshrinkavg*29.
-       centerlift = Number(centerlift).toFixed(2)
-       return centerlift;
+        let centerlift = gammahshrinkavg * 29.
+        centerlift = Number(centerlift).toFixed(2)
+        return centerlift;
     }
 
 
     calcEdgeLiftem(alphahswellavg) {
-        let edgelift = -45118*Math.pow(alphahswellavg,2)+(1395.5*alphahswellavg)-0.7712
+        let edgelift = -45118 * Math.pow(alphahswellavg, 2) + (1395.5 * alphahswellavg) - 0.7712
         edgelift = Number(edgelift).toFixed(1)
         return edgelift;
     }
 
     calcCenterLiftem(alphahshrinkavg) {
         alphahshrinkavg = Number(alphahshrinkavg)
-        let centerlift = 50102*(Math.pow(alphahshrinkavg,1.5909));
+        let centerlift = 50102 * (Math.pow(alphahshrinkavg, 1.5909));
         centerlift = Number(centerlift).toFixed(1)
         return centerlift;
     }
@@ -51,7 +52,7 @@ class PTSlabCalcs {
         let alphahavg = 0;
         let alphahswellavg = 0;
         let alphahshrinkavg = 0
-    
+
         // eslint-disable-next-line
         modified.map(modified => {
             gammahavg += modified.gammah * modified.weightedavg;
@@ -69,7 +70,7 @@ class PTSlabCalcs {
         alphahswellavg = Number(alphahswellavg).toFixed(6)
         alphahshrinkavg = Number(alphahshrinkavg).toFixed(6)
 
-        
+
 
         return ({ gammahavg, gammahswellavg, gammahshrinkavg, alphahavg, alphahswellavg, alphahshrinkavg })
 
@@ -138,28 +139,41 @@ class PTSlabCalcs {
         return Number(gammah).toFixed(4);
     }
 
-  getGamma(zone, pifc, llfc) {
-    const gfk = new GFK();
-    const zonecharts = gfk.getZoneCharts.call(this) || {};
+    getGamma(zone, pifc, llfc) {
+    if (!zone) return 0;
+
+  
+
+    const zonecharts = new ZoneCharts();
     let gamma = 0;
 
-    if (!zonecharts) return gamma;
-
-    // Safely select the correct zone array
-    const zonechart = zonecharts[`zone_${zone}`] || [];
+    // Dynamically call the correct method on ZoneCharts
+    const methodName = `zone_${zone}`;
+    const zonechart = typeof zonecharts[methodName] === 'function' 
+        ? zonecharts[methodName]() 
+        : [];
 
     if (Array.isArray(zonechart) && zonechart.length > 0) {
+       
         const match = zonechart.find(chart => 
-            Number(chart.ll) === Number(llfc) && Number(chart.pi) === Number(pifc)
+           
+           
+            Number(chart.LL) === Number(llfc) &&
+            Number(chart.PI) === Number(pifc)
+        
         );
 
+         
+
         if (match) {
-            gamma = match.gamma;
-        }
+            gamma = match.Gamma;
+        } 
     }
 
     return gamma;
 }
+
+
 
 
     getLLFc(ll, fc) {

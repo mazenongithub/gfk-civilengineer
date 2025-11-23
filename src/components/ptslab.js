@@ -10,6 +10,7 @@ import MakeID from './makeids';
 import { PTSlabSection, PTSlabLayer } from './functions'
 import SoilClassification from './soilclassification';
 import PTSlabCalcs from './ptslabcalcs';
+import ZoneCharts from './zonecharts';
 
 class PTSlab extends Component {
 
@@ -735,7 +736,7 @@ class PTSlab extends Component {
 
         if (!project.ptslab) return;
         const ptslab = project.ptslab;
-        console.log(ptslab)
+      
         try {
             // Send ptslab to backend
             const values = { projectid, ptslab };
@@ -1022,7 +1023,7 @@ class PTSlab extends Component {
             let pi = 0
             let fines = '';
             const sample = gfk.getSampleById.call(this, projectid, boring.boringid, sampleid)
-            console.log(sample)
+        
             if (sample) {
 
                 if (Number(sample.ll) > 0) {
