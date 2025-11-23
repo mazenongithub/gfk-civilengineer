@@ -82,32 +82,34 @@ export async function LoginUser(values) {
         })
 }
 
-export async function UploadFieldImage(formdata) {
-    var APIURL = `https://civilengineer.io/gfk/api/uploadfieldimage.php`
+export async function UploadFieldImage(formData) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/upload/fieldimage`;
 
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        body: formdata,
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+        });
 
-    })
-        .then(resp => {
+        // Handle non-OK responses
+        if (!resp.ok) {
+            const errorData = await resp.json().catch(() => null);
 
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
+            if (resp.status >= 400 && resp.status < 500 && errorData?.message) {
+                throw new Error(errorData.message);
             }
 
-            return resp.json();
-        })
+            throw new Error("Please try again later, server is not responding");
+        }
+
+        // Return successful response
+        return await resp.json();
+
+    } catch (error) {
+        // Normalize error object
+        return Promise.reject(error.message || "Unexpected error occurred");
+    }
 }
 
 export async function LoadSeismic() {

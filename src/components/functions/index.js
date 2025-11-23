@@ -1408,8 +1408,8 @@ export function newSection(sectionid,projectid,section,slices) {
 export function newLayer(layerid,layer,layertype) {
     return({layerid,layer,layertype})
 }
-export function fieldReport(fieldid, projectid, datereport, content, engineerid) {
-    return ({ fieldid, projectid, datereport, content, engineerid })
+export function fieldReport(fieldid, datereport, content, engineerid) {
+    return ({ fieldid, datereport, content, engineerid })
 }
 export function UnconfinedTestData(unid, loadreading, displacement) {
     return ({
