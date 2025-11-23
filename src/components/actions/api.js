@@ -112,6 +112,8 @@ export async function UploadFieldImage(formData) {
     }
 }
 
+
+
 export async function LoadSeismic() {
     let APIURL = `http://civilengineer.io/gfk/api/loadseismic.php`
 
@@ -184,26 +186,30 @@ export async function LoadPTSlab() {
 }
 
 export async function LoadZoneCharts() {
-    let APIURL = `http://civilengineer.io/gfk/api/zonecharts.php`
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/loadzonecharts`;
 
-    return fetch(APIURL, { credentials: 'include' }).then(resp => {
+    try {
+        const resp = await fetch(APIURL, { credentials: "include" });
 
         if (!resp.ok) {
+            // Handle client errors (400–499)
             if (resp.status >= 400 && resp.status < 500) {
-                return resp.json().then(data => {
+                const data = await resp.json();
+                throw new Error(data.message || "Client error");
+            }
 
-                    throw data.message;
-                })
-            }
-            else {
-                let err = { errorMessage: 'Please try again later, server is not responding' };
-                throw err;
-            }
+            // Handle server or unknown errors
+            throw new Error("Please try again later, server is not responding");
         }
 
-        return resp.json();
-    })
+        return await resp.json();
+
+    } catch (err) {
+        // Normalize errors into a readable message
+        throw err instanceof Error ? err : new Error("Network error");
+    }
 }
+
 
 export async function LoadProjects() {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/loadprojects`;

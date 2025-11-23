@@ -21,6 +21,7 @@ class PTSlab extends Component {
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
+      
 
 
 
@@ -28,16 +29,14 @@ class PTSlab extends Component {
     }
 
     async loadProgram() {
-        if (!this.props.zonecharts.hasOwnProperty("zone_1")) {
-            const response = LoadZoneCharts();
-            const zonecharts = await response;
-            this.props.reduxZones(zonecharts.zonecharts)
+        try {
 
-        }
-        if (!this.props.ptslab.hasOwnProperty("length")) {
-            const response_1 = LoadPTSlab();
-            const ptslab = await response_1;
-            this.props.reduxPTSlab(ptslab.ptslab.sections)
+            const response = await LoadZoneCharts()
+            if (response.zonecharts) {
+                this.setState({ zonecharts: response.zonecharts })
+            }
+        } catch (err) {
+            alert(err)
         }
 
 
@@ -727,48 +726,48 @@ class PTSlab extends Component {
 
 
     async saveSection() {
-          const gfk = new GFK();
-          const projectid = this.props.match.params.projectid;
-  
-          const project = gfk.getProjectById.call(this, projectid);
-          if (!project) return;
-  
-          
-          if (!project.ptslab) return;
-          const ptslab = project.ptslab;
-          console.log(ptslab)
-          try {
-              // Send ptslab to backend
-              const values = { projectid, ptslab };
-        
-              const response = await SavePTSlab(values);
-              console.log(response)
-              // Extract response properties safely
-              const message = response?.message;
-              const returnedPTSlabObj = response?.ptslab
-  
+        const gfk = new GFK();
+        const projectid = this.props.match.params.projectid;
 
-              if (!returnedPTSlabObj) return;
-  
-              const returnedProjectId = returnedPTSlabObj.projectid;
-             
-  
-              // Update projects in Redux
-              const projects = gfk.getProjects.call(this);
-              const index = gfk.getProjectKeyById.call(this, returnedProjectId);
-  
-              if (index !== false && projects[index]) {
-                  projects[index].ptslab = returnedPTSlabObj;
-                  this.props.reduxProjects(projects);
-                  this.setState({ message });
-              }
-  
-  
-          } catch (err) {
-              alert(err?.errorMessage || err?.message || String(err));
-          }
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
 
-        
+
+        if (!project.ptslab) return;
+        const ptslab = project.ptslab;
+        console.log(ptslab)
+        try {
+            // Send ptslab to backend
+            const values = { projectid, ptslab };
+
+            const response = await SavePTSlab(values);
+            console.log(response)
+            // Extract response properties safely
+            const message = response?.message;
+            const returnedPTSlabObj = response?.ptslab
+
+
+            if (!returnedPTSlabObj) return;
+
+            const returnedProjectId = returnedPTSlabObj.projectid;
+
+
+            // Update projects in Redux
+            const projects = gfk.getProjects.call(this);
+            const index = gfk.getProjectKeyById.call(this, returnedProjectId);
+
+            if (index !== false && projects[index]) {
+                projects[index].ptslab = returnedPTSlabObj;
+                this.props.reduxProjects(projects);
+                this.setState({ message });
+            }
+
+
+        } catch (err) {
+            alert(err?.errorMessage || err?.message || String(err));
+        }
+
+
 
 
 
@@ -1056,6 +1055,77 @@ class PTSlab extends Component {
         }
 
     }
+
+    zone_1() {
+        if(this.state.zonecharts) {
+            return( <div>
+                    <h3>zone_1</h3>
+                    <pre style={{ background: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                        {JSON.stringify(this.state.zonecharts.zone_1, null, 2)}
+                    </pre>
+                </div>)
+        }
+    }
+
+
+      zone_2() {
+        if(this.state.zonecharts) {
+            return( <div>
+                    <h3>zone_2</h3>
+                    <pre style={{ background: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                        {JSON.stringify(this.state.zonecharts.zone_2, null, 2)}
+                    </pre>
+                </div>)
+        }
+    }
+
+     zone_3() {
+        if(this.state.zonecharts) {
+            return( <div>
+                    <h3>zone_3</h3>
+                    <pre style={{ background: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                        {JSON.stringify(this.state.zonecharts.zone_3, null, 2)}
+                    </pre>
+                </div>)
+        }
+    }
+
+     zone_4() {
+        if(this.state.zonecharts) {
+            return( <div>
+                    <h3>zone_4</h3>
+                    <pre style={{ background: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                        {JSON.stringify(this.state.zonecharts.zone_4, null, 2)}
+                    </pre>
+                </div>)
+        }
+    }
+
+     zone_5() {
+        if(this.state.zonecharts) {
+            return( <div>
+                    <h3>zone_5</h3>
+                    <pre style={{ background: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                        {JSON.stringify(this.state.zonecharts.zone_5, null, 2)}
+                    </pre>
+                </div>)
+        }
+    }
+
+     zone_6() {
+        if(this.state.zonecharts) {
+            return( <div>
+                    <h3>zone_6</h3>
+                    <pre style={{ background: '#f0f0f0', padding: '10px', borderRadius: '5px' }}>
+                        {JSON.stringify(this.state.zonecharts.zone_6, null, 2)}
+                    </pre>
+                </div>)
+        }
+    }
+
+
+
+
 
     showOutput() {
         let output = [];
@@ -1471,6 +1541,13 @@ class PTSlab extends Component {
                 <div style={{ ...styles.generalFlex }}>
                     {this.showOutput()}
                 </div>
+
+               
+
+
+               
+
+
 
 
 
