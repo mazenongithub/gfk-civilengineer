@@ -5,7 +5,7 @@ import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
 import { LoadProject } from './actions/api';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import FieldReports from './fieldreports';
 import Borings from './borings';
 import Samples from './samples';
@@ -141,25 +141,25 @@ class ViewProject extends Component {
 
     getScopeofWork() {
         const project = this.getProject();
-        let scopeofwork = '';
+        let sow = '';
         if (project) {
-            scopeofwork = project.proposedproject;
+            sow = project.sow
 
         }
-        return scopeofwork;
+        return sow
 
     }
 
     handleScopeofWork(value) {
         const gfk = new GFK();
-        const myuser = gfk.getuser.call(this)
-        if (myuser) {
+        const projects = gfk.getProjects.call(this)
+        if (projects) {
 
             const project = this.getProject();
             if (project) {
                 const key = this.getProjectKey();
-                myuser.projects.project[key].proposedproject = value
-                this.props.reduxUser(myuser);
+                projects[key].sow = value
+                this.props.reduxProjects(projects);
                 this.setState({ render: 'render' })
             }
 
@@ -181,7 +181,7 @@ class ViewProject extends Component {
             <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                 <Link
                     style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                    to={`/${engineerid}`}>
+                    to={`/${engineerid}/profile`}>
                     /{engineerid}
                 </Link>
             </div>
@@ -286,8 +286,9 @@ class ViewProject extends Component {
             return (
 
                 <div style={{ ...styles.generalContainer }}>
+                
 
-                    <BrowserRouter>
+                   
 
                         <div style={{ ...styles.generalContainer }}>
                             <Switch>
@@ -306,7 +307,7 @@ class ViewProject extends Component {
                                 <Route exact path={`${path}/borings/:boringid/samples/:sampleid/unconfined`} component={Unconfined} />
                             </Switch>
                         </div>
-                    </BrowserRouter>
+               
 
                 </div>
 

@@ -383,10 +383,10 @@ class Projects extends Component {
 
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}`}>
+                                to={`/${engineerid}/profile`}>
                                 /{engineerid}
                             </Link>
-                            <div style={{ ...styles.generalContainer }}>
+                            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
                                 <Link
                                     style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                     to={`/${engineerid}/projects`}>

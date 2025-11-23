@@ -12,6 +12,7 @@ import Projects from './components/projects';
 import ViewProject from './components/viewproject';
 import GFK from './components/gfk'
 import { Link } from 'react-router-dom';
+import Landing from './components/landing';
 
 
 class App extends Component {
@@ -35,6 +36,28 @@ class App extends Component {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
 
+  projectsLink() {
+    const gfk = new GFK();
+    const user = gfk.getUser.call(this);
+
+    return user && user._id ? (
+      <Link onClick={() => { this.closeMenu() }} to={`/${user.engineerid}/projects`}>Projects</Link>
+    ) : (
+      <a href="#">Features</a>
+    );
+  }
+
+  profileLink() {
+    const gfk = new GFK();
+    const user = gfk.getUser.call(this);
+
+    return user && user._id ? (
+      <Link onClick={() => { this.closeMenu() }} to={`/${user.engineerid}/profile`}>Profile</Link>
+    ) : (
+      <a href="#">Features</a>
+    );
+  }
+
   loginLink() {
     const gfk = new GFK();
     const user = gfk.getUser.call(this);
@@ -42,7 +65,7 @@ class App extends Component {
     return user && user._id ? (
       <a onClick={() => this.logout()}>Logout</a>
     ) : (
-      <Link to="/access/login">Login</Link>
+      <Link onClick={() => { this.closeMenu() }} to="/access/login">Login</Link>
     );
   }
 
@@ -117,6 +140,10 @@ class App extends Component {
     }
   }
 
+  homeLink() {
+    return (<Link onClick={() => { this.closeMenu() }} to={`/`}>Home</Link>)
+  }
+
   showApp() {
     const styles = MyStylesheet()
     const { open } = this.state;
@@ -130,9 +157,9 @@ class App extends Component {
 
             {/* Desktop Links */}
             <div className="nav-links">
-              <a href="#">Home</a>
-              <a href="#">Features</a>
-              <a href="#">Pricing</a>
+              {this.homeLink()}
+              {this.projectsLink()}
+              {this.profileLink()}
               {this.loginLink()}
             </div>
 
@@ -149,9 +176,9 @@ class App extends Component {
           <div className={`mobile-menu ${open ? "open" : ""}`}>
             <button className="close-btn" onClick={() => { this.closeMenu() }}>×</button>
 
-            <a href="#" onClick={() => { this.closeMenu() }}>Home</a>
-            <a href="#" oonClick={() => { this.closeMenu() }}>Features</a>
-            <a href="#" onClick={() => { this.closeMenu() }}>Pricing</a>
+            {this.homeLink()}
+            {this.projectsLink()}
+            {this.profileLink()}
             {this.loginLink()}
           </div>
 
@@ -183,9 +210,9 @@ class App extends Component {
             {this.showApp()}
             <div style={{ ...styles.generalContainer }}>
               <Switch>
-                <Route exact path="/" render={showprofile} />
+                <Route exact path="/" component={Landing} />
                 <Route exact path="/access/login" component={Login} />
-                <Route exact path="/:engineerid" render={showprofile} />
+                <Route exact path="/:engineerid/profile" render={showprofile} />
                 <Route exact path="/:engineerid/projects" component={Projects} />
                 <Route path="/:engineerid/projects/:projectid" component={ViewProject} />
               </Switch>
@@ -193,7 +220,7 @@ class App extends Component {
           </BrowserRouter>
         </div>
 
-    
+
 
 
 
