@@ -508,22 +508,21 @@ class GFK {
         return project.ptslab || false;
     }
 
-    getcurvebyid(curveid) {
+    getcurvebyid(projectid, curveid) {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const curves = gfk.getcurves.call(this, projectid)
-        let getcurve = false;
+        const curves = gfk.getcurves.call(this, projectid);
 
-        if (curves) {
-            // eslint-disable-next-line
-            curves.map(curve => {
-                if (curve.curveid === curveid) {
-                    getcurve = curve;
-                }
-            })
-        }
+        return curves?.find(curve => curve.curveid === curveid) || false;
+    }
 
-        return getcurve;
+    getcurvekeybyid(projectid, curveid) {
+        const gfk = new GFK();
+        const curves = gfk.getcurves.call(this, projectid);
+
+        if (!curves) return false;
+
+        const index = curves.findIndex(c => c.curveid === curveid);
+        return index >= 0 ? index : false;
     }
 
     getcompactiontests(projectid, fieldid) {
@@ -1075,7 +1074,7 @@ class GFK {
     }
     unconfinedTestDataById(projectId, boringId, sampleId, unid) {
         const gfk = new GFK();
-        const tests = gfk.getUnconfinedTestById.call(this,projectId, boringId, sampleId);
+        const tests = gfk.getUnconfinedTestById.call(this, projectId, boringId, sampleId);
 
         if (!Array.isArray(tests)) return false;
 
@@ -1084,7 +1083,7 @@ class GFK {
     }
     unconfinedTestDataKeyById(projectId, boringId, sampleId, unid) {
         const gfk = new GFK();
-        const tests = gfk.getUnconfinedTestById.call(this,projectId, boringId, sampleId);
+        const tests = gfk.getUnconfinedTestById.call(this, projectId, boringId, sampleId);
 
         if (!Array.isArray(tests)) return false;
 
@@ -1150,7 +1149,7 @@ class GFK {
                 this.setState({ message });
             }
 
-          
+
         } catch (err) {
             alert(err?.errorMessage || err?.message || String(err));
         }

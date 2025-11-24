@@ -564,6 +564,35 @@ export async function SaveSlope(values) {
 }
 
 
+export async function SaveCompactionCurves(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savecompactioncurves`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
+
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save compactioncurves";
+        }
+
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+              err.message ||
+              "Server error while saving compactioncurves";
+    }
+}
+
 
 export async function UploadGraphicLog(formData) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/uploadgraphiclog`;

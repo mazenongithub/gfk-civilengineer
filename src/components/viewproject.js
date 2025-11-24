@@ -18,6 +18,7 @@ import LabSummary from './labsummary';
 import PTSlab from './ptslab';
 import Seismic from './seismic'
 import SlopeStability from './slopestabilty'
+import Compaction from './compaction'
 
 
 class ViewProject extends Component {
@@ -293,6 +294,7 @@ class ViewProject extends Component {
                         <div style={{ ...styles.generalContainer }}>
                             <Switch>
                                 <Route exact path={path} render={() => this.showViewProject()} />
+                                <Route exact path={`${path}/compaction`} component={Compaction} />
                                 <Route exact path={`${path}/fieldreports`} component={FieldReports} />
                                 <Route exact path={`${path}/fieldreports/:fieldid`}component={ViewFieldReport} />
                                 <Route exact path={`${path}/timesheet`} component={Timesheet} />

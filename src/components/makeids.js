@@ -4,47 +4,47 @@ import { makeID } from './functions'
 class MakeID {
 
     pointID(projectid) {
-    const gfk = new GFK();
-    const slope = gfk.getSlopeByProjectID.call(this, projectid);
+        const gfk = new GFK();
+        const slope = gfk.getSlopeByProjectID.call(this, projectid);
 
-    // If no slope, just return a new ID
-    if (!slope) {
-        return makeID(16);
-    }
+        // If no slope, just return a new ID
+        if (!slope) {
+            return makeID(16);
+        }
 
-    let pointid = false;
+        let pointid = false;
 
-    while (!pointid) {
-        const candidate = makeID(16);
-        let exists = false;
+        while (!pointid) {
+            const candidate = makeID(16);
+            let exists = false;
 
-        // Search all sections → layers → points
-        for (const section of slope.sections) {
-            if (!section.layers) continue;
+            // Search all sections → layers → points
+            for (const section of slope.sections) {
+                if (!section.layers) continue;
 
-            for (const layer of section.layers) {
-                if (!layer.points) continue;
+                for (const layer of section.layers) {
+                    if (!layer.points) continue;
 
-                for (const point of layer.points) {
-                    if (point.pointid === candidate) {
-                        exists = true;
-                        break;
+                    for (const point of layer.points) {
+                        if (point.pointid === candidate) {
+                            exists = true;
+                            break;
+                        }
                     }
+
+                    if (exists) break;
                 }
 
                 if (exists) break;
             }
 
-            if (exists) break;
+            if (!exists) {
+                pointid = candidate;
+            }
         }
 
-        if (!exists) {
-            pointid = candidate;
-        }
+        return pointid;
     }
-
-    return pointid;
-}
 
 
     layerID(projectid) {
@@ -266,6 +266,22 @@ class MakeID {
         }
         return strainid
     }
+
+    curveID(projectid) {
+        const gfk = new GFK();
+        const curves = gfk.getcurves.call(this, projectid) || [];
+
+        let id;
+        let exists = true;
+
+        while (exists) {
+            id = makeID(16);                      // generate a random ID
+            exists = curves.some(c => c.curveid === id);  // check if it already exists
+        }
+
+        return id;
+    }
+
 
     seismicpointid(projectid) {
         const gfk = new GFK();
