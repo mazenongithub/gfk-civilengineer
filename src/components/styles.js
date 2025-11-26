@@ -10,6 +10,9 @@ export function MyStylesheet() {
         alignLeft:{
             textAlign:'left'
         },
+        topMargin15:{
+            marginTop:'15px'
+        },
         generalButton: {
             border: '0px',
             backgroundColor: '#FFFFFF'

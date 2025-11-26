@@ -154,7 +154,16 @@ class Clients extends Component {
         return (
             <div style={{ ...styles.generalContainer }}>
 
-                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.alignCenter, ...styles.topMargin15 }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/gfk`}>
+                        /gfk
+                    </Link>
+
+                </div>
+
+                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.alignCenter }}>
                     <Link
                         style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                         to={`/gfk/clients`}>
@@ -163,7 +172,7 @@ class Clients extends Component {
 
                 </div>
 
-                <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15, ...styles.alignCenter }}>
                     <select style={{ ...regularFont, ...styles.mediumWidth }}
                         value={this.state.activeclientid}
                         onChange={event => { this.setState({ activeclientid: event.target.value }) }}>

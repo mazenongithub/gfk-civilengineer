@@ -414,7 +414,9 @@ class ViewFieldReport extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser
+        myuser: state.myuser,
+        projects:state.projects,
+        company:state.company
     }
 }
 export default connect(mapStateToProps, actions)(ViewFieldReport);

@@ -14,6 +14,7 @@ import GFK from './components/gfk'
 import { Link } from 'react-router-dom';
 import Landing from './components/landing';
 import Clients from './components/clients';
+import Company from './components/company'
 
 
 class App extends Component {
@@ -58,6 +59,21 @@ class App extends Component {
       <a href="#">Features</a>
     );
   }
+ 
+  companyLink(){
+
+    const gfk = new GFK();
+    const user = gfk.getUser.call(this);
+
+    return user && user._id ? (
+      <Link onClick={() => { this.closeMenu() }} to={`/gfk`}>Company</Link>
+    ) : (
+      <a href="#">Features</a>
+    );
+
+  }
+
+   
 
   loginLink() {
     const gfk = new GFK();
@@ -163,6 +179,7 @@ class App extends Component {
             {/* Desktop Links */}
             <div className="nav-links">
               {this.homeLink()}
+              {this.companyLink()}
               {this.projectsLink()}
               {this.profileLink()}
               {this.loginLink()}
@@ -182,6 +199,7 @@ class App extends Component {
             <button className="close-btn" onClick={() => { this.closeMenu() }}>×</button>
 
             {this.homeLink()}
+            {this.companyLink()}
             {this.projectsLink()}
             {this.profileLink()}
             {this.loginLink()}
@@ -216,6 +234,7 @@ class App extends Component {
             <div style={{ ...styles.generalContainer }}>
               <Switch>
                 <Route exact path="/" component={Landing} />
+                <Route exact path="/gfk" component={Company} />
                 <Route exact path="/access/login" component={Login} />
                 <Route exact path="/gfk/clients" component={Clients} />
                 <Route exact path="/:engineerid/profile" render={showprofile} />
