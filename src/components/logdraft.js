@@ -29,8 +29,9 @@ class LogDraft extends Component {
 
     viewBox() {
         const gfk = new GFK();
-        const boringid = this.props.match.params.boringid;
-        const samples = gfk.getsamplesbyboringid.call(this, boringid)
+        const {projectid, boringid} = this.props.match.params
+        const samples = gfk.getSamplesByBoringId.call(this,projectid, boringid)
+        
         let viewBox = "0 0 1002 1295"
         if (samples.length > 0) {
 
@@ -47,8 +48,9 @@ class LogDraft extends Component {
     }
     getBoring() {
         const gfk = new GFK();
-        const boringid = this.props.match.params.boringid;
-        const boring = gfk.getboringbyid.call(this, boringid)
+        const {projectid, boringid} = this.props.match.params
+        const boring = gfk.getBoringById.call(this,projectid, boringid)
+        
         return boring
 
     }
@@ -71,8 +73,8 @@ class LogDraft extends Component {
     }
     getSamples() {
         const gfk = new GFK();
-        const boringid = this.props.match.params.boringid;
-        const samples = gfk.getsamplesbyboringid.call(this, boringid)
+        const {projectid, boringid} = this.props.match.params
+        const samples = gfk.getSamplesByBoringId.call(this,projectid, boringid)
         return samples;
     }
 
@@ -358,7 +360,7 @@ class LogDraft extends Component {
         let datereport = "";
         let address = ""
         let city = "";
-        const project = gfk.getprojectbyid.call(this, projectid)
+        const project = gfk.getProjectById.call(this, projectid)
         if (project) {
 
 
@@ -491,11 +493,10 @@ class LogDraft extends Component {
         const styles = MyStylesheet();
         const engineerid = this.props.match.params.engineerid;
         const headerFont = gfk.getHeaderFont.call(this)
-        const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid)
         const regularFont = gfk.getRegularFont.call(this);
-        const boringid = this.props.match.params.boringid;
-        const boring = gfk.getboringbyid.call(this, boringid);
+        const {projectid, boringid} = this.props.match.params
+        const project = gfk.getProjectById.call(this,projectid)
+        const boring = gfk.getBoringById.call(this,projectid, boringid);
 
 
         if (project) {
@@ -508,7 +509,7 @@ class LogDraft extends Component {
                         <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                                to={`/${engineerid}`}>
+                                to={`/${engineerid}/profile`}>
                                 /{engineerid}
                             </Link>
                         </div>
@@ -650,7 +651,9 @@ class LogDraft extends Component {
 
 function mapStateToProps(state) {
     return {
-        myuser: state.myuser
+        myuser: state.myuser,
+        projects:state.projects,
+        company:state.company
     }
 }
 export default connect(mapStateToProps, actions)(LogDraft);
