@@ -267,6 +267,25 @@ class MakeID {
         return strainid
     }
 
+    makeClientID() {
+    const makeid = new MakeID();
+    const gfk = new GFK();
+
+    const clients = gfk.getClients.call(this) || [];
+
+    let newID;
+    let exists = true;
+
+    // keep generating until it's unique
+    while (exists) {
+        newID =  makeID(16);
+        exists = clients.some(client => client.clientid === newID);
+    }
+
+    return newID;
+}
+
+
     curveID(projectid) {
         const gfk = new GFK();
         const curves = gfk.getcurves.call(this, projectid) || [];

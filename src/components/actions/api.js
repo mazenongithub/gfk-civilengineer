@@ -563,6 +563,35 @@ export async function SaveSlope(values) {
     }
 }
 
+export async function SaveClients(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/saveclients`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
+
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save clients";
+        }
+
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+              err.message ||
+              "Server error while saving clients";
+    }
+}
+
 
 export async function SaveCompactionCurves(values) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savecompactioncurves`;

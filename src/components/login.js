@@ -13,11 +13,11 @@ import { MyStylesheet } from "./styles";
 class Login extends Component {
     constructor(props) {
         super(props)
-        this.state = { email: '', setEmail: "", password: "", setPassword: "", firstname:"", lastname:"", emailaddress:"", profileurl:"", phonenumber:"", apple:"" }
+        this.state = { email: '', setEmail: "", password: "", setPassword: "", firstname: "", lastname: "", emailaddress: "", profileurl: "", phonenumber: "", apple: "" }
     }
 
-     async  handleAppleLogin() {
-      
+    async handleAppleLogin() {
+
 
         const auth = getAuth();
 
@@ -67,10 +67,10 @@ class Login extends Component {
 
 
     async handleGoogleLogin() {
-   
-        
 
-       
+
+
+
         try {
 
             let google = "";
@@ -80,9 +80,9 @@ class Login extends Component {
             let profileurl = "";
             let phonenumber = "";
             let user = {}
-            
-          
-             const result = await signInWithPopup(auth, googleProvider);
+
+
+            const result = await signInWithPopup(auth, googleProvider);
 
             if (result.hasOwnProperty("user")) {
 
@@ -133,11 +133,15 @@ class Login extends Component {
 
             if (response.engineer) {
                 this.props.reduxUser(response.engineer);
-                
+
             }
 
-            if(response.projects) {
+            if (response.projects) {
                 this.props.reduxProjects(response.projects)
+            }
+
+            if (response?.gfk) {
+                this.props.reduxCompany(response.gfk)
             }
 
             this.setState({ render: 'render' });
@@ -151,7 +155,7 @@ class Login extends Component {
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
 
-         return (
+        return (
 
             <div className="login-container">
                 <div className="login-box">
@@ -175,18 +179,18 @@ class Login extends Component {
 
 
                     {/* Google Login */}
-                    <button className="login-btn google" onClick={()=>{this.handleGoogleLogin()}}>
+                    <button className="login-btn google" onClick={() => { this.handleGoogleLogin() }}>
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="google" />
                         Sign in with Google
                     </button>
 
 
-                     <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                            <span style={{ ...regularFont }}>{this.state.message}</span>
-                        </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <span style={{ ...regularFont }}>{this.state.message}</span>
+                    </div>
 
 
-              
+
                     {/* Email / password form */}
 
 
@@ -202,16 +206,16 @@ class Login extends Component {
         const profile = new Profile()
         const gfk = new GFK();
         const user = gfk.getUser.call(this)
-        if(user) {
+        if (user) {
 
-            return(profile.showprofile.call(this))
+            return (profile.showprofile.call(this))
 
         } else {
 
-            return(this.showLogin())
+            return (this.showLogin())
 
         }
-       
+
     }
 }
 function mapStateToProps(state) {

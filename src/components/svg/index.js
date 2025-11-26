@@ -6,29 +6,29 @@ export function addNewImage() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222.07 47.64"><defs><style></style></defs><title>addnewimage</title><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="addnewimage-1" x="1" y="1" width="218.79" height="45.64" rx="5.08" /><text className="addnewimage-2" transform="translate(13.64 30.5) scale(0.98 1)">Add New Image</text></g></g></g></svg>)
 }
 export function calculateIcon() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
-    </style></defs><g id="Layer_1-2"><rect className="calculateIcon-2" width="149" height="39" rx="8.85" ry="8.85"/><text className="calculateIcon-1" transform="translate(7.55 27)"><tspan x="0" y="0">CA</tspan><tspan className="calculateIcon-4" x="31.85" y="0">L</tspan><tspan x="44.1" y="0">CU</tspan><tspan className="calculateIcon-5" x="75.6" y="0">L</tspan><tspan className="calculateIcon-3" x="88.82" y="0">A</tspan><tspan x="103.56" y="0">TE</tspan></text></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="calculateIcon-2" width="149" height="39" rx="8.85" ry="8.85" /><text className="calculateIcon-1" transform="translate(7.55 27)"><tspan x="0" y="0">CA</tspan><tspan className="calculateIcon-4" x="31.85" y="0">L</tspan><tspan x="44.1" y="0">CU</tspan><tspan className="calculateIcon-5" x="75.6" y="0">L</tspan><tspan className="calculateIcon-3" x="88.82" y="0">A</tspan><tspan x="103.56" y="0">TE</tspan></text></g></svg>)
 }
 export function saveSection() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 69"><defs><style>
-    </style></defs><g id="Layer_1-2"><rect className="savesection-1" width="290" height="69" rx="13.71" ry="13.71"/><text className="savesection-2" transform="translate(39.91 41.5)"><tspan x="0" y="0">S</tspan><tspan className="savesection-4" x="18.44" y="0">A</tspan><tspan x="37.5" y="0">VE SE</tspan><tspan className="savesection-3" x="116.78" y="0">C</tspan><tspan x="135.98" y="0">TION</tspan></text></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 69"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="savesection-1" width="290" height="69" rx="13.71" ry="13.71" /><text className="savesection-2" transform="translate(39.91 41.5)"><tspan x="0" y="0">S</tspan><tspan className="savesection-4" x="18.44" y="0">A</tspan><tspan x="37.5" y="0">VE SE</tspan><tspan className="savesection-3" x="116.78" y="0">C</tspan><tspan x="135.98" y="0">TION</tspan></text></g></svg>)
 }
 export function addSection() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 69"><defs><style>
-    </style></defs><g id="Layer_1-2"><rect className="addsection-1" width="290" height="69" rx="13.71" ry="13.71"/><text className="addsection-3" transform="translate(64.64 41.5)"><tspan x="0" y="0">ADD </tspan><tspan className="addsection-4" x="66.65" y="0">L</tspan><tspan className="addsection-2" x="83.17" y="0">A</tspan><tspan x="101.16" y="0">YER</tspan></text></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 69"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="addsection-1" width="290" height="69" rx="13.71" ry="13.71" /><text className="addsection-3" transform="translate(64.64 41.5)"><tspan x="0" y="0">ADD </tspan><tspan className="addsection-4" x="66.65" y="0">L</tspan><tspan className="addsection-2" x="83.17" y="0">A</tspan><tspan x="101.16" y="0">YER</tspan></text></g></svg>)
 }
 export function addSieveIcon() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
-    </style></defs><g id="Layer_1-2"><rect className="addSieve-2" width="149" height="39" rx="8.85" ry="8.85"/><text className="addSieve-1" transform="translate(14.62 27)"><tspan x="0" y="0">ADD SIEVE</tspan></text></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="addSieve-2" width="149" height="39" rx="8.85" ry="8.85" /><text className="addSieve-1" transform="translate(14.62 27)"><tspan x="0" y="0">ADD SIEVE</tspan></text></g></svg>)
 }
 export function remarksIcon() {
-    return(
+    return (
         <svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 149 39"><defs><style>
-        </style></defs><g id="Layer_1-2"><rect className="remarkIcon-3" width="149" height="39" rx="8.85" ry="8.85"/><text className="remarkIcon-2" transform="translate(17.75 27)"><tspan x="0" y="0">RE</tspan><tspan className="remarkIcon-1" x="28.82" y="0">M</tspan><tspan x="50.05" y="0">ARKS</tspan></text></g></svg>)
+        </style></defs><g id="Layer_1-2"><rect className="remarkIcon-3" width="149" height="39" rx="8.85" ry="8.85" /><text className="remarkIcon-2" transform="translate(17.75 27)"><tspan x="0" y="0">RE</tspan><tspan className="remarkIcon-1" x="28.82" y="0">M</tspan><tspan x="50.05" y="0">ARKS</tspan></text></g></svg>)
 }
 export function goToIcon() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185.01 71.41"><defs><style>
-    </style></defs><g id="content"><polygon className="goToIcon-1" points="122 69.7 122 52.2 1 52.2 1 19.2 122 19.2 122 1.7 182.96 35.7 122 69.7"/></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185.01 71.41"><defs><style>
+    </style></defs><g id="content"><polygon className="goToIcon-1" points="122 69.7 122 52.2 1 52.2 1 19.2 122 19.2 122 1.7 182.96 35.7 122 69.7" /></g></svg>)
 
 }
 export function ActualDateArrowUp() {
@@ -39,19 +39,19 @@ export function ActualDateArrowDown() {
     </style></defs><title>datearrowdown</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><polygon className="actualdatearrowdown-1" points="20.38 33.5 39.88 0.5 0.88 0.5 20.38 33.5" /></g></g></svg>)
 }
 export function savetimeicon() {
-    return(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 366 89"><defs><style></style></defs><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect className="savetime-1" x="1" y="1" width="364" height="87" rx="10.92"/><text className="savetime-2" transform="translate(45.92 56)">S<tspan className="savetime-3" x="35.79" y="0">a</tspan><tspan className="savetime-4" x="66.94" y="0">v</tspan><tspan className="savetime-5" x="96.48" y="0">e</tspan><tspan className="savetime-6" x="128.26" y="0"> </tspan><tspan x="142.71" y="0">Time</tspan></text></g></g></svg>)
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 366 89"><defs><style></style></defs><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect className="savetime-1" x="1" y="1" width="364" height="87" rx="10.92" /><text className="savetime-2" transform="translate(45.92 56)">S<tspan className="savetime-3" x="35.79" y="0">a</tspan><tspan className="savetime-4" x="66.94" y="0">v</tspan><tspan className="savetime-5" x="96.48" y="0">e</tspan><tspan className="savetime-6" x="128.26" y="0"> </tspan><tspan x="142.71" y="0">Time</tspan></text></g></g></svg>)
 }
 export function layerDown() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 51"><defs><style>
-    </style></defs><g id="Layer_1-2"><rect className="layerarrow-2" x=".5" y=".5" width="53" height="50" rx="4.92" ry="4.92"/><polygon className="layerarrow-1" points="15 25.45 20 25.45 20 4.8 32 4.8 32 25.45 37 25.45 26 44.5 15 25.45"/></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 51"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="layerarrow-2" x=".5" y=".5" width="53" height="50" rx="4.92" ry="4.92" /><polygon className="layerarrow-1" points="15 25.45 20 25.45 20 4.8 32 4.8 32 25.45 37 25.45 26 44.5 15 25.45" /></g></svg>)
 }
 
 export function layerUp() {
-    return(<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 51"><defs><style>
-    </style></defs><g id="Layer_1-2"><rect className="layerarrow-2" x=".5" y=".5" width="53" height="50" rx="4.92" ry="4.92"/><polygon className="layerarrow-1" points="37 23.85 32 23.85 32 44.5 20 44.5 20 23.85 15 23.85 26 4.8 37 23.85"/></g></svg>)
+    return (<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54 51"><defs><style>
+    </style></defs><g id="Layer_1-2"><rect className="layerarrow-2" x=".5" y=".5" width="53" height="50" rx="4.92" ry="4.92" /><polygon className="layerarrow-1" points="37 23.85 32 23.85 32 44.5 20 44.5 20 23.85 15 23.85 26 4.8 37 23.85" /></g></svg>)
 }
 export function saveProjectIcon() {
-    return(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 328.78 76.75"><defs><style></style></defs><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="saveprojects-1" x="0.5" y="0.5" width="327.78" height="75.75" rx="12.05"/><text className="saveprojects-2" transform="translate(31.22 51.33) scale(0.98 1)">S<tspan className="saveprojects-3" x="26.7" y="0">a</tspan><tspan className="saveprojects-4" x="50.84" y="0">v</tspan><tspan x="72.36" y="0">e P</tspan><tspan className="saveprojects-5" x="135.73" y="0">r</tspan><tspan x="150.51" y="0">ojects</tspan></text></g></g></g></svg>)
+    return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 328.78 76.75"><defs><style></style></defs><g id="Layer_2" data-name="Layer 2"><g id="grid"><g id="Layer_3" data-name="Layer 3"><rect className="saveprojects-1" x="0.5" y="0.5" width="327.78" height="75.75" rx="12.05" /><text className="saveprojects-2" transform="translate(31.22 51.33) scale(0.98 1)">S<tspan className="saveprojects-3" x="26.7" y="0">a</tspan><tspan className="saveprojects-4" x="50.84" y="0">v</tspan><tspan x="72.36" y="0">e P</tspan><tspan className="saveprojects-5" x="135.73" y="0">r</tspan><tspan x="150.51" y="0">ojects</tspan></text></g></g></g></svg>)
 }
 export function actualmajorDownIcon() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75.5 52.5"> <title>calendarIcon</title><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect className="calendarIcon-2" x="0.25" y="0.25" width="48" height="7" /><rect className="calendarIcon-2" x="0.25" y="7.25" width="10.71" height="6.43" /><rect className="calendarIcon-2" x="10.96" y="7.25" width="10.71" height="6.43" /><rect className="calendarIcon-2" x="21.68" y="7.25" width="10.71" height="6.43" /><rect className="calendarIcon-2" x="32.39" y="7.25" width="10.71" height="6.43" />
@@ -103,4 +103,27 @@ export function dateMonthDown() {
 }
 export function dateMonthUp() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 66"><defs><style></style></defs><title>datemonthup</title><g id="Layer_2" data-name="Layer 2"><g id="guides"><rect className="datemonthup-1" x="1" y="1" width="76" height="64" /><polygon className="datemonthup-2" points="55 29 30 45 30 13 55 29" /></g></g></svg>)
+}
+export function saveSF() {
+    return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233.45 74.46">
+  <defs>
+    <style>
+    
+    </style>
+  </defs>
+  <g id="UI">
+    <rect className="sfsave-1" x="5.39" y="1" width="227.06" height="72.46" rx="11.69" ry="11.69"/>
+    <text className="sfsave-2" transform="translate(71.73 51.87) scale(.92 1)"><tspan className="sfsave-3" x="0" y="0">S</tspan><tspan className="sfsave-4" x="26.63" y="0">a</tspan><tspan className="sfsave-5" x="49.13" y="0">v</tspan><tspan className="sfsave-6" x="70.2" y="0">e </tspan></text>
+  </g>
+</svg>)
+}
+
+export function radioIcon() {
+    return (
+        <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56.52 56.52">
+            <g id="UI">
+                <circle className="radioIcon-1" cx="28.26" cy="28.26" r="27.26" />
+            </g>
+        </svg>
+    );
 }

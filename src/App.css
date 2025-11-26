@@ -24,6 +24,43 @@
 .calculateIcon-1{fill:#d6b729;font-family:Roboto-Bold, Roboto;font-size:24px;font-weight:700;stroke:#000;stroke-miterlimit:10;}.calculateIcon-2{fill:#591d19;stroke-width:0px;}.calculateIcon-3{letter-spacing:-.06em;}.calculateIcon-4{letter-spacing:-.03em;}.calculateIcon-5{letter-spacing:0em;}
 .addSieve-1{fill:#d6b729;font-family:Roboto-Bold, Roboto;font-size:24px;font-weight:700;stroke:#000;stroke-miterlimit:10;}.addSieve-2{fill:#591d19;stroke-width:0px;}
 .remarkIcon-1{letter-spacing:0em;}.remarkIcon-2{fill:#d6b729;font-family:Roboto-Bold, Roboto;font-size:24px;font-weight:700;stroke:#000;stroke-miterlimit:10;}.remarkIcon-3{fill:#591d19;stroke-width:0px;}
+.radioIcon-1 {stroke: #030202;
+        stroke-miterlimit: 10;
+        stroke-width: 2px;
+      }
+        .sfsave-1 {
+        fill: #a91e22;
+        stroke: #030202;
+        stroke-width: 2px;
+      }
+
+      .sfsave-1, .sfsave-2 {
+        stroke-miterlimit: 10;
+      }
+
+      .sfsave-3 {
+        letter-spacing: -.06em;
+      }
+
+      .sfsave-4 {
+        letter-spacing: -.07em;
+      }
+
+      .sfsave-5 {
+        letter-spacing: -.07em;
+      }
+
+      .sfsave-6 {
+        letter-spacing: -.06em;
+      }
+
+      .sfsave-2 {
+        fill: #f2f2f3;
+        font-family: Roboto-Bold, Roboto;
+        font-size: 48px;
+        font-weight: 700;
+        stroke: #231f20;
+      }
 .hidescroll {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;  /* Firefox */

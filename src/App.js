@@ -13,6 +13,7 @@ import ViewProject from './components/viewproject';
 import GFK from './components/gfk'
 import { Link } from 'react-router-dom';
 import Landing from './components/landing';
+import Clients from './components/clients';
 
 
 class App extends Component {
@@ -112,12 +113,16 @@ class App extends Component {
   async checkUser() {
     try {
       const response = await CheckUser();
-
+      console.log(response)
       // Update engineer
       if (response?.engineer) {
         this.props.reduxUser(response.engineer);
       } else {
         console.warn("⚠️ No engineer returned.");
+      }
+
+      if(response?.gfk) {
+        this.props.reduxCompany(response.gfk)
       }
 
       // Update projects
@@ -212,6 +217,7 @@ class App extends Component {
               <Switch>
                 <Route exact path="/" component={Landing} />
                 <Route exact path="/access/login" component={Login} />
+                <Route exact path="/gfk/clients" component={Clients} />
                 <Route exact path="/:engineerid/profile" render={showprofile} />
                 <Route exact path="/:engineerid/projects" component={Projects} />
                 <Route path="/:engineerid/projects/:projectid" component={ViewProject} />
@@ -232,7 +238,8 @@ class App extends Component {
 function mapStateToProps(state) {
   return {
     myuser: state.myuser,
-    projects: state.projects
+    projects: state.projects,
+    company:state.company
   }
 }
 

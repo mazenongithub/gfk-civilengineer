@@ -963,6 +963,45 @@ class GFK {
         samples.sort((a, b) => Number(a.depth) - Number(b.depth));
         return samples;
     }
+
+    getCompany() {
+        if (this.props?.company) {
+            return this.props.company;
+        }
+        return false;
+    }
+
+
+    getClients() {
+        const clients = this.props.company?.clients || false;
+        if (!clients) return false;
+
+        return [...clients].sort((a, b) =>
+            a.lastname.localeCompare(b.lastname)
+        );
+    }
+
+    getClientById(clientid) {
+        const gfk = new GFK();
+        const clients = gfk.getClients.call(this);
+
+        return clients?.find(client => client.clientid === clientid) || null;
+    }
+
+    getClientIndexById(clientid) {
+        const gfk = new GFK();
+        const clients = gfk.getClients.call(this);
+
+        if (!Array.isArray(clients)) return null;
+
+        const index = clients.findIndex(client => client.clientid === clientid);
+
+        return index !== -1 ? index : null;
+    }
+
+
+
+
     getborings() {
         const gfk = new GFK();
         const myuser = gfk.getuser.call(this);

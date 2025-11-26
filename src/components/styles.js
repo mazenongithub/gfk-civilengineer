@@ -7,6 +7,9 @@ export function MyStylesheet() {
         dateButton: {
             width: '54px'
         },
+        alignLeft:{
+            textAlign:'left'
+        },
         generalButton: {
             border: '0px',
             backgroundColor: '#FFFFFF'
