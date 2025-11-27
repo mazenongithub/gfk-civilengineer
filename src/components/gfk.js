@@ -964,6 +964,53 @@ class GFK {
         return samples;
     }
 
+    getTimesheetByProjectID(projectid) {
+        const gfk = new GFK();
+
+        // You accidentally wrote "this.projectid" instead of passing the argument
+        const project = gfk.getProjectById.call(this, projectid);
+
+        return project?.timesheet || false;
+    }
+
+    getLaborByProjectID(projectid) {
+        const gfk = new GFK();
+        const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
+
+        return timesheet?.labor ?? false;
+    }
+
+
+    getLaborByID(projectid, laborid) {
+        const gfk = new GFK();
+
+        // Get labor array for the project
+        const labor = gfk.getLaborByProjectID.call(this, projectid);
+        if (!Array.isArray(labor)) return false;
+
+        // Find the matching labor entry
+        return labor.find(item => item.laborid === laborid) || false;
+    }
+
+    getLaborIndexByID(projectid, laborid) {
+        const gfk = new GFK();
+
+        // Get labor array for the project
+        const labor = gfk.getLaborByProjectID.call(this, projectid);
+        if (!Array.isArray(labor)) return false;
+
+        // Find the index
+        const index = labor.findIndex(item => item.laborid === laborid);
+
+        return index >= 0 ? index : false;
+    }
+
+
+
+
+
+
+
     getCompany() {
         if (this.props?.company) {
             return this.props.company;

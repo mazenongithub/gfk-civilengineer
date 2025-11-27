@@ -79,7 +79,8 @@ class ViewProject extends Component {
 
         try {
             const result = await LoadProject(projectid);
-            if (!result || !result.borings) return;
+            console.log(result)
+            if (!result) return;
 
             // Normalize projects list in case it’s wrapped in an object
             const allProjects = Array.isArray(projects)
@@ -103,7 +104,8 @@ class ViewProject extends Component {
                 compactioncurves: result.compactioncurves,
                 seismic: result.seismic,
                 ptslab: result.ptslab,
-                slope: result.slope
+                slope: result.slope,
+                timesheet:result.timesheet
             };
 
             // Update Redux store or local state
@@ -262,6 +264,23 @@ class ViewProject extends Component {
                 </div>
             </div>
 
+              <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/timesheet`}>
+                        /Timesheet
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/invoice`}>
+                        /Invoice
+                    </Link>
+                </div>
+            </div>
+
 
 
 
@@ -302,6 +321,7 @@ class ViewProject extends Component {
                                 <Route exact path={`${path}/labsummary`} component={LabSummary} />
                                 <Route exact path={`${path}/ptslab`} component={PTSlab} />
                                 <Route exact path={`${path}/seismic`} component={Seismic} />
+                                <Route exact path={`${path}/timesheet`} component={Timesheet} />
                                 <Route exact path={`${path}/slopestability`} component={SlopeStability} />
                                 <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
                                 <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />

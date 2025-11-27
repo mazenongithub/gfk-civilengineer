@@ -124,6 +124,18 @@
   color: #61dafb;
 }
 
+/* App.css or your component CSS */
+.rdt input {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+}
+
+.rdtPicker {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+}
+
+
 
 @keyframes App-logo-spin {
   from {

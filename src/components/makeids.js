@@ -410,24 +410,21 @@ class MakeID {
         return id;
     }
 
-    laborid() {
-        let laborid = false;
+     laborid(projectid) {
         const gfk = new GFK();
-        const myuser = gfk.getUser.call(this)
-        while (!laborid) {
-            laborid = makeID(16)
-            if (myuser.hasOwnProperty("actuallabor")) {
-                // eslint-disable-next-line
-                myuser.actuallabor.mylabor.map(mylabor => {
-                    if (mylabor.laborid === laborid) {
-                        laborid = false;
-                    }
-                })
-            }
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex === -1) throw new Error('Project not found');
 
+        // Get all existing labor IDs for this project
+        const laborIds = projects[projectIndex]?.timesheet?.labor?.map(l => l.laborid) || [];
 
-        }
-        return laborid;
+        let id;
+        do {
+            id = makeID(16);  // Use your makeID function
+        } while (laborIds.includes(id));
+
+        return id;
     }
 }
 
