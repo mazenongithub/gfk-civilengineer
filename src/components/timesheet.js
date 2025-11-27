@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import * as actions from './actions';
 import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
-import { removeIconSmall, savetimeicon } from './svg'
+import { removeIconSmall, saveSF } from './svg'
 import GFK from './gfk';
-import { SaveTime } from './actions/api'
+import { SaveTime, SaveTimesheet } from './actions/api'
 import MakeID from './makeids'
 import { Link } from 'react-router-dom';
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from "moment";
+
 
 class Timesheet extends Component {
     constructor(props) {
@@ -200,6 +201,40 @@ class Timesheet extends Component {
 
     }
 
+ async saveTimesheet() {
+    try {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+
+        if (!projectid) {
+            throw new Error("Project ID is required.");
+        }
+
+        const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
+        const values = { projectid, timesheet };
+
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+
+        if (projectIndex === -1) {
+            throw new Error(`Project not found: ${projectid}`);
+        }
+
+        const response = await SaveTimesheet(values);
+        console.log(response)
+
+        if (response.timesheet) {
+            projects[projectIndex].timesheet = response.timesheet;
+            this.props.reduxProjects(projects);
+            this.setState({ message:response.message });
+        }
+
+    } catch (err) {
+        console.error("Error saving timesheet:", err);
+        alert(`Error saving timesheet: ${err.message}`);
+    }
+}
+
 
 
     render() {
@@ -210,6 +245,7 @@ class Timesheet extends Component {
         const regularFont = gfk.getRegularFont.call(this)
         const headerFont = gfk.getHeaderFont.call(this)
         const project = gfk.getProjectById.call(this, projectid)
+        const saveWidth = { width: '20%' }
 
         if (project) {
 
@@ -299,6 +335,15 @@ class Timesheet extends Component {
                             <span style={{ ...regularFont }}>Description</span>
                         </div>
                     </div>
+
+                     <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15, ...styles.generalFont }}>
+                    <span style={{ ...regularFont }}>{this.state.message} </span>
+                </div>
+
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                        <button style={{ ...styles.generalButton, ...saveWidth }} onClick={() => { this.saveTimesheet() }}>{saveSF()}</button>
+                    </div>
+
 
                     <div style={{ ...styles.generalContainer }}>
                         {this.showlaborids()}

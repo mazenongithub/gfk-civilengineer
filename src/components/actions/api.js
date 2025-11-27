@@ -25,29 +25,29 @@ export async function LogoutUser(engineerid) {
 }
 
 export async function EngineerLogin(values) {
-  const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/users/clientlogin`;
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/users/clientlogin`;
 
-  try {
-    const resp = await fetch(APIURL, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(values),
-    });
+    try {
+        const resp = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(values),
+        });
 
-    // Handle client errors (400–499)
-    if (!resp.ok) {
-      const errorData = await resp.json().catch(() => ({}));
-      const message = errorData.message || `Request failed with status ${resp.status}`;
-      throw new Error(message);
+        // Handle client errors (400–499)
+        if (!resp.ok) {
+            const errorData = await resp.json().catch(() => ({}));
+            const message = errorData.message || `Request failed with status ${resp.status}`;
+            throw new Error(message);
+        }
+
+        return await resp.json();
+    } catch (err) {
+        throw err;
     }
-
-    return await resp.json();
-  } catch (err) {
-    throw err;
-  }
 }
 
 export async function LoginUser(values) {
@@ -261,26 +261,26 @@ export async function LoadProject(projectid) {
 
 
 export async function CheckUser() {
-  const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/checkuser`;
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/checkuser`;
 
-  try {
-    const resp = await fetch(APIURL, {
-      credentials: 'include'
-    });
+    try {
+        const resp = await fetch(APIURL, {
+            credentials: 'include'
+        });
 
-    if (!resp.ok) {
-      if (resp.status >= 400 && resp.status < 500) {
-        const data = await resp.json().catch(() => ({}));
-        throw new Error(data.message || "Client-side error");
-      } else {
-        throw new Error("Please try again later, server is not responding");
-      }
+        if (!resp.ok) {
+            if (resp.status >= 400 && resp.status < 500) {
+                const data = await resp.json().catch(() => ({}));
+                throw new Error(data.message || "Client-side error");
+            } else {
+                throw new Error("Please try again later, server is not responding");
+            }
+        }
+
+        return await resp.json();
+    } catch (err) {
+        throw err;
     }
-
-    return await resp.json();
-  } catch (err) {
-    throw err;
-  }
 }
 
 
@@ -440,37 +440,37 @@ export async function SaveBorings(values) {
         throw typeof err === "string"
             ? err
             : err.errorMessage ||
-              err.message ||
-              "Server error while saving borings";
+            err.message ||
+            "Server error while saving borings";
     }
 }
 
 
 export async function SaveFieldReports(values) {
-  const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savefieldreports`;
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savefieldreports`;
 
-  try {
-    const response = await fetch(APIURL, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(values),
-    });
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(values),
+        });
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      const message =
-        data.message || 'Request failed or server is not responding';
-      throw new Error(message);
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            const message =
+                data.message || 'Request failed or server is not responding';
+            throw new Error(message);
+        }
+
+        return await response.json();
+
+    } catch (err) {
+        throw err instanceof Error ? err : new Error(String(err));
     }
-
-    return await response.json();
-
-  } catch (err) {
-    throw err instanceof Error ? err : new Error(String(err));
-  }
 }
 
 
@@ -498,8 +498,8 @@ export async function SaveSeismic(values) {
         throw typeof err === "string"
             ? err
             : err.errorMessage ||
-              err.message ||
-              "Server error while saving seismic";
+            err.message ||
+            "Server error while saving seismic";
     }
 }
 
@@ -528,8 +528,8 @@ export async function SavePTSlab(values) {
         throw typeof err === "string"
             ? err
             : err.errorMessage ||
-              err.message ||
-              "Server error while saving ptslab";
+            err.message ||
+            "Server error while saving ptslab";
     }
 }
 
@@ -558,8 +558,8 @@ export async function SaveSlope(values) {
         throw typeof err === "string"
             ? err
             : err.errorMessage ||
-              err.message ||
-              "Server error while saving slope";
+            err.message ||
+            "Server error while saving slope";
     }
 }
 
@@ -587,8 +587,38 @@ export async function SaveClients(values) {
         throw typeof err === "string"
             ? err
             : err.errorMessage ||
-              err.message ||
-              "Server error while saving clients";
+            err.message ||
+            "Server error while saving clients";
+    }
+}
+
+
+export async function SaveTimesheet(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savetimesheet`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        });
+
+        if (!resp.ok) {
+            const data = await resp.json();
+            throw data.message || "Failed to save timesheet";
+        }
+
+        return await resp.json();
+
+    } catch (err) {
+        throw typeof err === "string"
+            ? err
+            : err.errorMessage ||
+            err.message ||
+            "Server error while saving timesheet";
     }
 }
 
@@ -617,8 +647,8 @@ export async function SaveCompactionCurves(values) {
         throw typeof err === "string"
             ? err
             : err.errorMessage ||
-              err.message ||
-              "Server error while saving compactioncurves";
+            err.message ||
+            "Server error while saving compactioncurves";
     }
 }
 
@@ -685,29 +715,29 @@ export async function SaveTime(values) {
 
 
 export async function SaveProjects(values) {
-  const API_URL = `${process.env.REACT_APP_SERVER_API}/gfk/saveprojects`;
+    const API_URL = `${process.env.REACT_APP_SERVER_API}/gfk/saveprojects`;
 
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
+        });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const message =
-        errorData.message ||
-        (response.status >= 400 && response.status < 500
-          ? "Invalid request. Please check your data."
-          : "Please try again later, server is not responding.");
-      throw new Error(message);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const message =
+                errorData.message ||
+                (response.status >= 400 && response.status < 500
+                    ? "Invalid request. Please check your data."
+                    : "Please try again later, server is not responding.");
+            throw new Error(message);
+        }
+
+        return await response.json();
+    } catch (err) {
+        console.error("❌ SaveProjects error:", err);
+        throw err;
     }
-
-    return await response.json();
-  } catch (err) {
-    console.error("❌ SaveProjects error:", err);
-    throw err;
-  }
 }
