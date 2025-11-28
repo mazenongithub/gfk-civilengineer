@@ -980,6 +980,13 @@ class GFK {
         return timesheet?.labor ?? false;
     }
 
+     getCostsByProjectID(projectid) {
+        const gfk = new GFK();
+        const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
+
+        return timesheet?.costs ?? false;
+    }
+
 
     getLaborByID(projectid, laborid) {
         const gfk = new GFK();
@@ -1001,6 +1008,31 @@ class GFK {
 
         // Find the index
         const index = labor.findIndex(item => item.laborid === laborid);
+
+        return index >= 0 ? index : false;
+    }
+
+
+      getCostByID(projectid, costid) {
+        const gfk = new GFK();
+
+        // Get cost array for the project
+        const cost = gfk.getCostsByProjectID.call(this, projectid);
+        if (!Array.isArray(cost)) return false;
+
+        // Find the matching cost entry
+        return cost.find(item => item.costid === costid) || false;
+    }
+
+    getCostIndexByID(projectid, costid) {
+        const gfk = new GFK();
+
+        // Get cost array for the project
+        const cost = gfk.getCostsByProjectID.call(this, projectid);
+        if (!Array.isArray(cost)) return false;
+
+        // Find the index
+        const index = cost.findIndex(item => item.costid === costid);
 
         return index >= 0 ? index : false;
     }

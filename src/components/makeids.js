@@ -268,22 +268,22 @@ class MakeID {
     }
 
     makeClientID() {
-    const makeid = new MakeID();
-    const gfk = new GFK();
+        const makeid = new MakeID();
+        const gfk = new GFK();
 
-    const clients = gfk.getClients.call(this) || [];
+        const clients = gfk.getClients.call(this) || [];
 
-    let newID;
-    let exists = true;
+        let newID;
+        let exists = true;
 
-    // keep generating until it's unique
-    while (exists) {
-        newID =  makeID(16);
-        exists = clients.some(client => client.clientid === newID);
+        // keep generating until it's unique
+        while (exists) {
+            newID = makeID(16);
+            exists = clients.some(client => client.clientid === newID);
+        }
+
+        return newID;
     }
-
-    return newID;
-}
 
 
     curveID(projectid) {
@@ -410,7 +410,7 @@ class MakeID {
         return id;
     }
 
-     laborid(projectid) {
+    laborid(projectid) {
         const gfk = new GFK();
         const projects = gfk.getProjects.call(this);
         const projectIndex = projects.findIndex(p => p.projectid === projectid);
@@ -426,6 +426,28 @@ class MakeID {
 
         return id;
     }
+
+    costid(projectid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+
+        // Find project
+        const project = projects.find(p => p.projectid === projectid);
+        if (!project) throw new Error("Project not found");
+
+        // Extract existing cost IDs (safe even if undefined)
+        const costIds =
+            project?.timesheet?.costs?.map(c => c.costid) || [];
+
+        // Generate unique cost ID
+        let id;
+        do {
+            id = makeID(16);
+        } while (costIds.includes(id));
+
+        return id;
+    }
+
 }
 
 export default MakeID;

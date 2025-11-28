@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import { removeIconSmall, saveSF } from './svg'
 import GFK from './gfk';
-import { SaveTime, SaveTimesheet } from './actions/api'
+import { SaveTimesheet } from './actions/api'
 import MakeID from './makeids'
 import { Link } from 'react-router-dom';
 import Datetime from "react-datetime";
@@ -170,6 +170,7 @@ class Timesheet extends Component {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
+        const buttonWidth = { width: '45px' }
 
         const activelaborid = (laborid) => {
             if (laborid === this.state.activelaborid) {
@@ -185,8 +186,13 @@ class Timesheet extends Component {
             return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         };
 
-        return (<div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15, ...activelaborid(labor.laborid) }} onClick={() => { this.makelaboridactive(labor.laborid) }}>
-            <span style={{ ...regularFont }}>TimeIn: {formatTime(labor.timein)} </span> <span style={{ ...regularFont }}>Time Out {formatTime(labor.timeout)}</span> <span style={{ ...regularFont }}>{labor.laborrate} </span> <span style={{ ...regularFont }}>{labor.description}</span>
+        return (<div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15 }}>
+            <div style={{ ...styles.flex5, ...activelaborid(labor.laborid) }} onClick={() => { this.makelaboridactive(labor.laborid) }}>
+                <span style={{ ...regularFont }}>TimeIn: {formatTime(labor.timein)} </span> <span style={{ ...regularFont }}>Time Out {formatTime(labor.timeout)}</span> <span style={{ ...regularFont }}>{labor.laborrate} </span> <span style={{ ...regularFont }}>{labor.description}</span>
+            </div>
+            <div style={{ ...styles.flex1 }}>
+                <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={() => { this.removeLabor(labor.laborid) }}>{removeIconSmall()}</button>
+            </div>
         </div>)
     }
 
@@ -201,39 +207,276 @@ class Timesheet extends Component {
 
     }
 
- async saveTimesheet() {
-    try {
+    makecostidactive(costid) {
+        this.setState(prevState => {
+            // If clicking the same cost, deactivate it
+            if (prevState.activecostid === costid) {
+                const now = new Date(); // current time
+                return {
+                    activecostid: false,
+                    datein: now
+                };
+            } else {
+                // Otherwise, activate the new costid
+                return { activecostid: costid };
+            }
+        });
+    }
+    showcostids() {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+        const costids = gfk.getCostsByProjectID.call(this, projectid)
+        if (Array.isArray(costids)) {
+            return costids.map(cost => this.showcostid(cost))
+        }
+
+    }
+
+    showcostid(cost) {
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const regularFont = gfk.getRegularFont.call(this)
+        const buttonWidth = { width: '45px' }
+
+        const activecostid = (costid) => {
+            if (costid === this.state.activecostid) {
+                return (styles.activefieldreport)
+            }
+        }
+
+        const formatDate = (date) => {
+            if (!date) return "";
+            const d = date instanceof Date ? date : new Date(date);
+
+            return d.toLocaleDateString([], {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            });
+        };
+
+        return (<div style={{ ...styles.generalFlex, ...styles.generalFont, ...styles.bottomMargin15 }}>
+            <div style={{ ...styles.flex5, ...activecostid(cost.costid) }} onClick={() => { this.makecostidactive(cost.costid) }} >
+                <span style={{ ...regularFont }}>Date In: {formatDate(cost.datein)} </span> <span style={{ ...regularFont }}>Quantity {cost.quantity}</span> <span style={{ ...regularFont }}>Unit: {cost.unit} </span> <span style={{ ...regularFont }}>Unit Cost: {cost.unitcost} </span> <span style={{ ...regularFont }}>{cost.description}</span>
+            </div>
+            <div style={{ ...styles.flex1 }}>
+                <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={()=>{this.removeCost(cost.costid)}}>{removeIconSmall()}</button>
+            </div>
+        </div>)
+    }
+
+    removeCost(costid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+        const { projectid } = this.props.match.params;
+
+        // Validate project
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === -1) return;
+
+        const project = projects[projectIndex];
+        const costIndex = gfk.getCostIndexByID.call(this, projectid, costid);
+        if (costIndex === -1) return;
+
+        // Clone for immutability
+        const updatedProjects = [...projects];
+        const updatedProject = { ...project };
+        const updatedTimesheet = { ...updatedProject.timesheet };
+        const updatedCosts = [...updatedTimesheet.costs];
+
+        // Remove cost
+        updatedCosts.splice(costIndex, 1);
+
+        // Reassign
+        updatedTimesheet.costs = updatedCosts;
+        updatedProject.timesheet = updatedTimesheet;
+        updatedProjects[projectIndex] = updatedProject;
+
+        // Push to Redux
+        this.props.reduxProjects(updatedProjects);
+
+        // Reset state
+        this.setState({ activecostid: false });
+    }
+
+
+
+    getCostField(field) {
+        const { activecostid } = this.state;
         const gfk = new GFK();
         const { projectid } = this.props.match.params;
 
-        if (!projectid) {
-            throw new Error("Project ID is required.");
+        const costs = gfk.getCostsByProjectID.call(this, projectid) || [];
+
+        // -------------------------------
+        // 1. RETURN EXISTING COST IF ACTIVE
+        // -------------------------------
+        if (activecostid) {
+            const cost = costs.find(c => c.costid === activecostid);
+            if (cost) {
+                return cost[field] || "";
+            }
         }
 
-        const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
-        const values = { projectid, timesheet };
+        // -------------------------------
+        // 2. NO ACTIVE COST → DEFAULTS
+        // -------------------------------
+        if (field === "datein") {
+            return this.state.datein || "";
+        }
 
-        const projects = gfk.getProjects.call(this);
-        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        return "";
+    }
+
+    setCostField(field, value) {
+        const gfk = new GFK();
+        const makeid = new MakeID();
+        const { projectid } = this.props.match.params;
+
+        // Clone projects
+        const projects = [...this.props.projects];
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
 
         if (projectIndex === -1) {
-            throw new Error(`Project not found: ${projectid}`);
+            console.error("Project not found:", projectid);
+            return;
         }
 
-        const response = await SaveTimesheet(values);
-        console.log(response)
+        const project = { ...projects[projectIndex] };
+        const timesheet = project.timesheet || {};
 
-        if (response.timesheet) {
-            projects[projectIndex].timesheet = response.timesheet;
-            this.props.reduxProjects(projects);
-            this.setState({ message:response.message });
+        // -------------------------------------------------
+        // ENSURE costs IS AN ARRAY
+        // -------------------------------------------------
+        if (!Array.isArray(timesheet.costs)) {
+            timesheet.costs = [];
         }
 
-    } catch (err) {
-        console.error("Error saving timesheet:", err);
-        alert(`Error saving timesheet: ${err.message}`);
+        let { activecostid } = this.state;
+
+        // Get engineerid
+        const user = gfk.getUser.call(this);
+        const engineerid = user?.engineerid || "";
+
+        // -------------------------------------------------
+        // 1) UPDATE EXISTING COST
+        // -------------------------------------------------
+        if (activecostid) {
+            const costIndex = timesheet.costs.findIndex(
+                c => c.costid === activecostid
+            );
+
+            if (costIndex !== -1) {
+                timesheet.costs[costIndex][field] = value;
+
+                project.timesheet = timesheet;
+                projects[projectIndex] = project;
+
+                this.props.reduxProjects(projects);
+                this.setState({});
+                return;
+            }
+        }
+
+        // -------------------------------------------------
+        // 2) CREATE NEW COST ENTRY
+        // -------------------------------------------------
+        activecostid = makeid.costid.call(this, projectid);
+
+        const newCost = {
+            engineerid,
+            costid: activecostid,
+            datein: this.state.datein,
+            quantity: "",
+            unit: "",
+            unitcost: "",
+            description: ""
+        };
+
+        // Apply field being set
+        newCost[field] = value;
+
+        // Push into costs array
+        timesheet.costs.push(newCost);
+
+        // Update redux + state
+        project.timesheet = timesheet;
+        projects[projectIndex] = project;
+
+        this.props.reduxProjects(projects);
+        this.setState({ activecostid });
     }
-}
+
+    removeLabor(laborid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+        const { projectid } = this.props.match.params;
+
+        // Validate project
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === -1) return;
+
+        const project = projects[projectIndex];
+        const laborIndex = gfk.getLaborIndexByID.call(this, projectid, laborid);
+        if (laborIndex === -1) return;
+
+        // Clone for immutability
+        const updatedProjects = [...projects];
+        const updatedProject = { ...project };
+        const updatedTimesheet = { ...updatedProject.timesheet };
+        const updatedLabor = [...updatedTimesheet.labor];
+
+        // Remove labor
+        updatedLabor.splice(laborIndex, 1);
+
+        // Reassign
+        updatedTimesheet.labor = updatedLabor;
+        updatedProject.timesheet = updatedTimesheet;
+        updatedProjects[projectIndex] = updatedProject;
+
+        // Push to Redux
+        this.props.reduxProjects(updatedProjects);
+
+        // Reset state
+        this.setState({ activelaborid: false });
+    }
+
+
+
+
+    async saveTimesheet() {
+        try {
+            const gfk = new GFK();
+            const { projectid } = this.props.match.params;
+
+            if (!projectid) {
+                throw new Error("Project ID is required.");
+            }
+
+            const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
+            const values = { projectid, timesheet };
+
+            const projects = gfk.getProjects.call(this);
+            const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+
+            if (projectIndex === -1) {
+                throw new Error(`Project not found: ${projectid}`);
+            }
+
+            const response = await SaveTimesheet(values);
+            console.log(response)
+
+            if (response.timesheet) {
+                projects[projectIndex].timesheet = response.timesheet;
+                this.props.reduxProjects(projects);
+                this.setState({ message: response.message });
+            }
+
+        } catch (err) {
+            console.error("Error saving timesheet:", err);
+            alert(`Error saving timesheet: ${err.message}`);
+        }
+    }
 
 
 
@@ -336,9 +579,9 @@ class Timesheet extends Component {
                         </div>
                     </div>
 
-                     <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15, ...styles.generalFont }}>
-                    <span style={{ ...regularFont }}>{this.state.message} </span>
-                </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15, ...styles.generalFont }}>
+                        <span style={{ ...regularFont }}>{this.state.message} </span>
+                    </div>
 
                     <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
                         <button style={{ ...styles.generalButton, ...saveWidth }} onClick={() => { this.saveTimesheet() }}>{saveSF()}</button>
@@ -348,6 +591,62 @@ class Timesheet extends Component {
                     <div style={{ ...styles.generalContainer }}>
                         {this.showlaborids()}
                     </div>
+
+
+                    <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.generalFont }}>
+                            <span style={{ ...regularFont }}>Date In</span>
+                        </div>
+                        <Datetime
+                            value={this.getCostField("datein") ? moment(this.getCostField("datein"))
+                                : null}
+                            onChange={(date) => { this.setCostField("datein", date) }}
+                            timeFormat={false}
+                            dateFormat="MM/DD/YYYY"
+                            inputProps={{
+                                style: { ...styles.generalFont, ...regularFont, ...styles.generalField, ...styles.mediumWidth }
+                            }} // disables the time picker
+                        />
+                    </div>
+
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
+                        <div style={{ ...styles.flex1 }}>
+                            <div style={{ ...styles.generalContainer }}>
+                                <input type="text" value={this.getCostField("quantity")} onChange={(event) => { this.setCostField("quantity", event.target.value) }} style={{ ...styles.generalField, ...regularFont }} />
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <span style={{ ...regularFont }}>Quantity</span>
+                            </div>
+                        </div>
+                        <div style={{ ...styles.flex1 }}>
+                            <div style={{ ...styles.generalContainer }}>
+                                <input type="text" onChange={(event) => { this.setCostField("unit", event.target.value) }} value={this.getCostField("unit")} style={{ ...styles.generalField, ...regularFont }} />
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <span style={{ ...regularFont }}>Unit</span>
+                            </div>
+                        </div>
+                        <div style={{ ...styles.flex1 }}>
+                            <div style={{ ...styles.generalContainer }}>
+                                <input type="text" onChange={(event) => { this.setCostField("unitcost", event.target.value) }} value={this.getCostField("unitcost")} style={{ ...styles.generalField, ...regularFont }} />
+                            </div>
+                            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                                <span style={{ ...regularFont }}>Unit Cost</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.generalFont }} >
+                            <input type="text" onChange={(event) => { this.setCostField("description", event.target.value) }} value={this.getCostField("description")} style={{ ...styles.generalField, ...regularFont }} />
+                        </div>
+                        <div style={{ ...styles.generalContainer, ...styles.generalFont }}>
+                            <span style={{ ...regularFont }}>Description</span>
+                        </div>
+                    </div>
+
+                    {this.showcostids()}
 
                 </div>)
 
