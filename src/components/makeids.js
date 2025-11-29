@@ -268,7 +268,7 @@ class MakeID {
     }
 
     makeClientID() {
-        const makeid = new MakeID();
+   
         const gfk = new GFK();
 
         const clients = gfk.getClients.call(this) || [];
@@ -444,6 +444,30 @@ class MakeID {
         do {
             id = makeID(16);
         } while (costIds.includes(id));
+
+        return id;
+    }
+
+
+
+
+    invoiceid(projectid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+
+        // Find project
+        const project = projects.find(p => p.projectid === projectid);
+        if (!project) throw new Error("Project not found");
+
+        // Extract existing invoice IDs (safe even if undefined)
+        const invoiceIds =
+            project?.timesheet?.invoices?.map(c => c.invoiceid) || [];
+
+        // Generate unique invoice ID
+        let id;
+        do {
+            id = makeID(16);
+        } while (invoiceIds.includes(id));
 
         return id;
     }

@@ -1,8 +1,8 @@
 import React from 'react';
 import { saveBoringIcon } from './svg'
 import { MyStylesheet } from './styles';
-import { SaveBorings } from './actions/api'
-import { inputUTCStringForLaborID } from './functions'
+import { SaveBorings, SaveTimesheet } from './actions/api'
+
 class GFK {
 
     getLayerArrow() {
@@ -980,7 +980,7 @@ class GFK {
         return timesheet?.labor ?? false;
     }
 
-     getCostsByProjectID(projectid) {
+    getCostsByProjectID(projectid) {
         const gfk = new GFK();
         const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
 
@@ -1013,7 +1013,7 @@ class GFK {
     }
 
 
-      getCostByID(projectid, costid) {
+    getCostByID(projectid, costid) {
         const gfk = new GFK();
 
         // Get cost array for the project
@@ -1038,9 +1038,71 @@ class GFK {
     }
 
 
+    getInvoiceByProjectID(projectid) {
+        const gfk = new GFK();
+        const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
+
+        return timesheet?.invoices ?? false;
+    }
 
 
+    getInvoiceByID(projectid, invoiceid) {
+        const gfk = new GFK();
 
+        // Get invoice array for the project
+        const invoice = gfk.getInvoiceByProjectID.call(this, projectid);
+        if (!Array.isArray(invoice)) return false;
+
+        // Find the matching invoice entry
+        return invoice.find(item => item.invoiceid === invoiceid) || false;
+    }
+
+    getInvoiceIndexByID(projectid, invoiceid) {
+        const gfk = new GFK();
+
+        // Get invoice array for the project
+        const invoice = gfk.getInvoiceByProjectID.call(this, projectid);
+        if (!Array.isArray(invoice)) return false;
+
+        // Find the index
+        const index = invoice.findIndex(item => item.invoiceid === invoiceid);
+
+        return index >= 0 ? index : false;
+    }
+
+    async saveTimesheet() {
+        try {
+            const gfk = new GFK();
+            const { projectid } = this.props.match.params;
+
+            if (!projectid) {
+                throw new Error("Project ID is required.");
+            }
+
+            const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
+            const values = { projectid, timesheet };
+
+            const projects = gfk.getProjects.call(this);
+            const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+
+            if (projectIndex === -1) {
+                throw new Error(`Project not found: ${projectid}`);
+            }
+
+            const response = await SaveTimesheet(values);
+            console.log(response)
+
+            if (response.timesheet) {
+                projects[projectIndex].timesheet = response.timesheet;
+                this.props.reduxProjects(projects);
+                this.setState({ message: response.message });
+            }
+
+        } catch (err) {
+            console.error("Error saving timesheet:", err);
+            alert(`Error saving timesheet: ${err.message}`);
+        }
+    }
 
 
     getCompany() {

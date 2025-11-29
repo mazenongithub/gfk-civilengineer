@@ -135,6 +135,12 @@
   font-size: 16px;
 }
 
+ .addIcon-1 {
+        fill: #80a2d4;
+        stroke: #231f20;
+        stroke-miterlimit: 10;
+      }
+
 
 
 @keyframes App-logo-spin {

@@ -127,3 +127,16 @@ export function radioIcon() {
         </svg>
     );
 }
+
+export function addIcon() {
+    return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54.93 54.93">
+  <defs>
+    <style>
+     
+    </style>
+  </defs>
+  <g id="UI">
+    <polygon className="addIcon-1" points="54.43 17.76 54.43 37.17 37.17 37.17 37.17 54.43 17.76 54.43 17.76 37.17 .5 37.17 .5 17.76 17.76 17.76 17.76 .5 37.17 .5 37.17 17.76 54.43 17.76"/>
+  </g>
+</svg>)
+}

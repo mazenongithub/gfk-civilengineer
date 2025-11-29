@@ -1,25 +1,25 @@
-export function PTSlabLayer(layerid,layername,toplayer,bottomlayer,ll,pi,fines,micro) {
-    return({layerid,layername,toplayer,bottomlayer,ll,pi,fines,micro})
+export function PTSlabLayer(layerid, layername, toplayer, bottomlayer, ll, pi, fines, micro) {
+    return ({ layerid, layername, toplayer, bottomlayer, ll, pi, fines, micro })
 
 }
-export function newSeismic(magnitude,siteacceleration) {
-    return({siteacceleration,magnitude,points:[]})
+export function newSeismic(magnitude, siteacceleration) {
+    return ({ siteacceleration, magnitude, points: [] })
 
 }
-export function newStrain(strainid,toplayer,bottomlayer,strainratio) {
-    return({strainid,toplayer,bottomlayer,strainratio})
+export function newStrain(strainid, toplayer, bottomlayer, strainratio) {
+    return ({ strainid, toplayer, bottomlayer, strainratio })
 
 }
-export function newSeismicPoint(projectid,siteacceleration,magnitude,pointid,depth,pi,fines,spt,sampleid) {
-    return({projectid,siteacceleration,magnitude, points:[{pointid,depth,pi,fines,spt,sampleid,strain:[]}]})
+export function newSeismicPoint(projectid, siteacceleration, magnitude, pointid, depth, pi, fines, spt, sampleid) {
+    return ({ projectid, siteacceleration, magnitude, points: [{ pointid, depth, pi, fines, spt, sampleid, strain: [] }] })
 
 }
-export function SeismicPoint(pointid,depth,pi,fines,spt,sampleid) {
-    return({pointid,depth,pi,fines,spt,sampleid,strain:[]})
+export function SeismicPoint(pointid, depth, pi, fines, spt, sampleid) {
+    return ({ pointid, depth, pi, fines, spt, sampleid, strain: [] })
 
 }
-export function PTSlabSection(sectionid,sectionname) {
-    return{sectionid,sectionname,layers:[]}
+export function PTSlabSection(sectionid, sectionname) {
+    return { sectionid, sectionname, layers: [] }
 }
 export function formatDateforCalendarDisplay(datein) {
     let month = getmonth(datein);
@@ -161,7 +161,7 @@ export function CreateSieve(sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, w
     return ({ sampleid, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200 })
 }
 export function Sample(sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks) {
-    return ({ sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt,sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks })
+    return ({ sampleid, boringid, sampledepth, depth, samplenumber, sampleset, diameter, samplelength, description, uscs, spt, sptlength, wetwgt, wetwgt_2, drywgt, tarewgt, tareno, graphiclog, ll, pi, remarks })
 }
 export function CreateImage(imageid, image, caption) {
     return ({ imageid, image, caption })
@@ -283,7 +283,7 @@ export function AMPMfromTimeIn(timein) {
 }
 export function getOffsetTime(timein) {
     let datein = new Date(`${timein.replace(/-/g, '/')} UTC`)
-let offset = datein.getTimezoneOffset() / 60;
+    let offset = datein.getTimezoneOffset() / 60;
 
     let sym = "+";
     if (offset > 0) {
@@ -292,11 +292,11 @@ let offset = datein.getTimezoneOffset() / 60;
     if (Math.abs(offset) < 10) {
         offset = `0${offset}`
     }
- return(`${sym}${offset}:00`)
+    return (`${sym}${offset}:00`)
 
 }
 
-export function moist (drywgt,tarewgt, wetwgt,wetwgt_2) {
+export function moist(drywgt, tarewgt, wetwgt, wetwgt_2) {
     let wgtwater = 0;
     let netweight = Number(drywgt) - Number(tarewgt)
 
@@ -315,15 +315,15 @@ export function moist (drywgt,tarewgt, wetwgt,wetwgt_2) {
 
 }
 
-export function  netwgt_1 (wetwgt_2, wetwgt,tarewgt, drywgt) {
+export function netwgt_1(wetwgt_2, wetwgt, tarewgt, drywgt) {
     let netwgt_1 = 0
     if (Number(wetwgt_2) > 0) {
-         netwgt_1 = (Number(wetwgt) - Number(tarewgt)) / (1 + moist(drywgt,tarewgt, wetwgt,wetwgt_2))
-        
+        netwgt_1 = (Number(wetwgt) - Number(tarewgt)) / (1 + moist(drywgt, tarewgt, wetwgt, wetwgt_2))
+
     }
     return netwgt_1;
 }
-export function netwgt (drywgt,tarewgt) {
+export function netwgt(drywgt, tarewgt) {
     if (Number(drywgt) && Number(tarewgt) > 0) {
         return (Number(drywgt) - Number(tarewgt));
     } else {
@@ -331,12 +331,46 @@ export function netwgt (drywgt,tarewgt) {
     }
 }
 
-export function calcdryden (wetwgt_2, wetwgt, tarewgt, drywgt, diameter,samplelength) {
+export function calculateLaborCost(timeIn, timeOut, laborRate) {
+  const start = new Date(timeIn);
+  const end = new Date(timeOut);
+
+  const diffMs = end - start;                        // difference in milliseconds
+  const hours = diffMs / (1000 * 60 * 60);           // convert to hours
+  const roundedHours = Math.round(hours * 100) / 100; // round to hundredth
+
+  const totalCost = Math.round(roundedHours * laborRate * 100) / 100;
+
+  return totalCost;
+}
+
+export function calculateHours(timeIn, timeOut) {
+  const start = new Date(timeIn);
+  const end = new Date(timeOut);
+
+  const diffMs = end - start;                        // difference in ms
+  const hours = diffMs / (1000 * 60 * 60);           // convert to hours
+
+  return Math.round(hours * 100) / 100;              // round to hundredth
+}
+
+export function calculateCost(quantity, unitCost) {
+  const qty = Number(quantity);
+  const cost = Number(unitCost);
+
+  if (isNaN(qty) || isNaN(cost)) return 0;
+
+  // round to hundredth
+  return Math.round(qty * cost * 100) / 100;
+}
+
+
+export function calcdryden(wetwgt_2, wetwgt, tarewgt, drywgt, diameter, samplelength) {
     let netweight = 0;
     if (Number(wetwgt_2) > 0) {
-        netweight = netwgt_1(wetwgt_2, wetwgt,tarewgt, drywgt)
+        netweight = netwgt_1(wetwgt_2, wetwgt, tarewgt, drywgt)
     } else {
-        netweight = netwgt(drywgt,tarewgt);
+        netweight = netwgt(drywgt, tarewgt);
     }
     if (netweight > 0 && diameter > 0 && samplelength > 0) {
         return Math.round(Number((netweight / (.25 * Math.pow(Number(diameter), 2) * Math.PI * Number(samplelength))) * (1 / 453.592) * (144 * 12)))
@@ -344,12 +378,12 @@ export function calcdryden (wetwgt_2, wetwgt, tarewgt, drywgt, diameter,samplele
         return 0;
     }
 }
-export function CreateTime(laborid,projectid,timein,timeout,traveltimein,traveltimeout,description,invoiceid) {
-    return({laborid,projectid,timein,timeout,traveltimein,traveltimeout,description,invoiceid})
+export function CreateTime(laborid, projectid, timein, timeout, traveltimein, traveltimeout, description, invoiceid) {
+    return ({ laborid, projectid, timein, timeout, traveltimein, traveltimeout, description, invoiceid })
 }
 export function getOffset(timein) {
     let datein = new Date(`${timein.replace(/-/g, '/')} 00:00:00`)
-let offset = datein.getTimezoneOffset() / 60;
+    let offset = datein.getTimezoneOffset() / 60;
 
     let sym = "+";
     if (offset > 0) {
@@ -358,7 +392,7 @@ let offset = datein.getTimezoneOffset() / 60;
     if (Math.abs(offset) < 10) {
         offset = `0${offset}`
     }
- return(`${sym}${offset}:00`)
+    return (`${sym}${offset}:00`)
 
 }
 export function check_30(dateobj) {
@@ -1391,22 +1425,22 @@ export function makeDatefromObj(datein) {
 
     return (`${year}-${month}-${date}`)
 }
-export function newPoint(pointid,xcoord,ycoord) {
-    return({pointid,xcoord,ycoord})
+export function newPoint(pointid, xcoord, ycoord) {
+    return ({ pointid, xcoord, ycoord })
 }
-export function subSurface(gamma,cohesion,friction) {
-    return({gamma,cohesion,friction,points:[]})
+export function subSurface(gamma, cohesion, friction) {
+    return ({ gamma, cohesion, friction, points: [] })
 }
-export function failureSurface(cx,cy,rx,ry) {
-    return({cx,cy,rx,ry})
+export function failureSurface(cx, cy, rx, ry) {
+    return ({ cx, cy, rx, ry })
 }
 
-export function newSection(sectionid,projectid,section,slices) {
-    return({sectionid,projectid,section,slices, layers:[]})
+export function newSection(sectionid, projectid, section, slices) {
+    return ({ sectionid, projectid, section, slices, layers: [] })
 
 }
-export function newLayer(layerid,layer,layertype) {
-    return({layerid,layer,layertype})
+export function newLayer(layerid, layer, layertype) {
+    return ({ layerid, layer, layertype })
 }
 export function fieldReport(fieldid, datereport, content, engineerid) {
     return ({ fieldid, datereport, content, engineerid })
@@ -1419,6 +1453,18 @@ export function UnconfinedTestData(unid, loadreading, displacement) {
     }
     )
 }
+
+export function formatDate(date) {
+    if (!date) return "";
+    const d = date instanceof Date ? date : new Date(date);
+
+    return d.toLocaleDateString([], {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
+};
+
 export function UnconfinedTest(unid, sampleid, loadreading, displacement) {
     return ({
         sampleid,
@@ -1431,8 +1477,8 @@ export function UnconfinedTest(unid, sampleid, loadreading, displacement) {
         }
     })
 }
-export function CreateProject(projectid,projectnumber,series,title,projectaddress,projectcity,proposedproject,projectapn,engineerid,clientid) {
-   return({projectid,projectnumber,series,title,projectaddress,projectcity,proposedproject,projectapn,engineerid,clientid})
+export function CreateProject(projectid, projectnumber, series, title, projectaddress, projectcity, proposedproject, projectapn, engineerid, clientid) {
+    return ({ projectid, projectnumber, series, title, projectaddress, projectcity, proposedproject, projectapn, engineerid, clientid })
 }
 export function inputDateObjOutputAdjString(datein) {
     let offset = new Date().getTimezoneOffset() / 60

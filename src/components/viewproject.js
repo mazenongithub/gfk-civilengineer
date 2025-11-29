@@ -19,6 +19,7 @@ import PTSlab from './ptslab';
 import Seismic from './seismic'
 import SlopeStability from './slopestabilty'
 import Compaction from './compaction'
+import Invoice from './invoice';
 
 
 class ViewProject extends Component {
@@ -322,6 +323,7 @@ class ViewProject extends Component {
                                 <Route exact path={`${path}/ptslab`} component={PTSlab} />
                                 <Route exact path={`${path}/seismic`} component={Seismic} />
                                 <Route exact path={`${path}/timesheet`} component={Timesheet} />
+                                <Route exact path={`${path}/invoice`} component={Invoice} />
                                 <Route exact path={`${path}/slopestability`} component={SlopeStability} />
                                 <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
                                 <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />
