@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import { Link } from 'react-router-dom';
 import GFK from './gfk';
-import { milestoneformatdatestring } from './functions'
+import { formatDate, milestoneformatdatestring } from './functions'
+import CompactionTable from './compactiontable';
 class ViewFieldReport extends Component {
     constructor(props) {
         super(props);
@@ -24,11 +25,11 @@ class ViewFieldReport extends Component {
     }
     getFieldReport() {
         const gfk = new GFK();
-        const fieldid = this.props.match.params.fieldid;
+        const { projectid, fieldid } = this.props.match.params;
 
         let getfieldreport = false;
-        const fieldreport = gfk.getfieldreportbyid.call(this,fieldid)
-        if(fieldreport) {
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
+        if (fieldreport) {
             getfieldreport = fieldreport;
         }
         return getfieldreport;
@@ -37,19 +38,18 @@ class ViewFieldReport extends Component {
     }
 
     compactionReport() {
-        let compactionreport = false;
         const gfk = new GFK();
-        const fieldid = this.props.match.params.fieldid;
-        const fieldreport = gfk.getfieldreportbyid.call(this,fieldid)
-        if(fieldreport.hasOwnProperty("compactiontests")) {
-            compactionreport = true;
-        }
-        return compactionreport;
-       
+        const { projectid, fieldid } = this.props.match.params;
+
+        const fieldReport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+
+        return Array.isArray(fieldReport?.compactiontests)
+            ? fieldReport
+            : false;
     }
 
     showcompactioncurves() {
-        let curves = this.getcompactioncurves();
+        let curves = this.getCompactionCurves();
         let showcurves = [];
         const gfk = new GFK();
         const styles = MyStylesheet();
@@ -58,23 +58,23 @@ class ViewFieldReport extends Component {
         const title = () => {
             return (
                 <div style={{ ...styles.generalFlex, ...styles.generalFont }}>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.showBorder }}>
+                        <span style={{ ...regularFont }}>
                             Curve No.
                         </span>
                     </div>
-                    <div style={{...styles.flex3, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
+                    <div style={{ ...styles.flex3, ...styles.alignCenter, ...styles.showBorder }}>
+                        <span style={{ ...regularFont }}>
                             Description
                         </span>
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.showBorder }}>
+                        <span style={{ ...regularFont }}>
                             Max. Density (p.c.f)
                         </span>
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.showBorder }}>
+                        <span style={{ ...regularFont }}>
                             Moisture %
                         </span>
                     </div>
@@ -83,35 +83,35 @@ class ViewFieldReport extends Component {
             )
 
         }
-        if (compactiontests.length>0) {
+        if (compactiontests.length > 0) {
             showcurves.push(title())
             // eslint-disable-next-line
-            curves.map(curve=> {
+            curves.map(curve => {
                 showcurves.push(
 
                     <div style={{ ...styles.generalFlex, ...styles.generalFont }}>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
-                           {curve.curvenumber}
-                        </span>
-                    </div>
-                    <div style={{...styles.flex3, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
-                           {curve.description}
-                        </span>
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
-                            {curve.maxden}
-                        </span>
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...styles.showBorder}}>
-                        <span style={{...regularFont}}>
-                            {curve.moist}%
-                        </span>
-                    </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.showBorder }}>
+                            <span style={{ ...regularFont }}>
+                                {curve.curvenumber}
+                            </span>
+                        </div>
+                        <div style={{ ...styles.flex3, ...styles.alignCenter, ...styles.showBorder }}>
+                            <span style={{ ...regularFont }}>
+                                {curve.description}
+                            </span>
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.showBorder }}>
+                            <span style={{ ...regularFont }}>
+                                {curve.maxden}
+                            </span>
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.showBorder }}>
+                            <span style={{ ...regularFont }}>
+                                {curve.moist}%
+                            </span>
+                        </div>
 
-                </div>
+                    </div>
 
                 )
             })
@@ -122,60 +122,51 @@ class ViewFieldReport extends Component {
 
     }
 
-    getcompactioncurves() {
+    getCompactionCurves() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid)
-        let curves = [];
-        if (project) {
-            if (this.compactionReport()) {
-                const compactioncurves = gfk.getcurves.call(this)
-                // eslint-disable-next-line
-                compactioncurves.map(curve => {
-                    if (curve.projectid === projectid) {
-                        curves.push(curve)
-                    }
-                })
-            }
+        const { projectid } = this.props.match.params;
 
-        }
-        curves.sort((a, b) => {
-            if (Number(a.curvenumber) >= Number(b.curvenumber)) {
-                return 1;
-            } else {
-                return -1
-            }
-        })
-        return curves;
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project || !this.compactionReport()) return [];
+
+        const allCurves = gfk.getcurves.call(this, projectid);
+
+        // Ensure we have a valid array before doing anything
+        if (!Array.isArray(allCurves)) return [];
+
+        return allCurves
+            .sort((a, b) => Number(a.curvenumber) - Number(b.curvenumber));
     }
+
 
 
 
     getCompactionTests() {
         const gfk = new GFK();
-        const fieldid = this.props.match.params.fieldid;
-    
-        const compactiontests = gfk.getcompactiontestsbyfieldid.call(this,fieldid)
-        console.log(compactiontests)
-        if(compactiontests) {
-        compactiontests.sort((a, b) => {
-            if (Number(a.testnum) >= Number(b.testnum)) {
-                return 1;
-            } else {
-                return -1
-            }
-        })
+        const { projectid, fieldid } = this.props.match.params;
 
-    }
-    
-       return compactiontests;
+        const compactiontests = gfk.getcompactiontestsbyfieldid.call(this, projectid, fieldid)
+        console.log(compactiontests)
+        if (compactiontests) {
+            compactiontests.sort((a, b) => {
+                if (Number(a.testnum) >= Number(b.testnum)) {
+                    return 1;
+                } else {
+                    return -1
+                }
+            })
+
+        }
+
+        return compactiontests;
     }
 
     getcurvenumber(curveid) {
         const gfk = new GFK();
         let curvenumber = '';
-        let curve = gfk.getcurvebyid.call(this,curveid)
-        if(curve) {
+        const { projectid } = this.props.match.params;
+        let curve = gfk.getcurvebyid.call(this, projectid, curveid)
+        if (curve) {
             curvenumber = curve.curvenumber;
         }
         return curvenumber;
@@ -188,36 +179,36 @@ class ViewFieldReport extends Component {
         let table = [];
         const regularFont = gfk.getRegularFont.call(this)
         const title = () => {
-            return(
-                <div style={{...styles.generalFlex, ...styles.generalFont}}>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+            return (
+                <div style={{ ...styles.generalFlex, ...styles.generalFont }}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Test No.
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         El.
                     </div>
-                    <div style={{...styles.flex3, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex3, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Location
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Wet Den. (p.c.f)
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Moisture (p.c.f)
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Dry Den. (p.c.f)
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Moisture %
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Max Den. (p.c.f)
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Relative %
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
+                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
                         Curve No.
                     </div>
                 </div>
@@ -226,47 +217,47 @@ class ViewFieldReport extends Component {
 
         }
         const tests = this.getCompactionTests();
-        if(tests.length>0) {
-     
+        if (tests.length > 0) {
+
             table.push(title())
             // eslint-disable-next-line
-            tests.map(test=> {
-              
-                table.push(
-                  
+            tests.map(test => {
 
-                    <div style={{...styles.generalFlex, ...styles.generalFont}}>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.testnum}
+                table.push(
+
+
+                    <div style={{ ...styles.generalFlex, ...styles.generalFont }}>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.testnum}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.elevation}
+                        </div>
+                        <div style={{ ...styles.flex3, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.location}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.wetpcf}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.moistpcf}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.dryden}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.moist}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.maxden}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {test.relative}
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...regularFont, ...styles.showBorder }}>
+                            {this.getcurvenumber(test.curveid)}
+                        </div>
                     </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.elevation}
-                    </div>
-                    <div style={{...styles.flex3, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.location}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.wetpcf}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.moistpcf}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.dryden}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.moist}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.maxden}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                        {test.relative}
-                    </div>
-                    <div style={{...styles.flex1, ...styles.alignCenter, ...regularFont,...styles.showBorder}}>
-                       {this.getcurvenumber(test.curveid)}
-                    </div>
-                </div>
 
                 )
             })
@@ -277,17 +268,17 @@ class ViewFieldReport extends Component {
 
     getReport() {
         const gfk = new GFK();
-        const fieldid = this.props.match.params.fieldid
+        const { projectid, fieldid } = this.props.match.params;
         let report = false;
-        report = gfk.getfieldreportbyid.call(this, fieldid);
+        report = gfk.getfieldreportbyid.call(this, projectid, fieldid);
         return report;
     }
 
     getfieldimages() {
-        const fieldid = this.props.match.params.fieldid;
+        const { projectid, fieldid } = this.props.match.params;
         const gfk = new GFK();
-        const fieldimages = gfk.getimagesbyfieldid.call(this,fieldid);
-       
+        const fieldimages = gfk.getimagesbyfieldid.call(this, projectid, fieldid);
+
         return fieldimages;
 
     }
@@ -298,18 +289,18 @@ class ViewFieldReport extends Component {
         const styles = MyStylesheet();
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
-        
-        if(fieldimages.length>0) {
-           
+
+        if (fieldimages.length > 0) {
+
             // eslint-disable-next-line
-            fieldimages.map(fieldimage=> {
+            fieldimages.map(fieldimage => {
                 images.push(
-                    <div style={{...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15}} key={fieldimage.imageid}>
-                        <div style={{...styles.generalContainer, ...styles.alignCenter}}>
-                            <img src={fieldimage.image} alt={fieldimage.caption} />
+                    <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }} key={fieldimage.imageid}>
+                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                            <img src={`${process.env.REACT_APP_SERVER_API}${fieldimage.image}`} alt={fieldimage.caption} />
                         </div>
-                        <div style={{...styles.generalContainer, ...styles.alignCenter}}>
-                            <span style={{...regularFont}}>{fieldimage.caption}</span>
+                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                            <span style={{ ...regularFont }}>{fieldimage.caption}</span>
                         </div>
                     </div>
 
@@ -318,19 +309,20 @@ class ViewFieldReport extends Component {
             })
         }
         return images;
-        
+
     }
 
     render() {
         const gfk = new GFK();
         const styles = MyStylesheet();
         const projectid = this.props.match.params.projectid;
-        const project = gfk.getprojectbyid.call(this, projectid)
+        const project = gfk.getProjectById.call(this, projectid)
         const engineerid = this.props.match.params.engineerid;
         const headerFont = gfk.getHeaderFont.call(this)
         const regularFont = gfk.getRegularFont.call(this);
         const fieldid = this.props.match.params.fieldid;
         const report = this.getFieldReport();
+        const compactiontable = new CompactionTable();
 
         if (project) {
 
@@ -342,7 +334,7 @@ class ViewFieldReport extends Component {
                     <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                            to={`/${engineerid}`}>
+                            to={`/${engineerid}/profile`}>
                             /{engineerid}
                         </Link>
                     </div>
@@ -372,7 +364,7 @@ class ViewFieldReport extends Component {
                         <Link
                             style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                             to={`/${engineerid}/projects/${projectid}/fieldreports/${fieldid}`}>
-                            /{datereport}
+                            /{formatDate(datereport)}
                         </Link>
                     </div>
 
@@ -386,11 +378,11 @@ class ViewFieldReport extends Component {
                         {this.showcompactioncurves()}
                     </div>
 
-                    <div style={{ ...styles.generalContainer,...styles.bottomMargin15 }}>
-                        {this.showCompactionTests()}
+                    <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+                        {compactiontable.showCompactionTable.call(this)}
                     </div>
 
-                    <div style={{...styles.generalContainer, ...styles.bottomMargin15}}>
+                    <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
                         {this.showfieldimages()}
                     </div>
 
@@ -415,8 +407,8 @@ class ViewFieldReport extends Component {
 function mapStateToProps(state) {
     return {
         myuser: state.myuser,
-        projects:state.projects,
-        company:state.company
+        projects: state.projects,
+        company: state.company
     }
 }
 export default connect(mapStateToProps, actions)(ViewFieldReport);

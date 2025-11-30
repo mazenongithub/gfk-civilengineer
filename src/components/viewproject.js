@@ -20,6 +20,7 @@ import Seismic from './seismic'
 import SlopeStability from './slopestabilty'
 import Compaction from './compaction'
 import Invoice from './invoice';
+import ClientID from './clientid';
 
 
 class ViewProject extends Component {
@@ -106,7 +107,7 @@ class ViewProject extends Component {
                 seismic: result.seismic,
                 ptslab: result.ptslab,
                 slope: result.slope,
-                timesheet:result.timesheet
+                timesheet: result.timesheet
             };
 
             // Update Redux store or local state
@@ -143,33 +144,40 @@ class ViewProject extends Component {
         return projectkey;
     }
 
-    getScopeofWork() {
-        const project = this.getProject();
-        let sow = '';
-        if (project) {
-            sow = project.sow
+  
 
-        }
-        return sow
-
-    }
-
-    handleScopeofWork(value) {
-        const gfk = new GFK();
-        const projects = gfk.getProjects.call(this)
-        if (projects) {
-
-            const project = this.getProject();
-            if (project) {
-                const key = this.getProjectKey();
-                projects[key].sow = value
-                this.props.reduxProjects(projects);
-                this.setState({ render: 'render' })
+       getProjectProp(prop) {
+            const gfk = new GFK();
+            const {projectid} = this.props.match.params;
+    
+            if (!projectid) {
+                return this.state[prop];
             }
-
+    
+            const project = gfk.getProjectById.call(this, projectid);
+    
+            return project ? project[prop] : ""
         }
-
-    }
+    
+        setProjectProp(prop, value) {
+            const gfk = new GFK();
+            let projects = gfk.getProjects.call(this) || [];
+            const {projectid} = this.props.match.params;
+    
+         
+    
+            // --- Updating an existing project ---
+            const project = gfk.getProjectById.call(this, projectid);
+            if (!project) return;
+    
+            const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+    
+            projects[projectIndex][prop] = value;
+    
+            // Push update to redux
+            this.props.reduxProjects(projects);
+            this.setState({ render: 'render' })
+        }
 
     showViewProject() {
 
@@ -180,6 +188,7 @@ class ViewProject extends Component {
         const regularFont = gfk.getRegularFont.call(this)
         const headerFont = gfk.getHeaderFont.call(this)
         const project = gfk.getProjectById.call(this, projectid)
+        const clientid = new ClientID();
 
         return (<div style={{ ...styles.generalContainer }}>
             <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
@@ -204,10 +213,48 @@ class ViewProject extends Component {
                 </Link>
             </div>
 
+            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.bottomMargin15 }}>
+                {clientid.showClientID.call(this)}
+            </div>
+
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
+                <div style={{ ...styles.flex1 }}>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Project Number</span></div>
+                    <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
+                        value={this.getProjectProp("projectnumber")}
+                        onChange={event => { this.setProjectProp("projectnumber", event.target.value) }}
+                    />
+
+                </div>
+                <div style={{ ...styles.flex1 }}>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Title</span></div>
+                    <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
+                        value={this.getProjectProp("title")}
+                        onChange={event => { this.setProjectProp("title", event.target.value) }} />
+                </div>
+            </div>
+
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1 }}>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Address</span></div>
+                    <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
+                        value={this.getProjectProp("projectaddress")}
+                        onChange={(event) => { this.setProjectProp("projectaddress", event.target.value) }}
+                    />
+                </div>
+                <div style={{ ...styles.flex1 }}>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>City</span></div>
+                    <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
+                        value={this.getProjectProp("projectcity")}
+                        onChange={event => { this.setProjectProp("projectcity", event.target.value) }}
+                    />
+                </div>
+            </div>
+
             <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
                 <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont, ...styles.minHeight150 }}
-                    value={this.getScopeofWork()}
-                    onChange={event => { this.handleScopeofWork(event.target.value) }}>
+                    value={this.getProjectProp("sow")}
+                    onChange={event => { this.setProjectProp("sow",event.target.value) }}>
 
                 </textarea>
                 <div style={{ ...styles.generalContainer }}>
@@ -265,7 +312,7 @@ class ViewProject extends Component {
                 </div>
             </div>
 
-              <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                 <div style={{ ...styles.flex1, ...styles.alignCenter }}>
                     <Link
                         style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
@@ -307,31 +354,31 @@ class ViewProject extends Component {
             return (
 
                 <div style={{ ...styles.generalContainer }}>
-                
 
-                   
 
-                        <div style={{ ...styles.generalContainer }}>
-                            <Switch>
-                                <Route exact path={path} render={() => this.showViewProject()} />
-                                <Route exact path={`${path}/compaction`} component={Compaction} />
-                                <Route exact path={`${path}/fieldreports`} component={FieldReports} />
-                                <Route exact path={`${path}/fieldreports/:fieldid`}component={ViewFieldReport} />
-                                <Route exact path={`${path}/timesheet`} component={Timesheet} />
-                                <Route exact path={`${path}/borings`} component={Borings} />
-                                <Route exact path={`${path}/labsummary`} component={LabSummary} />
-                                <Route exact path={`${path}/ptslab`} component={PTSlab} />
-                                <Route exact path={`${path}/seismic`} component={Seismic} />
-                                <Route exact path={`${path}/timesheet`} component={Timesheet} />
-                                <Route exact path={`${path}/invoice`} component={Invoice} />
-                                <Route exact path={`${path}/slopestability`} component={SlopeStability} />
-                                <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
-                                <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />
-                                <Route exact path={`${path}/borings/:boringid/samples/:sampleid/sieve`} component={Sieve} />
-                                <Route exact path={`${path}/borings/:boringid/samples/:sampleid/unconfined`} component={Unconfined} />
-                            </Switch>
-                        </div>
-               
+
+
+                    <div style={{ ...styles.generalContainer }}>
+                        <Switch>
+                            <Route exact path={path} render={() => this.showViewProject()} />
+                            <Route exact path={`${path}/compaction`} component={Compaction} />
+                            <Route exact path={`${path}/fieldreports`} component={FieldReports} />
+                            <Route exact path={`${path}/fieldreports/:fieldid`} component={ViewFieldReport} />
+                            <Route exact path={`${path}/timesheet`} component={Timesheet} />
+                            <Route exact path={`${path}/borings`} component={Borings} />
+                            <Route exact path={`${path}/labsummary`} component={LabSummary} />
+                            <Route exact path={`${path}/ptslab`} component={PTSlab} />
+                            <Route exact path={`${path}/seismic`} component={Seismic} />
+                            <Route exact path={`${path}/timesheet`} component={Timesheet} />
+                            <Route exact path={`${path}/invoice`} component={Invoice} />
+                            <Route exact path={`${path}/slopestability`} component={SlopeStability} />
+                            <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
+                            <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />
+                            <Route exact path={`${path}/borings/:boringid/samples/:sampleid/sieve`} component={Sieve} />
+                            <Route exact path={`${path}/borings/:boringid/samples/:sampleid/unconfined`} component={Unconfined} />
+                        </Switch>
+                    </div>
+
 
                 </div>
 
@@ -356,7 +403,8 @@ class ViewProject extends Component {
 function mapStateToProps(state) {
     return {
         myuser: state.myuser,
-        projects: state.projects
+        projects: state.projects,
+        company:state.company
     }
 }
 export default connect(mapStateToProps, actions)(ViewProject)

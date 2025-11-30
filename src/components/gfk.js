@@ -646,10 +646,10 @@ class GFK {
 
         return sieve;
     }
-    getcompactiontestsbyfieldid(fieldid) {
-        console.log(fieldid)
+    getcompactiontestsbyfieldid(projectid, fieldid) {
+    
         const gfk = new GFK();
-        const fieldreport = gfk.getfieldreportbyid.call(this, fieldid)
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
 
         let compactiontests = false;
         if (fieldreport) {
@@ -669,7 +669,7 @@ class GFK {
                     const timetest = test.timetest;
 
 
-                    const curve = gfk.getcurvebyid.call(this, test.curveid);
+                    const curve = gfk.getcurvebyid.call(this, projectid, test.curveid);
                     const dryden = () => {
 
                         if (wetpcf && moistpcf) {

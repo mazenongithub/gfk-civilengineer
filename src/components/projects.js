@@ -10,12 +10,13 @@ import { CreateProject } from './functions'
 import { saveProjectIcon } from './svg';
 import { SaveProjects } from './actions/api'
 import { Link } from 'react-router-dom';
+import ClientID from './clientid';
 
 
 class Projects extends Component {
     constructor(props) {
         super(props);
-        this.state = { render: '', width: 0, height: 0, activeprojectid: false, projectnumber: '', title: '', address: '', city: '', searchprojectnumber: '', searchcity: '', clientid: 'gus', series: 0, proposedproject: '' }
+        this.state = { render: '', width: 0, height: 0, activeprojectid: false, projectnumber: '', title: '', projectaddress: '', projectcity: '', searchprojectnumber: '', searchcity: '', clientid: '', series: 0, proposedproject: '' }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
     componentDidMount() {
@@ -43,191 +44,70 @@ class Projects extends Component {
 
     }
 
-    getcity() {
-        const gfk = new GFK();
+ 
 
-        if (this.state.activeprojectid) {
-            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
-            return myproject.projectcity;
-        } else {
-            return this.state.city;
+    getProjectProp(prop) {
+        const gfk = new GFK();
+        const { activeprojectid } = this.state;
+
+        if (!activeprojectid) {
+            return this.state[prop];
         }
 
+        const project = gfk.getProjectById.call(this, activeprojectid);
+
+        return project ? project[prop] : ""
     }
-    handlecity(city) {
+
+    setProjectProp(prop, value) {
+        const gfk = new GFK();
         const makeid = new MakeID();
-        const gfk = new GFK();
-        const projects = gfk.getProjects.call(this)
-        if (projects) {
-            const engineerid = ""
-            if (this.state.activeprojectid) {
-                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
-                projects[i].projectcity = city;
-                this.props.reduxProjects(projects);
-                this.setState({ render: 'render' })
+        let projects = gfk.getProjects.call(this) || [];
+        const { activeprojectid } = this.state;
 
-            } else {
-                const projectid = makeid.projectid.call(this);
-                const series = this.state.series;
-                const projectnumber = '0';
-                const title = this.state.title
-                const address = this.state.address;
-                const proposedproject = this.state.proposedproject;
-                const projectapn = this.state.projectapn;
-                const clientid = this.state.clientid;
-                let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getProjects.call(this);
-                if (projects) {
-                    projects.push(newproject)
-                } else {
-                    const project = { project: [newproject] }
-                    projects = project;
-                }
-                this.props.reduxProjects(projects)
-                this.setState({ activeprojectid: projectid })
-            }
-        }
-    }
+        // --- If no active project → create new project ---
+        if (!activeprojectid) {
+            const newProject = {
+                projectid: makeid.projectid.call(this),
+                // initialize all known project properties to empty strings
+                projectnumber: "",
+                series: "",
+                title: "",
+                sow: "",
+                clientid: "",
+                engineerid: "",
+                projectaddress: "",
+                projectcity: "",
+                projectapn: "",
+                // add more props here as needed...
+            };
 
+            // Set the requested property
+            newProject[prop] = value;
 
-    getaddress() {
-        const gfk = new GFK();
+            // Append to projects
+            projects.push(newProject);
 
-        if (this.state.activeprojectid) {
-            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
-            return myproject.projectaddress;
-        } else {
-            return this.state.address;
+            // Save and set as active
+            this.props.reduxProjects(projects);
+            this.setState({ activeprojectid: newProject.projectid });
+
+            return;
         }
 
-    }
-    handleaddress(address) {
-        const makeid = new MakeID();
-        const gfk = new GFK();
-        const projects = gfk.getProjects.call(this)
-        if (projects) {
-            const engineerid = ""
-            if (this.state.activeprojectid) {
-                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
-                projects[i].projectaddress = address;
-                this.props.reduxProjects(projects);
-                this.setState({ render: 'render' })
+        // --- Updating an existing project ---
+        const project = gfk.getProjectById.call(this, activeprojectid);
+        if (!project) return;
 
-            } else {
-                const projectid = makeid.projectid.call(this);
-                const series = this.state.series;
-                const projectnumber = '0';
-                const title = this.state.title
-                const city = this.state.city;
-                const proposedproject = this.state.proposedproject;
-                const projectapn = this.state.projectapn;
-                const clientid = this.state.clientid;
-                let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getProjects.call(this);
-                if (projects) {
-                    projects.push(newproject)
-                } else {
-                    const project = { project: [newproject] }
-                    projects = project;
-                }
-                this.props.reduxProjects(projects)
-                this.setState({ activeprojectid: projectid })
-            }
-        }
+        const projectIndex = gfk.getProjectKeyById.call(this, activeprojectid);
+
+        projects[projectIndex][prop] = value;
+
+        // Push update to redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' })
     }
 
-    gettitle() {
-        const gfk = new GFK();
-
-        if (this.state.activeprojectid) {
-            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
-            console.log(myproject)
-            return myproject.title;
-        } else {
-            return this.state.title;
-        }
-
-    }
-    handletitle(title) {
-        const makeid = new MakeID();
-        const gfk = new GFK();
-        const projects = gfk.getProjects.call(this)
-        if (projects) {
-            const engineerid = ""
-            if (this.state.activeprojectid) {
-                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
-                projects[i].title = title;
-                this.props.reduxProjects(projects);
-                this.setState({ render: 'render' })
-
-            } else {
-                const projectid = makeid.projectid.call(this);
-                const series = this.state.series;
-                const projectnumber = '0';
-                const address = this.state.address;
-                const city = this.state.city;
-                const proposedproject = this.state.proposedproject;
-                const projectapn = this.state.projectapn;
-                const clientid = this.state.clientid;
-                let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getProjects.call(this);
-                if (projects) {
-                    projects.push(newproject)
-                } else {
-                    const project = { project: [newproject] }
-                    projects = project;
-                }
-                this.props.reduxProjects(projects)
-                this.setState({ activeprojectid: projectid })
-            }
-        }
-    }
-
-    getprojectnumber() {
-        const gfk = new GFK();
-
-        if (this.state.activeprojectid) {
-            const myproject = gfk.getProjectById.call(this, this.state.activeprojectid);
-            return myproject.projectnumber;
-        } else {
-            return this.state.projectnumber;
-        }
-
-    }
-    handleprojectnumber(projectnumber) {
-        const makeid = new MakeID();
-        const gfk = new GFK();
-        const projects = gfk.getProjects.call(this)
-        if (projects) {
-            const engineerid = ""
-            if (this.state.activeprojectid) {
-                const i = gfk.getProjectKeyById.call(this, this.state.activeprojectid)
-                projects[i].projectnumber = projectnumber;
-                this.props.reduxProjects(projects);
-                this.setState({ render: 'render' })
-
-            } else {
-                const projectid = makeid.projectid.call(this);
-                const series = this.state.series;
-                const title = this.state.title;
-                const address = this.state.address;
-                const city = this.state.city;
-                const proposedproject = this.state.proposedproject;
-                const projectapn = this.state.projectapn;
-                const clientid = this.state.clientid;
-                let newproject = CreateProject(projectid, projectnumber, series, title, address, city, proposedproject, projectapn, engineerid, clientid);
-                const projects = gfk.getProjects.call(this);
-                if (projects) {
-                    projects.push(newproject)
-                } else {
-                    const project = { project: [newproject] }
-                    projects = project;
-                }
-                this.props.reduxProjects(projects)
-                this.setState({ activeprojectid: projectid })
-            }
-        }
-    }
 
     async saveprojects() {
         try {
@@ -268,21 +148,22 @@ class Projects extends Component {
         const projectid = new ProjectID();
         const headerFont = gfk.getHeaderFont.call(this)
         const saveprojecticon = gfk.getsaveprojecticon.call(this)
+        const clientid = new ClientID();
         const showtitle = () => {
             if (this.state.width > 800) {
                 return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex1, ...regularFont, ...styles.generalFont }}>
                         Project Number <br />
                         <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                            value={this.getprojectnumber()}
-                            onChange={event => { this.handleprojectnumber(event.target.value) }}
+                            value={this.getProjectProp("projectnumber")}
+                            onChange={event => { this.setProjectProp("projectnumber",event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex2, ...regularFont, ...styles.generalFont, ...styles.addLeftMargin }}>
                         Title <br />
                         <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                            value={this.gettitle()}
-                            onChange={event => { this.handletitle(event.target.value) }}
+                            value={this.getProjectProp("title")}
+                            onChange={event => { this.setProjectProp("title",event.target.value) }}
                         />
 
                     </div>
@@ -296,8 +177,8 @@ class Projects extends Component {
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
                                 Project Number <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                    value={this.getprojectnumber()}
-                                    onChange={event => { this.handleprojectnumber(event.target.value) }}
+                                    value={this.getProjectProp("projectnumber")}
+                                    onChange={event => { this.setProjectProp("projectnumber",event.target.value) }}
                                 />
                             </div>
 
@@ -308,8 +189,8 @@ class Projects extends Component {
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
                                 Title <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                    value={this.gettitle()}
-                                    onChange={event => { this.handletitle(event.target.value) }} />
+                                    value={this.getProjectProp("title")}
+                                    onChange={event => { this.setProjectProp("title",event.target.value) }} />
                             </div>
 
                         </div>
@@ -327,15 +208,15 @@ class Projects extends Component {
                     <div style={{ ...styles.flex2, ...regularFont, ...styles.generalFont }}>
                         Address <br />
                         <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                            value={this.getaddress()}
-                            onChange={(event) => { this.handleaddress(event.target.value) }}
+                            value={this.getProjectProp("projectaddress")}
+                            onChange={(event) => { this.setProjectProp("projectaddress",event.target.value) }}
                         />
                     </div>
                     <div style={{ ...styles.flex1, ...regularFont, ...styles.generalFont, ...styles.addLeftMargin }}>
                         City <br />
                         <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                            value={this.getcity()}
-                            onChange={event => { this.handlecity(event.target.value) }}
+                            value={this.getProjectProp("projectcity")}
+                            onChange={event => { this.setProjectProp("projectcity",event.target.value) }}
                         />
 
                     </div>
@@ -349,8 +230,8 @@ class Projects extends Component {
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
                                 Address <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                    value={this.getaddress()}
-                                    onChange={(event) => { this.handleaddress(event.target.value) }} />
+                                    value={this.getProjectProp("projectaddress")}
+                                    onChange={(event) => { this.setProjectProp("projectaddress",event.target.value) }} />
                             </div>
 
                         </div>
@@ -360,8 +241,8 @@ class Projects extends Component {
                             <div style={{ ...styles.flex1, ...styles.generalFont, ...regularFont }}>
                                 City <br />
                                 <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
-                                    value={this.getcity()}
-                                    onChange={event => { this.handlecity(event.target.value) }}
+                                    value={this.getProjectProp("projectcity")}
+                                    onChange={event => { this.setProjectProp("projectcity",event.target.value) }}
                                 />
                             </div>
 
@@ -396,6 +277,10 @@ class Projects extends Component {
                         </div>
                     </div>
 
+                    {clientid.showClientID.call(this)}
+
+
+
                     {showtitle()}
 
                     {location()}
@@ -423,7 +308,8 @@ class Projects extends Component {
 function mapStateToProps(state) {
     return {
         myuser: state.myuser,
-        projects: state.projects
+        projects: state.projects,
+        company:state.company
     }
 }
 export default connect(mapStateToProps, actions)(Projects);

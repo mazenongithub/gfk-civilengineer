@@ -6,10 +6,11 @@ import GFK from './gfk';
 import DateReport from './datereport';
 import CurveID from './curveid';
 import { removeIconSmall, saveReport, uploadImage, goToIcon } from './svg';
-import { fieldReport, makeDatefromObj, makeUTCStringCurrentTime, compactionTest, milestoneformatdatestring, inputUTCStringForLaborID, sorttimesdesc, CreateImage } from './functions';
+import { fieldReport, makeDatefromObj, makeUTCStringCurrentTime, compactionTest, milestoneformatdatestring, inputUTCStringForLaborID, sorttimesdesc, CreateImage, formatDate } from './functions';
 import { SaveFieldReports, UploadFieldImage } from './actions/api'
 import { Link } from 'react-router-dom';
 import MakeID from './makeids';
+import CompactionTable from './compactiontable';
 
 class FieldReports extends Component {
     constructor(props) {
@@ -813,7 +814,7 @@ class FieldReports extends Component {
             <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, }}>
                 <div style={{ ...styles.generalFlex, ...regularFont, ...styles.generalFont, ...activebackground() }} key={report.fieldid}>
                     <div style={{ ...styles.flex5 }} onClick={() => { this.makereportactive(report.fieldid) }}>
-                        {milestoneformatdatestring(report.datereport)}
+                        {formatDate(report.datereport)}
                     </div>
                     <div style={{ ...styles.flex1 }}>
                         <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removefieldreport(report.fieldid) }}>
@@ -889,7 +890,7 @@ class FieldReports extends Component {
             const datereport = makeDatefromObj(this.state.datereport);
             const engineerid = 'mazen'; // fallback if not in state
 
-            const newFieldReport = fieldReport(fieldid,  datereport, content, engineerid);
+            const newFieldReport = fieldReport(fieldid, datereport, content, engineerid);
 
             if (!projects[i].fieldreports) {
                 projects[i].fieldreports = [];
@@ -946,6 +947,7 @@ class FieldReports extends Component {
         const regularFont = gfk.getRegularFont.call(this)
         const styles = MyStylesheet();
         const removeIcon = gfk.getremoveicon.call(this)
+        const { projectid } = this.props.match.params;
 
         const activebackground = () => {
             if (this.state.activetestid === test.testid) {
@@ -954,10 +956,35 @@ class FieldReports extends Component {
                 return;
             }
         }
+        const curve = gfk.getcurvebyid.call(this, projectid, test.curveid)
+        const dryden = (test) => {
+            const wet = Number(test?.wetpcf);
+            const moist = Number(test?.moistpcf);
+
+            if (isNaN(wet) || isNaN(moist)) {
+                return 0; // or whatever default you prefer
+            }
+
+            return wet - moist;
+        };
+
+        const moist = (() => {
+            const d = dryden(test);
+            const m = Number(test?.moistpcf);
+
+            if (!d || isNaN(d) || isNaN(m)) {
+                return 0; // fallback value
+            }
+
+            return Number(((m / d) * 100).toFixed(1));
+        })();
+
+        const maxden = Number(curve.maxden)
+        const relative = Math.round((dryden(test) / maxden) * 100)
         return (
             <div style={{ ...regularFont, ...styles.generalFont, ...styles.generalFlex, ...styles.bottomMargin15 }} key={test.testid}>
                 <div style={{ ...styles.flex5, ...activebackground() }} onClick={() => { this.maketestactive(test.testid) }}>
-                    {test.testnum} {test.elevation} {test.location} {test.wetpcf} {test.moistpcf} {test.dryden} {test.moistpcf} {test.moist} {test.maxden} {test.relative} {test.curvenumber}
+                    {test.testnum} {test.elevation} {test.location} {test.wetpcf} {test.moistpcf} {dryden(test)} {moist}% {maxden} {relative} {curve.curvenumber}
                 </div>
                 <div style={{ ...styles.flex1 }}>
                     <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removetest(test.testid) }}> {removeIconSmall()}</button>
@@ -966,6 +993,22 @@ class FieldReports extends Component {
         )
 
     }
+
+    showCompactionTable() {
+        const gfk = new GFK();
+        const compactiontable = new CompactionTable();
+
+        if (!this.state.activefieldid) return [];
+
+        const { projectid } = this.props.match.params;
+        const fieldid = this.state.activefieldid;
+
+        const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid);
+        if (!fieldreport || !Array.isArray(fieldreport.compactiontests)) return [];
+
+        return compactiontable.showCompactionTable.call(this)
+    }
+
     showcompactiontests() {
         const gfk = new GFK();
 
@@ -1181,275 +1224,276 @@ class FieldReports extends Component {
     }
 
 
- async uploadimage() {
-    const gfk = new GFK();
-    const { projectid } = this.props.match.params;
+    async uploadimage() {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
 
-    // Validate project list
-    const projects = gfk.getProjects.call(this);
-    if (!projects) return;
-  
-    const projectIndex = gfk.getProjectKeyById.call(this, projectid);
-    if (projectIndex === false) return;
+        // Validate project list
+        const projects = gfk.getProjects.call(this);
+        if (!projects) return;
 
-    const fieldreports = gfk.getfieldreports.call(this, projectid)
-    console.log(fieldreports)
-    if (!fieldreports) return;
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+        if (projectIndex === false) return;
 
-    const fieldid = this.state.activefieldid;
-    const imageid = this.state.activeimageid;
-    console.log(fieldid, imageid)
-    if (!fieldid || !imageid) return;
-    console.log(fieldid, imageid)
+        const fieldreports = gfk.getfieldreports.call(this, projectid)
+        console.log(fieldreports)
+        if (!fieldreports) return;
 
-    const fieldIndex = gfk.getfieldkeybyid.call(this, projectid, fieldid);
-    const imageIndex = gfk.getimagekeybyid.call(this, projectid, fieldid, imageid);
-    if (fieldIndex === false || imageIndex === false) return;
+        const fieldid = this.state.activefieldid;
+        const imageid = this.state.activeimageid;
+        console.log(fieldid, imageid)
+        if (!fieldid || !imageid) return;
+        console.log(fieldid, imageid)
 
-    // File selection
-    const fileInput = document.getElementById("field-image");
-    const file = fileInput?.files?.[0];
-    if (!file) return;
-  console.log("report")
-    // Build form payload
-    const formdata = new FormData();
-    formdata.append("fieldimage", file);
-    formdata.append("fieldid", fieldid);
-    formdata.append("imageid", imageid);
-    formdata.append("projectid", projectid);
-    formdata.append("fieldreports", JSON.stringify(fieldreports));  // FIXED
+        const fieldIndex = gfk.getfieldkeybyid.call(this, projectid, fieldid);
+        const imageIndex = gfk.getimagekeybyid.call(this, projectid, fieldid, imageid);
+        if (fieldIndex === false || imageIndex === false) return;
 
-    try {
-        const response = await UploadFieldImage(formdata);
-        console.log(response)
-        // Update Redux if images returned
-        const returnedReports = response?.fieldreports?.fieldreports
+        // File selection
+        const fileInput = document.getElementById("field-image");
+        const file = fileInput?.files?.[0];
+        if (!file) return;
+        console.log("report")
+        // Build form payload
+        const formdata = new FormData();
+        formdata.append("fieldimage", file);
+        formdata.append("fieldid", fieldid);
+        formdata.append("imageid", imageid);
+        formdata.append("projectid", projectid);
+        formdata.append("fieldreports", JSON.stringify(fieldreports));  // FIXED
 
-        if (returnedReports) {
-            projects[projectIndex].fieldreports = returnedReports;
-            this.props.reduxProjects(projects);
-            this.setState({ render: "render" });
+        try {
+            const response = await UploadFieldImage(formdata);
+            console.log(response)
+            // Update Redux if images returned
+            const returnedReports = response?.fieldreports?.fieldreports
+
+            if (returnedReports) {
+                projects[projectIndex].fieldreports = returnedReports;
+                this.props.reduxProjects(projects);
+                this.setState({ render: "render" });
+            }
+
+            if (response?.message) {
+                this.setState({ message: response.message });
+            }
+
+        } catch (err) {
+            alert(err);
         }
-
-        if (response?.message) {
-            this.setState({ message: response.message });
-        }
-
-    } catch (err) {
-        alert(err);
     }
-}
 
 
 
-showimageuploader() {
-    const styles = MyStylesheet();
-    const gfk = new GFK();
-    const uploadbutton = gfk.getuploadbutton.call(this)
-    const regularFont = gfk.getRegularFont.call(this);
-    const thumbphoto = gfk.getthumbimage.call(this)
-    const removeIcon = gfk.getremoveicon.call(this)
-    const projectid = this.props.match.params.projectid;
-    const imagecontainer = () => {
-        if (this.state.width > 800) {
-            return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+    showimageuploader() {
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const uploadbutton = gfk.getuploadbutton.call(this)
+        const regularFont = gfk.getRegularFont.call(this);
+        const thumbphoto = gfk.getthumbimage.call(this)
+        const removeIcon = gfk.getremoveicon.call(this)
+        const projectid = this.props.match.params.projectid;
+        const imagecontainer = () => {
+            if (this.state.width > 800) {
+                return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                    <div style={{ ...styles.flex1 }}>
+                        Add Field Image
+                    </div>
+                    <div style={{ ...styles.flex1 }}>
+                        <input type="file" id="field-image" style={{ ...styles.generalField }} />
+                    </div>
+                    <div style={{ ...styles.flex1 }}>
+                        <button style={{ ...styles.generalButton, ...uploadbutton }} onClick={() => { this.uploadimage() }}>{uploadImage()}</button>
+
+                    </div>
+                </div>)
+
+            } else {
+                return (
+                    <div style={{ ...styles.generalFlex }}>
+                        <div style={{ ...styles.flex1 }}>
+
+                            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                                <div style={{ ...styles.flex1 }}>
+                                    Add Field Image
+                                </div>
+                            </div>
+
+                            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                                <div style={{ ...styles.flex1 }}>
+                                    <input type="file" id="field-image" style={{ ...styles.generalField }} />
+                                </div>
+                                <div style={{ ...styles.flex1 }}>
+                                    <button style={{ ...styles.generalButton, ...uploadbutton }} onClick={() => { this.uploadimage() }}>{uploadImage()}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>)
+
+            }
+        }
+        const activebackground = (imageid) => {
+            if (this.state.activeimageid === imageid) {
+                return (styles.activefieldreport)
+            } else {
+                return;
+            }
+        }
+        const showimage = (image) => {
+            return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }} onClick={() => { this.makeimageactive(image.imageid) }}>
                 <div style={{ ...styles.flex1 }}>
-                    Add Field Image
+                    <div style={{ ...styles.generalContainer, ...styles.marginAuto, ...thumbphoto, ...styles.showBorder }}
+
+                    >
+                        <img src={`${process.env.REACT_APP_SERVER_API}${image.image}`} alt={image.caption} style={{ ...thumbphoto }} />
+                    </div>
+                </div>
+                <div style={{ ...styles.flex3 }}>
+                    <div style={{ ...styles.generalContainer, ...activebackground(image.imageid) }}>
+                        {process.env.REACT_APP_SERVER_API}{image.image}
+                    </div>
+                    <div style={{ ...styles.generalContainer, ...activebackground(image.imageid) }}>
+                        {image.caption}
+                    </div>
                 </div>
                 <div style={{ ...styles.flex1 }}>
-                    <input type="file" id="field-image" style={{ ...styles.generalField }} />
-                </div>
-                <div style={{ ...styles.flex1 }}>
-                    <button style={{ ...styles.generalButton, ...uploadbutton }} onClick={() => { this.uploadimage() }}>{uploadImage()}</button>
+                    <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeimage(image.imageid) }}>
+                        {removeIconSmall()}
+                    </button>
 
                 </div>
             </div>)
 
-        } else {
+        }
+        const imageids = () => {
+            let myimages = [];
+            if (this.state.activefieldid) {
+                let images = gfk.getimagesbyfieldid.call(this, projectid, this.state.activefieldid)
+                if (images) {
+                    // eslint-disable-next-line
+                    images.map(image => {
+                        myimages.push(showimage(image))
+                    })
+
+
+                }
+            }
+            return myimages;
+        }
+        if (this.state.activefieldid) {
             return (
-                <div style={{ ...styles.generalFlex }}>
+                <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
                     <div style={{ ...styles.flex1 }}>
 
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont, ...styles.bottomMargin15 }}>
                             <div style={{ ...styles.flex1 }}>
-                                Add Field Image
+                                {imagecontainer()}
                             </div>
                         </div>
 
-                        <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
                             <div style={{ ...styles.flex1 }}>
-                                <input type="file" id="field-image" style={{ ...styles.generalField }} />
-                            </div>
-                            <div style={{ ...styles.flex1 }}>
-                                <button style={{ ...styles.generalButton, ...uploadbutton }} onClick={() => { this.uploadimage() }}>{uploadImage()}</button>
+                                Caption <br />
+                                <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
+                                    value={this.getcaption()}
+                                    onChange={event => { this.handlecaption(event.target.value) }}></textarea>
+
                             </div>
                         </div>
+
+                        {imageids()}
+
                     </div>
-                </div>)
-
-        }
-    }
-    const activebackground = (imageid) => {
-        if (this.state.activeimageid === imageid) {
-            return (styles.activefieldreport)
+                </div>
+            )
         } else {
             return;
         }
     }
-    const showimage = (image) => {
-        return (<div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }} onClick={() => { this.makeimageactive(image.imageid) }}>
-            <div style={{ ...styles.flex1 }}>
-                <div style={{ ...styles.generalContainer, ...styles.marginAuto, ...thumbphoto, ...styles.showBorder }}
-
-                >
-                    <img src={`${process.env.REACT_APP_SERVER_API}${image.image}`} alt={image.caption} style={{ ...thumbphoto }} />
-                </div>
-            </div>
-            <div style={{ ...styles.flex3 }}>
-                <div style={{ ...styles.generalContainer, ...activebackground(image.imageid) }}>
-                    {process.env.REACT_APP_SERVER_API}{image.image}
-                </div>
-                <div style={{ ...styles.generalContainer, ...activebackground(image.imageid) }}>
-                    {image.caption}
-                </div>
-            </div>
-            <div style={{ ...styles.flex1 }}>
-                <button style={{ ...styles.generalButton, ...removeIcon }} onClick={() => { this.removeimage(image.imageid) }}>
-                    {removeIconSmall()}
-                </button>
-
-            </div>
-        </div>)
-
-    }
-    const imageids = () => {
-        let myimages = [];
-        if (this.state.activefieldid) {
-            let images = gfk.getimagesbyfieldid.call(this, projectid, this.state.activefieldid)
-            if (images) {
-                // eslint-disable-next-line
-                images.map(image => {
-                    myimages.push(showimage(image))
-                })
-
-
-            }
-        }
-        return myimages;
-    }
-    if (this.state.activefieldid) {
+    render() {
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const headerFont = gfk.getHeaderFont.call(this);
+        const smallFont = gfk.getSmallFont.call(this);
+        const regularFont = gfk.getRegularFont.call(this);
+        const engineerid = 'mazen'
+        const projectid = this.props.match.params.projectid;
+        const myproject = gfk.getProjectById.call(this, this.props.match.params.projectid)
+        const datereport = new DateReport();
+        const saveReportIcon = gfk.getreporticon.call(this)
         return (
-            <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
+            <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex1 }}>
 
-                    <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont, ...styles.bottomMargin15 }}>
-                        <div style={{ ...styles.flex1 }}>
-                            {imagecontainer()}
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}`}>
+                            /{engineerid}
+                        </Link>
+                    </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects`}>
+                            /projects
+                        </Link>
+                    </div>
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}`}>
+                            /{myproject.projectnumber} - {myproject.title} {myproject.address} {myproject.city}
+                        </Link>
+                    </div>
+
+                    <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                        <Link
+                            style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                            to={`/${engineerid}/projects/${projectid}/fieldreports`}>
+                            /fieldreports
+                        </Link>
+                    </div>
+
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.generalFont }}>
+                            {datereport.showdatein.call(this)}
                         </div>
                     </div>
 
-                    <div style={{ ...styles.generalFlex, ...styles.generalFont, ...regularFont }}>
-                        <div style={{ ...styles.flex1 }}>
-                            Caption <br />
-                            <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont }}
-                                value={this.getcaption()}
-                                onChange={event => { this.handlecaption(event.target.value) }}></textarea>
 
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1, ...styles.generalFont }}>
+                            <span style={{ ...regularFont }}>Report Content</span> <textarea style={{ ...smallFont, ...styles.generalField, ...styles.generalFont }}
+                                value={this.getcontent()}
+                                onChange={event => { this.handlecontent(event.target.value) }}> </textarea>
                         </div>
                     </div>
+                    {this.compactiontestinput()}
+                    {this.showcompactiontests()}
 
-                    {imageids()}
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont }}>
+                            Field Reports by Project
+                        </div>
+                    </div>
+                    {this.showimageuploader()}
 
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont }}>
+                            {this.state.message}
+                        </div>
+                    </div>
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                            <button style={{ ...styles.generalButton, ...saveReportIcon }} onClick={() => { this.savereport() }}>{saveReport()}</button>
+                        </div>
+                    </div>
+                    {this.showotherreports()}
                 </div>
             </div>
         )
-    } else {
-        return;
     }
-}
-render() {
-    const styles = MyStylesheet();
-    const gfk = new GFK();
-    const headerFont = gfk.getHeaderFont.call(this);
-    const smallFont = gfk.getSmallFont.call(this);
-    const regularFont = gfk.getRegularFont.call(this);
-    const engineerid = 'mazen'
-    const projectid = this.props.match.params.projectid;
-    const myproject = gfk.getProjectById.call(this, this.props.match.params.projectid)
-    const datereport = new DateReport();
-    const saveReportIcon = gfk.getreporticon.call(this)
-    return (
-        <div style={{ ...styles.generalFlex }}>
-            <div style={{ ...styles.flex1 }}>
-
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}`}>
-                        /{engineerid}
-                    </Link>
-                </div>
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/projects`}>
-                        /projects
-                    </Link>
-                </div>
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/projects/${projectid}`}>
-                        /{myproject.projectnumber} - {myproject.title} {myproject.address} {myproject.city}
-                    </Link>
-                </div>
-
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/projects/${projectid}/fieldreports`}>
-                        /fieldreports
-                    </Link>
-                </div>
-
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.alignCenter, ...styles.generalFont }}>
-                        {datereport.showdatein.call(this)}
-                    </div>
-                </div>
-
-
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont }}>
-                        <span style={{ ...regularFont }}>Report Content</span> <textarea style={{ ...smallFont, ...styles.generalField, ...styles.generalFont }}
-                            value={this.getcontent()}
-                            onChange={event => { this.handlecontent(event.target.value) }}> </textarea>
-                    </div>
-                </div>
-                {this.compactiontestinput()}
-                {this.showcompactiontests()}
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont }}>
-                        Field Reports by Project
-                    </div>
-                </div>
-                {this.showimageuploader()}
-
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.generalFont, ...headerFont }}>
-                        {this.state.message}
-                    </div>
-                </div>
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                        <button style={{ ...styles.generalButton, ...saveReportIcon }} onClick={() => { this.savereport() }}>{saveReport()}</button>
-                    </div>
-                </div>
-                {this.showotherreports()}
-            </div>
-        </div>
-    )
-}
 }
 function mapStateToProps(state) {
     return {
