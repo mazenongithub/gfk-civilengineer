@@ -99,7 +99,9 @@ class App extends Component {
 
         if (response?.message) {
           // Clear Redux user state
-          this.props.reduxUser(null);  // You probably want to reset user, not set message
+          this.props.reduxUser(null);
+          this.props.reduxCompany(null)
+          this.props.reduxProjects(null)  // You probably want to reset user, not set message
           this.setState({ message: response.message });
 
           // Optionally show success message
