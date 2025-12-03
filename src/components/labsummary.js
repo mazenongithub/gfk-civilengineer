@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { calcdryden, moist } from './functions';
 import UnconfinedCalcs from './unconfinedcalcs';
 import SoilClassification from './soilclassification';
+import { GetSummary } from './actions/api';
+import { downloadIcon } from './svg';
 
 
 class LabSummary extends Component {
@@ -56,7 +58,7 @@ class LabSummary extends Component {
                         // eslint-disable-next-line 
                         samples.map(sample => {
 
-                      
+
                             const sampleid = sample.sampleid;
                             sampleno = `${boringnumber}-${sample.sampleset}(${sample.samplenumber})`
                             depth = sample.depth;
@@ -73,16 +75,16 @@ class LabSummary extends Component {
                                 pi = '';
                             }
 
-                            const unconfined = gfk.getUnconfinedTestById.call(this,projectid, boringid, sampleid);
-                           
-                                maxstress = unconfinedcalcs.getMaxStress.call(this, projectid,boringid, sampleid)
-                                maxstrain = unconfinedcalcs.getMaxStrain.call(this, projectid, boringid, sampleid)
+                            const unconfined = gfk.getUnconfinedTestById.call(this, projectid, boringid, sampleid);
 
-                                if(!maxstress || !maxstrain) {
+                            maxstress = unconfinedcalcs.getMaxStress.call(this, projectid, boringid, sampleid)
+                            maxstrain = unconfinedcalcs.getMaxStrain.call(this, projectid, boringid, sampleid)
+
+                            if (!maxstress || !maxstrain) {
                                 maxstress = '';
                                 maxstrain = '';
-                                }
-                            
+                            }
+
 
                             const sieve = gfk.getSieveBySampleId.call(this, projectid, boringid, sampleid)
 
@@ -110,10 +112,10 @@ class LabSummary extends Component {
                                 if (fines > 0) {
                                     sieveresult += ` Fines ${fines}%`
                                 }
-                                
+
 
                             } else {
-                                sieveresult=''
+                                sieveresult = ''
                             }
 
 
@@ -152,6 +154,24 @@ class LabSummary extends Component {
         </tr>)
     }
 
+    async getSummary() {
+        try {
+            const { projectid } = this.props.match.params;
+
+            // Fetch PDF Blob
+            const pdfBlob = await GetSummary(projectid);
+
+            // Create a URL and open it
+            const url = URL.createObjectURL(pdfBlob);
+            window.open(url, "_blank");
+
+        } catch (err) {
+            console.error("Error loading summary:", err);
+            alert(err.message || "Failed to load summary.");
+        }
+    }
+
+
 
     render() {
         const gfk = new GFK();
@@ -161,6 +181,7 @@ class LabSummary extends Component {
         const projectid = this.props.match.params.projectid;
         const regularFont = gfk.getRegularFont.call(this)
         const project = gfk.getProjectById.call(this, projectid)
+        const buttonWidth = { width: '200px' }
 
         if (project) {
 
@@ -221,6 +242,11 @@ class LabSummary extends Component {
                     </table>
                 </div>
 
+                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.alignCenter, ...styles.topMargin15 }}>
+                    <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={() => { this.getSummary() }}>{downloadIcon()}</button>
+                </div>
+
+
 
             </div>)
 
@@ -234,7 +260,7 @@ class LabSummary extends Component {
 
 function mapStateToProps(state) {
     return {
-        projects:state.projects,
+        projects: state.projects,
         myuser: state.myuser
     }
 }

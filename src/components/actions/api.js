@@ -235,6 +235,36 @@ export async function LoadProjects() {
     }
 }
 
+export async function GetSummary(projectid) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/xml/${projectid}/labsummary`;
+
+    try {
+        const resp = await fetch(APIURL, { credentials: 'include' });
+
+        if (!resp.ok) {
+            // Try to parse JSON error if server sent one
+            const errorData = await resp.json().catch(() => null);
+            const message =
+                errorData?.message ||
+                (resp.status >= 400 && resp.status < 500
+                    ? 'Client error while loading summary.'
+                    : 'Server error. Please try again later.');
+
+            throw new Error(message);
+        }
+
+        // ⬅️ IMPORTANT: API returns a PDF, so use blob()
+        const pdfBlob = await resp.blob();
+        return pdfBlob;
+
+    } catch (err) {
+        console.error('❌ Error fetching summary:', err);
+        throw err;
+    }
+}
+
+
+
 export async function LoadProject(projectid) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/loadproject`;
 

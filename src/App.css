@@ -124,6 +124,32 @@
   color: #61dafb;
 }
 
+   .downloadIcon-1 {
+        fill: #fff;
+      }
+
+      .downloadIcon-1, .downloadIcon-2, .downloadIcon-3 {
+        stroke-miterlimit: 10;
+      }
+
+      .downloadIcon-1, .downloadIcon-3 {
+        stroke: #000;
+      }
+
+      .downloadIcon-2 {
+        fill: #f2f2f3;
+        font-family: Roboto-Bold, Roboto;
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -.06em;
+        stroke: #231f20;
+      }
+
+      .downloadIcon-3 {
+        fill: #428bca;
+        stroke-width: 3px;
+      }
+
 /* App.css or your component CSS */
 .rdt input {
   font-family: 'Roboto', sans-serif;

@@ -128,6 +128,24 @@ export function radioIcon() {
     );
 }
 
+export function downloadIcon() {
+    return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272.44 80.72">
+  <defs>
+    <style>
+   
+    </style>
+  </defs>
+  <g id="UI">
+    <rect className="downloadIcon-3" x="11.53" y="1.5" width="259.42" height="77.72" rx="9.53" ry="9.53"/>
+    <text className="downloadIcon-2" transform="translate(27.18 55) scale(.92 1)"><tspan x="0" y="0">Download</tspan></text>
+    <g>
+      <rect className="downloadIcon-1" x="230.46" y="10.38" width="13.17" height="47.17"/>
+      <polygon className="downloadIcon-1" points="237.05 70.34 249.55 48.65 224.55 48.65 237.05 70.34"/>
+    </g>
+  </g>
+</svg>)
+}
+
 export function addIcon() {
     return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54.93 54.93">
   <defs>
