@@ -146,7 +146,7 @@ class ViewFieldReport extends Component {
         const { projectid, fieldid } = this.props.match.params;
 
         const compactiontests = gfk.getcompactiontestsbyfieldid.call(this, projectid, fieldid)
-        console.log(compactiontests)
+      
         if (compactiontests) {
             compactiontests.sort((a, b) => {
                 if (Number(a.testnum) >= Number(b.testnum)) {
