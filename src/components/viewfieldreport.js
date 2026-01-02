@@ -297,7 +297,7 @@ class ViewFieldReport extends Component {
                 images.push(
                     <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }} key={fieldimage.imageid}>
                         <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                            <img src={`${process.env.REACT_APP_SERVER_API}${fieldimage.image}`} alt={fieldimage.caption} />
+                            <img style={{...styles.width33}} src={`${process.env.REACT_APP_SERVER_API}${fieldimage.image}`} alt={fieldimage.caption} />
                         </div>
                         <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
                             <span style={{ ...regularFont }}>{fieldimage.caption}</span>

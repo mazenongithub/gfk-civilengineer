@@ -100,6 +100,7 @@ class LogDraft extends Component {
     }
 
     drawsample(depth, length, diameter) {
+        console.log(depth, length, diameter)
         let style = { stroke: "black", strokeWidth: 1, fill: "none" }
         let style_1 = { stroke: "black" }
         let style_2 = { stroke: "black", strokeWidth: 1 };
@@ -131,31 +132,31 @@ class LogDraft extends Component {
 
     }
 
-    loadsampletype() {
-        let sampletype = [];
-        const samples = this.getSamples();
-        if (samples.length > 0) {
-            // eslint-disable-next-line
-            samples.map(sample => {
-                if(Number(sample.sptlength)>0) {
-                    const depth = Number(sample.depth)
-                    const samplelength = Number(sample.sptlength)/12
-                    const diameter = Number(sample.diameter)
-                    sampletype.push(this.drawsample(depth,samplelength,diameter))
-                }
+  loadSampleType() {
+  const samples = this.getSamples();
+  console.log(samples)
 
-            })
+  if (!Array.isArray(samples) || samples.length === 0) {
+    return [];
+  }
 
+  return samples
+    .filter(sample => Number(sample.sptlength) > 0)
+    .map(sample => {
+        console.log(sample)
+      const depth = Number(sample.depth);
+      const sampleLength = Number(sample.sptlength) / 12;
+      const diameter = Number(sample.diameter);
 
-        }
-        return sampletype;
+      return this.drawsample(depth, sampleLength, diameter);
+    });
+}
 
-    }
     showgraphic(y1, y2, url) {
         let graphic = url;
 
         let style = {
-            backgroundImage: `url(${graphic}`,
+            backgroundImage: `url(${process.env.REACT_APP_SERVER_API}${graphic}`,
             width: "100%",
             height: "100%"
         }
@@ -364,9 +365,9 @@ class LogDraft extends Component {
         if (project) {
 
 
-            address = project.address;
+            address = project.projectaddress;
             projectnumber = project.projectnumber;
-            city = project.city;
+            city = project.projectcity;
             title = project.title;
 
 
@@ -578,7 +579,7 @@ class LogDraft extends Component {
 
                                     {this.loadsamplenumber()}
                                     <rect className="logdraft-2" x="49.5" y="61.5" width="26" height="70" />
-                                    {this.loadsampletype()}
+                                    {this.loadSampleType()}
                                     <rect className="logdraft-2" x="75.5" y="61.5" width="80" height="70" />
                                     {this.loadgraphics()}
                                     <rect className="logdraft-2" x="155.5" y="61.5" width="431" height="70" />

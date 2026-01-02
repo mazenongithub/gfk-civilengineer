@@ -3,6 +3,8 @@ import GFK from './gfk'
 import Profile from './profile';
 import * as actions from './actions';
 import { connect } from 'react-redux';
+import { MyStylesheet } from './styles';
+
 
 class Landing extends Component {
     constructor(props) {
@@ -25,10 +27,26 @@ class Landing extends Component {
     }
 
     showLanding() {
-        return (<div className="landing">
-            <h1>GeoPro</h1>
-            <p>Geotechnical data made simple.</p>
-        </div>)
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const headerFont = gfk.getHeaderFont.call(this)
+        const regularFont = gfk.getRegularFont.call(this)
+        return (
+
+            <div style={{ ...styles.generalContainer }}>
+
+              
+                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+                    <h1 style={{ ...styles.generalFont, ...headerFont, ...styles.boldFont }}>Geotechnical Engineering Software | Reports, Logs, & Analysis | CivilEngineer.io</h1>
+                </div>
+
+                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
+
+                    <p style={{ ...styles.generalFont, ...regularFont }}>Comprehensive geotechnical engineering software for California projects. Manage borings, lab data, soil logs, analysis, and professional reports online—secure, fast, and built by licensed engineers.</p>
+
+                </div>
+            </div>
+        )
     }
 
     render() {

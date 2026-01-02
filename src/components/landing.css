@@ -12,6 +12,7 @@
 .nav-logo {
   font-size: 22px;
   font-weight: bold;
+  color:#f2f2f2;
 }
 
 /* --- DESKTOP NAV LINKS --- */
@@ -23,7 +24,7 @@
 .nav-links a {
   text-decoration: none;
   font-size: 18px;
-  color: #333;
+  color: #f2f2f2;
 }
 
 .nav-links a:hover {
@@ -56,7 +57,7 @@
   left: 0;
   height: 100%;
   width: 260px;
-  background: white;
+  background: #f2f2f2;
   box-shadow: 2px 0 8px rgba(0,0,0,0.2);
   padding: 24px;
   transform: translateX(-100%);

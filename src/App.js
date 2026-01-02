@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import Landing from './components/landing';
 import Clients from './components/clients';
 import Company from './components/company'
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 
 
 class App extends Component {
@@ -45,7 +46,7 @@ class App extends Component {
     return user && user._id ? (
       <Link onClick={() => { this.closeMenu() }} to={`/${user.engineerid}/projects`}>Projects</Link>
     ) : (
-      <a href="#">Features</a>
+      <Link onClick={() => { this.closeMenu() }} to={`/contact`}>Contact</Link>
     );
   }
 
@@ -56,11 +57,11 @@ class App extends Component {
     return user && user._id ? (
       <Link onClick={() => { this.closeMenu() }} to={`/${user.engineerid}/profile`}>Profile</Link>
     ) : (
-      <a href="#">Features</a>
+      <span>&nbsp;</span>
     );
   }
- 
-  companyLink(){
+
+  companyLink() {
 
     const gfk = new GFK();
     const user = gfk.getUser.call(this);
@@ -68,12 +69,12 @@ class App extends Component {
     return user && user._id ? (
       <Link onClick={() => { this.closeMenu() }} to={`/gfk`}>Company</Link>
     ) : (
-      <a href="#">Features</a>
+      <Link onClick={() => { this.closeMenu() }} to={`/features`}>Features</Link>
     );
 
   }
 
-   
+
 
   loginLink() {
     const gfk = new GFK();
@@ -139,7 +140,7 @@ class App extends Component {
         console.warn("⚠️ No engineer returned.");
       }
 
-      if(response?.gfk) {
+      if (response?.gfk) {
         this.props.reduxCompany(response.gfk)
       }
 
@@ -175,11 +176,11 @@ class App extends Component {
       <div style={{ ...styles.generalContainer }}>
 
         <div style={{ ...styles.generalContainer }}>
-          <nav className="navbar">
-            <div className="nav-logo">GeoApp</div>
+          <nav style={{ ...styles.navColor }} className="navbar">
+            <div className="nav-logo">https://gfk.civilengineer.io</div>
 
             {/* Desktop Links */}
-            <div className="nav-links">
+            <div style={{ ...styles.mobileColor }} className="nav-links">
               {this.homeLink()}
               {this.companyLink()}
               {this.projectsLink()}
@@ -189,7 +190,7 @@ class App extends Component {
 
             {/* Hamburger */}
             <button className="nav-hamburger" onClick={() => { this.openMenu() }}>
-              ☰
+              <span style={{ ...styles.mobileColor }}>☰ </span>
             </button>
           </nav>
 
@@ -232,18 +233,43 @@ class App extends Component {
         {/* Landing Page Content */}
         <div className="landing-content">
           <BrowserRouter>
-            {this.showApp()}
-            <div style={{ ...styles.generalContainer }}>
-              <Switch>
-                <Route exact path="/" component={Landing} />
-                <Route exact path="/gfk" component={Company} />
-                <Route exact path="/access/login" component={Login} />
-                <Route exact path="/gfk/clients" component={Clients} />
-                <Route exact path="/:engineerid/profile" render={showprofile} />
-                <Route exact path="/:engineerid/projects" component={Projects} />
-                <Route path="/:engineerid/projects/:projectid" component={ViewProject} />
-              </Switch>
-            </div>
+            <HelmetProvider>
+              {this.showApp()}
+              <div style={{ ...styles.generalContainer }}>
+                <Helmet>
+                    {/* Base title (can be overridden per page) */}
+                    <title>Geotechnical Engineering Software | Reports, Logs, & Analysis | CivilEngineer.io</title>
+
+                    {/* Default meta description */}
+                    <meta
+                        name="description"
+                        content="Comprehensive geotechnical engineering software for California projects. Manage borings, lab data, soil logs, analysis, and professional reports online—secure, fast, and built by licensed engineers."
+                    />
+                    {/* Canonical (base) */}
+                    <link rel="canonical" href="https://gfk.civilengineer.io/" />
+
+                    {/* Open Graph */}
+                    <meta property="og:site_name" content="https://gfk.civilengineer.io" />
+                    <meta property="og:type" content="website" />
+                    <meta property="og:title" content="Geotechnical Engineering Software | Reports, Logs, & Analysis | CivilEngineer.io" />
+                    <meta
+                        property="og:description"
+                        content="Comprehensive geotechnical engineering software for California projects. Manage borings, lab data, soil logs, analysis, and professional reports online—secure, fast, and built by licensed engineers."
+                    />
+                    <meta property="og:url" content="https://gfk.civilengineer.io/" />
+
+                </Helmet>
+                <Switch>
+                  <Route exact path="/" component={Landing} />
+                  <Route exact path="/gfk" component={Company} />
+                  <Route exact path="/access/login" component={Login} />
+                  <Route exact path="/gfk/clients" component={Clients} />
+                  <Route exact path="/:engineerid/profile" render={showprofile} />
+                  <Route exact path="/:engineerid/projects" component={Projects} />
+                  <Route path="/:engineerid/projects/:projectid" component={ViewProject} />
+                </Switch>
+              </div>
+            </HelmetProvider>
           </BrowserRouter>
         </div>
 
@@ -260,7 +286,7 @@ function mapStateToProps(state) {
   return {
     myuser: state.myuser,
     projects: state.projects,
-    company:state.company
+    company: state.company
   }
 }
 

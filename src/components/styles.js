@@ -51,6 +51,9 @@ export function MyStylesheet() {
             width: '66%',
             padding: '3px'
         },
+        width33: {
+            width: '33%'
+        },
         generalField: {
             width: '95%',
             padding: '3px'
@@ -105,6 +108,15 @@ export function MyStylesheet() {
         },
         rightMargin10: {
             marginRight: '10px'
+        },
+        navColor:{
+            backgroundColor:'#6A7EA6'
+        },
+        mobileMenu:{
+            backgroundColor:'#023059'
+        },
+        mobileColor:{
+            color:'#f2f2f2'
         }
 
     })
