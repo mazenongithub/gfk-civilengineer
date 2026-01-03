@@ -54,6 +54,9 @@ export function MyStylesheet() {
         width33: {
             width: '33%'
         },
+        width99: {
+            width: '99%'
+        },
         generalField: {
             width: '95%',
             padding: '3px'

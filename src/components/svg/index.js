@@ -105,17 +105,17 @@ export function dateMonthUp() {
     return (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 66"><defs><style></style></defs><title>datemonthup</title><g id="Layer_2" data-name="Layer 2"><g id="guides"><rect className="datemonthup-1" x="1" y="1" width="76" height="64" /><polygon className="datemonthup-2" points="55 29 30 45 30 13 55 29" /></g></g></svg>)
 }
 export function saveSF() {
-    return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233.45 74.46">
-  <defs>
-    <style>
-    
-    </style>
-  </defs>
-  <g id="UI">
-    <rect className="sfsave-1" x="5.39" y="1" width="227.06" height="72.46" rx="11.69" ry="11.69"/>
-    <text className="sfsave-2" transform="translate(71.73 51.87) scale(.92 1)"><tspan className="sfsave-3" x="0" y="0">S</tspan><tspan className="sfsave-4" x="26.63" y="0">a</tspan><tspan className="sfsave-5" x="49.13" y="0">v</tspan><tspan className="sfsave-6" x="70.2" y="0">e </tspan></text>
-  </g>
-</svg>)
+    return (<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 233.45 74.46">
+        <defs>
+            <style>
+
+            </style>
+        </defs>
+        <g id="UI">
+            <rect className="sfsave-1" x="5.39" y="1" width="227.06" height="72.46" rx="11.69" ry="11.69" />
+            <text className="sfsave-2" transform="translate(71.73 51.87) scale(.92 1)"><tspan className="sfsave-3" x="0" y="0">S</tspan><tspan className="sfsave-4" x="26.63" y="0">a</tspan><tspan className="sfsave-5" x="49.13" y="0">v</tspan><tspan className="sfsave-6" x="70.2" y="0">e </tspan></text>
+        </g>
+    </svg>)
 }
 
 export function radioIcon() {
@@ -129,32 +129,90 @@ export function radioIcon() {
 }
 
 export function downloadIcon() {
-    return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272.44 80.72">
-  <defs>
-    <style>
-   
-    </style>
-  </defs>
-  <g id="UI">
-    <rect className="downloadIcon-3" x="11.53" y="1.5" width="259.42" height="77.72" rx="9.53" ry="9.53"/>
-    <text className="downloadIcon-2" transform="translate(27.18 55) scale(.92 1)"><tspan x="0" y="0">Download</tspan></text>
-    <g>
-      <rect className="downloadIcon-1" x="230.46" y="10.38" width="13.17" height="47.17"/>
-      <polygon className="downloadIcon-1" points="237.05 70.34 249.55 48.65 224.55 48.65 237.05 70.34"/>
-    </g>
-  </g>
-</svg>)
+    return (<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272.44 80.72">
+        <defs>
+            <style>
+
+            </style>
+        </defs>
+        <g id="UI">
+            <rect className="downloadIcon-3" x="11.53" y="1.5" width="259.42" height="77.72" rx="9.53" ry="9.53" />
+            <text className="downloadIcon-2" transform="translate(27.18 55) scale(.92 1)"><tspan x="0" y="0">Download</tspan></text>
+            <g>
+                <rect className="downloadIcon-1" x="230.46" y="10.38" width="13.17" height="47.17" />
+                <polygon className="downloadIcon-1" points="237.05 70.34 249.55 48.65 224.55 48.65 237.05 70.34" />
+            </g>
+        </g>
+    </svg>)
 }
 
 export function addIcon() {
-    return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54.93 54.93">
-  <defs>
-    <style>
-     
-    </style>
-  </defs>
-  <g id="UI">
-    <polygon className="addIcon-1" points="54.43 17.76 54.43 37.17 37.17 37.17 37.17 54.43 17.76 54.43 17.76 37.17 .5 37.17 .5 17.76 17.76 17.76 17.76 .5 37.17 .5 37.17 17.76 54.43 17.76"/>
-  </g>
-</svg>)
+    return (<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 54.93 54.93">
+        <defs>
+            <style>
+
+            </style>
+        </defs>
+        <g id="UI">
+            <polygon className="addIcon-1" points="54.43 17.76 54.43 37.17 37.17 37.17 37.17 54.43 17.76 54.43 17.76 37.17 .5 37.17 .5 17.76 17.76 17.76 17.76 .5 37.17 .5 37.17 17.76 54.43 17.76" />
+        </g>
+    </svg>)
+}
+
+export function pressPlay() {
+    return (
+        <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176.88 74.35">
+            <g id="svg">
+                <g>
+                    <rect className="pressplay-1" x=".5" y=".5" width="175.88" height="73.35" />
+                    <polygon className="pressplay-2" points="110.18 37.17 66.69 23.94 66.69 50.4 110.18 37.17" />
+                </g>
+            </g>
+        </svg>)
+}
+
+export function slideLeft() {
+    return (
+        <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100.89 75.43">
+
+            <g id="svg">
+                <g>
+                    <rect className="moveslide-1" x=".5" y=".5" width="99.89" height="74.43" />
+                    <g>
+                        <polygon className="moveslide-2" points="21.82 37.71 65.31 50.94 65.31 24.48 21.82 37.71" />
+                        <rect className="moveslide-2" x="73.68" y="24.48" width="5.39" height="26.46" />
+                    </g>
+                </g>
+            </g>
+        </svg>)
+}
+
+export function slideRight() {
+    return (
+        <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100.89 75.43">
+
+            <g id="svg">
+                <g>
+                    <rect className="moveslide-1" x=".5" y=".5" width="99.89" height="74.43" transform="translate(100.89 75.43) rotate(180)" />
+                    <g>
+                        <polygon className="moveslide-2" points="79.08 37.71 35.59 24.48 35.59 50.94 79.08 37.71" />
+                        <rect className="moveslide-2" x="21.82" y="24.48" width="5.39" height="26.46" transform="translate(49.02 75.43) rotate(180)" />
+                    </g>
+                </g>
+            </g>
+        </svg>)
+}
+
+export function stopButton() {
+    return (
+        <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176.88 74.35">
+
+            <g id="svg">
+                <g>
+                    <rect className="stopbutton-1" x=".5" y=".5" width="175.88" height="73.35" />
+                    <rect className="stopbutton-2" x="71.7" y="20.43" width="33.48" height="33.48" />
+                </g>
+            </g>
+        </svg>
+    )
 }

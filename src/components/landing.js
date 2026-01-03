@@ -4,6 +4,7 @@ import Profile from './profile';
 import * as actions from './actions';
 import { connect } from 'react-redux';
 import { MyStylesheet } from './styles';
+import SlideShow from './slideshow';
 
 
 class Landing extends Component {
@@ -45,6 +46,8 @@ class Landing extends Component {
                     <p style={{ ...styles.generalFont, ...regularFont }}>Comprehensive geotechnical engineering software for California projects. Manage borings, lab data, soil logs, analysis, and professional reports online—secure, fast, and built by licensed engineers.</p>
 
                 </div>
+
+                <SlideShow/>
             </div>
         )
     }
