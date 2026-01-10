@@ -672,6 +672,12 @@
   stroke: #231f20;
 }
 
+.triangleBullet-1 {
+  fill: #244f74;
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
+
 
 
 @keyframes App-logo-spin {

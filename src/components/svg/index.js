@@ -216,3 +216,13 @@ export function stopButton() {
         </svg>
     )
 }
+
+export function triangleBullet() {
+    return(
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.9 45.11">
+
+  <g id="svg">
+    <polygon className="triangleBullet-1" points="25.45 44.09 50.04 .5 .86 .5 25.45 44.09"/>
+  </g>
+</svg>)
+}

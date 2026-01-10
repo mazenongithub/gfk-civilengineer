@@ -112,6 +112,15 @@ export function MyStylesheet() {
         rightMargin10: {
             marginRight: '10px'
         },
+          marginLeft25:{
+            marginLeft:'25px'
+        },
+        marginLeft50:{
+            marginLeft:'50px'
+        },
+         marginLeft75:{
+            marginLeft:'75px'
+        },
         navColor:{
             backgroundColor:'#6A7EA6'
         },
