@@ -113,11 +113,13 @@ class Features extends Component {
         const gfk = new GFK();
         const styles = MyStylesheet();
 
-        const bulletStyle = { width: '50px' };
+        const bulletStyle = {
+            width: this.state.width > 900 ? '50px' : '35px'
+        };
         const headerFont = gfk.getWebHeaderFont.call(this);
         const regularFont = gfk.getWebFont.call(this);
 
-        const marginLeft50 = this.state.width>900 ? styles.marginLeft50 : null
+        const marginLeft50 = this.state.width > 900 ? styles.marginLeft50 : null
 
         const summaries = Array.isArray(feature.summary)
             ? feature.summary.map((summary, index) => (
@@ -172,11 +174,14 @@ class Features extends Component {
     render() {
         const gfk = new GFK();
         const styles = MyStylesheet();
-        const bullet = { width: '50px' }
+        const bullet = {
+            width: this.state.width > 900 ? '50px' : '35px'
+        };
+
         const headerFont = gfk.getWebHeaderFont.call(this)
         const regularFont = gfk.getWebFont.call(this)
 
-        const marginLeft50 = this.state.width>900 ? styles.marginLeft50 : null
+        const marginLeft50 = this.state.width > 900 ? styles.marginLeft50 : null
         return (
             <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
 
