@@ -647,7 +647,7 @@ class GFK {
         return sieve;
     }
     getcompactiontestsbyfieldid(projectid, fieldid) {
-    
+
         const gfk = new GFK();
         const fieldreport = gfk.getfieldreportbyid.call(this, projectid, fieldid)
 
@@ -807,6 +807,15 @@ class GFK {
             projectid = fieldreport.projectid;
         }
         return projectid;
+    }
+    getWebFont() {
+        return { fontSize: this.state.width > 900 ? '1.125rem' : '1rem' };
+    }
+    getWebHeaderFont() {
+        return {
+            fontSize: this.state.width > 900 ? '2.125rem' : '1.75rem',
+            lineHeight: '1.2'
+        };
     }
     getRegularFont() {
 

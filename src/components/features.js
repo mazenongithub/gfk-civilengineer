@@ -114,8 +114,10 @@ class Features extends Component {
         const styles = MyStylesheet();
 
         const bulletStyle = { width: '50px' };
-        const headerFont = gfk.getHeaderFont.call(this);
-        const regularFont = gfk.getRegularFont.call(this);
+        const headerFont = gfk.getWebHeaderFont.call(this);
+        const regularFont = gfk.getWebFont.call(this);
+
+        const marginLeft50 = this.state.width>900 ? styles.marginLeft50 : null
 
         const summaries = Array.isArray(feature.summary)
             ? feature.summary.map((summary, index) => (
@@ -134,7 +136,7 @@ class Features extends Component {
                     ...styles.generalContainer,
                     ...styles.bottomMargin15,
                     ...styles.generalFont,
-                    ...styles.marginLeft50
+                    ...marginLeft50
                 }}
             >
                 <button
@@ -171,8 +173,10 @@ class Features extends Component {
         const gfk = new GFK();
         const styles = MyStylesheet();
         const bullet = { width: '50px' }
-        const headerFont = gfk.getHeaderFont.call(this)
-        const regularFont = gfk.getRegularFont.call(this)
+        const headerFont = gfk.getWebHeaderFont.call(this)
+        const regularFont = gfk.getWebFont.call(this)
+
+        const marginLeft50 = this.state.width>900 ? styles.marginLeft50 : null
         return (
             <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
 
@@ -181,7 +185,7 @@ class Features extends Component {
                     <span style={{ ...headerFont, ...styles.boldFont }}>App Features</span>
                 </div>
 
-                <div style={{ ...styles.generalFont, ...styles.marginLeft50, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.generalFont, ...marginLeft50, ...styles.bottomMargin15 }}>
                     <span style={{ ...regularFont }}>A comprehensive, end-to-end platform designed to manage geotechnical engineering work—from field data collection to final technical reports and billing.</span>
                 </div>
 
