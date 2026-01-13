@@ -678,6 +678,34 @@
   stroke-miterlimit: 10;
 }
 
+.checkbox-1 {
+  fill: none;
+}
+
+
+.checkbox-1,
+.checkbox-2 {
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
+
+.checkbox-2 {
+  fill: #244f74;
+}
+
+.submit-1 {
+  fill: #f2f2f3;
+  font-family: Inter, sans-serif;
+  font-size: 25.12px;
+  font-variation-settings: 'opsz' 14, 'wght' 800;
+  font-weight: 700;
+}
+
+.submit-2 {
+  fill: #244f74;
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
 
 
 @keyframes App-logo-spin {

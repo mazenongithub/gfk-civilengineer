@@ -50,36 +50,31 @@ export async function EngineerLogin(values) {
     }
 }
 
-export async function LoginUser(values) {
+export async function SaveContactUs(values) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savecontactus`;
 
-    var APIURL = `https://civilengineer.io/gfk/api/login.php`
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(values),
+        });
 
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: "include",
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            const message =
+                data.message || 'Request failed or server is not responding';
+            throw new Error(message);
+        }
 
-        body: JSON.stringify(values)
-    })
-        .then(resp => {
+        return await response.json();
 
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
-
-            return resp.json();
-        })
+    } catch (err) {
+        throw err instanceof Error ? err : new Error(String(err));
+    }
 }
 
 export async function UploadFieldImage(formData) {
@@ -114,76 +109,14 @@ export async function UploadFieldImage(formData) {
 
 
 
-export async function LoadSeismic() {
-    let APIURL = `http://civilengineer.io/gfk/api/loadseismic.php`
-
-    return fetch(APIURL, { credentials: 'include' }).then(resp => {
-
-        if (!resp.ok) {
-            if (resp.status >= 400 && resp.status < 500) {
-                return resp.json().then(data => {
-
-                    throw data.message;
-                })
-            }
-            else {
-                let err = { errorMessage: 'Please try again later, server is not responding' };
-                throw err;
-            }
-        }
-
-        return resp.json();
-    })
-}
 
 
 
 
-export async function LoadSlopeStability() {
-    let APIURL = `http://civilengineer.io/gfk/api/loadslopestability.php`
-
-    return fetch(APIURL, { credentials: 'include' }).then(resp => {
-
-        if (!resp.ok) {
-            if (resp.status >= 400 && resp.status < 500) {
-                return resp.json().then(data => {
-
-                    throw data.message;
-                })
-            }
-            else {
-                let err = { errorMessage: 'Please try again later, server is not responding' };
-                throw err;
-            }
-        }
-
-        return resp.json();
-    })
-}
 
 
 
-export async function LoadPTSlab() {
-    let APIURL = `http://civilengineer.io/gfk/api/loadptslab.php`
 
-    return fetch(APIURL, { credentials: 'include' }).then(resp => {
-
-        if (!resp.ok) {
-            if (resp.status >= 400 && resp.status < 500) {
-                return resp.json().then(data => {
-
-                    throw data.message;
-                })
-            }
-            else {
-                let err = { errorMessage: 'Please try again later, server is not responding' };
-                throw err;
-            }
-        }
-
-        return resp.json();
-    })
-}
 
 export async function LoadZoneCharts() {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/loadzonecharts`;
@@ -314,137 +247,6 @@ export async function CheckUser() {
 }
 
 
-export async function DeletePTSlab(section_id, layer_id) {
-    const values = { section_id, layer_id }
-
-    var APIURL = `http://civilengineer.io/gfk/api/deleteptslab.php`
-
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
-
-        body: JSON.stringify(values)
-    })
-        .then(resp => {
-
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
-
-            return resp.json();
-        })
-}
-
-export async function HandleSlopeStability(projectid, sections) {
-    const values = { projectid, sections }
-
-    var APIURL = `http://civilengineer.io/gfk/api/handleslopestability.php`
-
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
-
-        body: JSON.stringify(values)
-    })
-        .then(resp => {
-
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        throw data;
-                    })
-                }
-                else {
-                    let err = ' Error Making Request'
-                    throw err;
-                }
-            }
-
-            return resp.json();
-        })
-}
-
-export async function HandleSeismic(seismic) {
-
-
-    var APIURL = `http://civilengineer.io/gfk/api/handleseismic.php`
-
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
-
-        body: JSON.stringify(seismic)
-    })
-        .then(resp => {
-
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
-
-            return resp.json();
-        })
-}
-
-
-export async function HandlePTSlab(ptslab) {
-    console.log(ptslab)
-
-    var APIURL = `http://civilengineer.io/gfk/api/handleptslab.php`
-
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
-
-        body: JSON.stringify(ptslab)
-    })
-        .then(resp => {
-
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = { errorMessage: data.message };
-                        throw err;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
-
-            return resp.json();
-        })
-}
 
 export async function SaveBorings(values) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/saveborings`;
@@ -713,35 +515,7 @@ export async function UploadGraphicLog(formData) {
     }
 }
 
-export async function SaveTime(values) {
-    var APIURL = `https://civilengineer.io/gfk/api/savetime.php`
-    return fetch(APIURL, {
-        method: 'post',
-        credentials: 'include',
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
 
-        body: JSON.stringify(values)
-    })
-        .then(resp => {
-
-            if (!resp.ok) {
-                if (resp.status >= 400 && resp.status < 500) {
-                    return resp.json().then(data => {
-
-                        throw data.message;
-                    })
-                }
-                else {
-                    let err = { errorMessage: 'Please try again later, server is not responding' };
-                    throw err;
-                }
-            }
-
-            return resp.json();
-        })
-}
 
 
 export async function SaveProjects(values) {

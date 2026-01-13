@@ -226,3 +226,34 @@ export function triangleBullet() {
   </g>
 </svg>)
 }
+
+export function checkedBox() {
+  return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56.97 47.92">
+  
+  <g id="png">
+    <rect className="checkbox-1" x=".5" y=".5" width="55.97" height="46.92"/>
+    <polygon className="checkbox-2" points="43.39 32.75 38.86 37.28 28.48 26.9 18.11 37.27 13.58 32.74 23.95 22.37 13.58 12 18.11 7.46 28.48 17.84 38.86 7.46 43.39 11.99 33.01 22.37 43.39 32.75"/>
+  </g>
+</svg>)
+}
+
+export function unCheckedBox() {
+  return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56.97 47.92">
+  
+  <g id="png">
+    <rect className="checkbox-1" x=".5" y=".5" width="55.97" height="46.92"/>
+  </g>
+</svg>)
+}
+
+export function submitButton() {
+  return(<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226.48 65.72">
+
+  <g id="png">
+    <g>
+      <rect className="submit-2" x="4.02" y=".5" width="221.95" height="64.72" rx="12.55" ry="12.55"/>
+      <text className="submit-1" transform="translate(67.77 40.76) scale(1.02 1)"><tspan x="0" y="0">Submit</tspan></text>
+    </g>
+  </g>
+</svg>)
+}

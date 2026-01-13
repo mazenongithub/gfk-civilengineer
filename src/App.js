@@ -17,6 +17,7 @@ import Clients from './components/clients';
 import Company from './components/company'
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import Features from './components/features';
+import Contact from './components/contact';
 
 
 class App extends Component {
@@ -264,6 +265,7 @@ class App extends Component {
                   <Route exact path="/" component={Landing} />
                   <Route exact path="/gfk" component={Company} />
                   <Route exact path="/features" component={Features} />
+                  <Route exact path="/contact" component={Contact} />
                   <Route exact path="/access/login" component={Login} />
                   <Route exact path="/gfk/clients" component={Clients} />
                   <Route exact path="/:engineerid/profile" render={showprofile} />

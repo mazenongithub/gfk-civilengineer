@@ -91,6 +91,9 @@ export function MyStylesheet() {
         flex6: {
             flex: 6
         },
+         flex8: {
+            flex: 8
+        },
         generalFont: {
             fontFamily: 'Roboto, sans-serif'
         },

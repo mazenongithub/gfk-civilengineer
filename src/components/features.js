@@ -9,7 +9,18 @@ class Features extends Component {
         super(props);
         this.state = {
             render: '', width: 0, height: 0,
-            features: [{
+            features: [
+                {
+                title: 'Project Manager',
+                description: 'A centralized project management system for organizing and tracking project information across properties and locations.',
+                summary: [
+                    'Search projects by property, location, or project number',
+                    'Store and manage project scopes of work',
+                    'Maintain a consistent, organized project database',
+                    'Acts as a centralized project workspace housing all related components, views, and project functionality.'
+                ]
+            },
+                {
                 title: 'Soil Labratory Management',
                 description: 'Manage lab testing with structured workflows and clear results.',
                 summary: [
