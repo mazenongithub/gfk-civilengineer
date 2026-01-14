@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import GFK from './gfk'
 import { MyStylesheet } from './styles';
 import { triangleBullet, checkedBox, submitButton, unCheckedBox } from './svg';
+import { SaveContactUs } from './actions/api';
 
 class Contact extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            render: '', width: 0, height: 0, lab: false, fullname:'', company:'', emailaddress:'', phonenumber:'' ,lab:false, liquefaction: false, logdraft: false, field: false, ptslab: false, slope: false, reports: false, invoice: false, description: ''
+            render: '', width: 0, height: 0, lab: false, fullname: '', company: '', emailaddress: '', phonenumber: '', lab: false, liquefaction: false, logdraft: false, field: false, ptslab: false, slope: false, reports: false, invoice: false, description: ''
         }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
@@ -49,7 +50,7 @@ class Contact extends Component {
 
     async saveContactUs() {
         try {
-          
+
             const {
                 fullname,
                 company,
@@ -84,12 +85,12 @@ class Contact extends Component {
 
             console.log(values)
 
-            // const response = await SaveContactUs(values);
-            // const created = new Date(response.contactus.created).toLocaleTimeString();
-            // const message =`${response.message} ${created}`
-            // this.setState({
-            //     message: message || 'Message sent successfully'
-            // });
+            const response = await SaveContactUs(values);
+            const created = new Date(response.contactus.created).toLocaleTimeString();
+            const message = `${response.message} ${created}`
+            this.setState({
+                message: message || 'Message sent successfully'
+            });
 
         } catch (err) {
             console.error('save contact us error:', err);
@@ -108,7 +109,7 @@ class Contact extends Component {
         const buttonWidth = { width: '3rem' }
         const areaHeight = { minHeight: '10rem' }
         const submitWidth = { width: '100%', maxWidth: '10rem' }
-        const getFlex = this.state.width>900 ? styles.flex5 : styles.flex2
+        const getFlex = this.state.width > 900 ? styles.flex5 : styles.flex2
 
         return (<div style={{ ...styles.generalContainer }}>
 
@@ -123,6 +124,9 @@ class Contact extends Component {
             </div>
 
 
+            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                <span style={{ ...regularFont }}>Full Name</span>
+            </div>
 
             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
                 <input type="text"
@@ -131,12 +135,12 @@ class Contact extends Component {
                     style={{ ...regularFont, ...styles.generalField }} />
             </div>
 
+
+
+
             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Full Name</span>
+                <span style={{ ...regularFont }}>Company</span>
             </div>
-
-
-
 
 
             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
@@ -145,10 +149,10 @@ class Contact extends Component {
                     onChange={event => { this.setField("company", event.target.value) }} />
             </div>
 
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Company</span>
-            </div>
 
+            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
+                <span style={{ ...regularFont }}>Email Address</span>
+            </div>
 
 
 
@@ -158,12 +162,11 @@ class Contact extends Component {
                     onChange={event => { this.setField("emailaddress", event.target.value) }} />
             </div>
 
+
+
             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Email Address</span>
+                <span style={{ ...regularFont }}>Phone Number</span>
             </div>
-
-
-
 
 
             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
@@ -172,9 +175,7 @@ class Contact extends Component {
                     onChange={event => { this.setField("phonenumber", event.target.value) }} />
             </div>
 
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Phone Number</span>
-            </div>
+
 
 
             <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
