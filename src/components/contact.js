@@ -8,7 +8,7 @@ class Contact extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            render: '', width: 0, height: 0, lab: false, fullname: '', company: '', emailaddress: '', phonenumber: '', lab: false, liquefaction: false, logdraft: false, field: false, ptslab: false, slope: false, reports: false, invoice: false, description: ''
+            render: '', width: 0, height: 0, lab: false, fullname: '', company: '', emailaddress: '', phonenumber: '', lab: false, liquefaction: false, logdraft: false, field: false, ptslab: false, slope: false, reports: false, invoice: false, description: '', captchaToken: null
         }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
@@ -16,6 +16,27 @@ class Contact extends Component {
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
+
+        window.onTurnstileSuccess = (token) => {
+            this.setState({ captchaToken: token });
+        };
+
+        window.onTurnstileExpired = () => {
+            this.setState({ captchaToken: null });
+        };
+
+        if (window.turnstile) {
+            window.turnstile.render("#turnstile-container", {
+                sitekey: process.env.REACT_APP_TURNSTILE_SITE_KEY,
+                callback: (token) => {
+                    this.setState({ captchaToken: token });
+                },
+                "expired-callback": () => {
+                    this.setState({ captchaToken: null });
+                },
+                theme: "light"
+            });
+        }
 
     }
 
@@ -64,7 +85,8 @@ class Contact extends Component {
                 slope,
                 reports,
                 invoice,
-                description
+                description,
+                captchaToken
             } = this.state;
 
             const values = {
@@ -80,7 +102,8 @@ class Contact extends Component {
                 slope,
                 reports,
                 invoice,
-                description
+                description,
+                captchaToken
             };
 
             console.log(values)
@@ -287,13 +310,25 @@ class Contact extends Component {
             </div>
 
 
+            <div
+                id="turnstile-container"
+                style={{ marginBottom: "15px", textAlign: "center" }}
+            ></div>
+
+
 
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...getFlex }}>
                     &nbsp;
                 </div>
                 <div style={{ ...styles.flex1 }}>
-                    <button style={{ ...styles.generalButton, ...submitWidth }} onClick={() => { this.saveContactUs() }}>
+                    <button
+                        style={{
+                            ...styles.generalButton, ...submitWidth, opacity: this.state.captchaToken ? 1 : 0.5,
+                            cursor: this.state.captchaToken ? "pointer" : "not-allowed"
+                        }}
+                        disabled={!this.state.captchaToken}
+                        onClick={() => { this.saveContactUs() }}>
                         {submitButton()}
                     </button>
                 </div>

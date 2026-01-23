@@ -158,11 +158,11 @@ class App extends Component {
 
     } catch (err) {
       console.error("❌ Error checking user:", err);
-      alert(
-        typeof err === "string"
-          ? err
-          : err.message || "Failed to verify user."
-      );
+      // alert(
+      //   typeof err === "string"
+      //     ? err
+      //     : err.message || "Failed to verify user."
+      // );
     }
   }
 
