@@ -1,7 +1,7 @@
 import React from 'react';
 import { saveBoringIcon } from './svg'
 import { MyStylesheet } from './styles';
-import { SaveBorings, SaveTimesheet } from './actions/api'
+import { SaveBorings, SaveTimesheet, SaveSchedule } from './actions/api'
 
 class GFK {
 
@@ -973,6 +973,15 @@ class GFK {
         return samples;
     }
 
+    getScheduleByProjectID(projectid) {
+        const gfk = new GFK();
+
+        // You accidentally wrote "this.projectid" instead of passing the argument
+        const project = gfk.getProjectById.call(this, projectid);
+
+        return project?.schedule || false;
+    }
+
     getTimesheetByProjectID(projectid) {
         const gfk = new GFK();
 
@@ -980,6 +989,37 @@ class GFK {
         const project = gfk.getProjectById.call(this, projectid);
 
         return project?.timesheet || false;
+    }
+
+    getScheduleLaborByProjectID(projectid) {
+        const gfk = new GFK();
+        const schedule = gfk.getScheduleByProjectID.call(this, projectid);
+
+        return schedule?.labor ?? false;
+    }
+
+    getScheduleLaborByID(projectid, laborid) {
+        const gfk = new GFK();
+
+        // Get labor array for the project
+        const labor = gfk.getScheduleLaborByProjectID.call(this, projectid);
+        if (!Array.isArray(labor)) return false;
+
+        // Find the matching labor entry
+        return labor.find(item => item.laborid === laborid) || false;
+    }
+
+    getScheduleLaborIndexByID(projectid, laborid) {
+        const gfk = new GFK();
+
+        // Get labor array for the project
+        const labor = gfk.getScheduleLaborByProjectID.call(this, projectid);
+        if (!Array.isArray(labor)) return false;
+
+        // Find the index
+        const index = labor.findIndex(item => item.laborid === laborid);
+
+        return index >= 0 ? index : false;
     }
 
     getLaborByProjectID(projectid) {
@@ -994,6 +1034,13 @@ class GFK {
         const timesheet = gfk.getTimesheetByProjectID.call(this, projectid);
 
         return timesheet?.costs ?? false;
+    }
+
+    getScheduleCostsByProjectID(projectid) {
+        const gfk = new GFK();
+        const schedule = gfk.getScheduleByProjectID.call(this, projectid);
+
+        return schedule?.costs ?? false;
     }
 
 
@@ -1022,6 +1069,32 @@ class GFK {
     }
 
 
+    getScheduleCostByID(projectid, costid) {
+        const gfk = new GFK();
+
+        // Get cost array for the project
+        const cost = gfk.getScheduleCostsByProjectID.call(this, projectid);
+        if (!Array.isArray(cost)) return false;
+
+        // Find the matching cost entry
+        return cost.find(item => item.costid === costid) || false;
+    }
+
+    getScheduleCostIndexByID(projectid, costid) {
+        const gfk = new GFK();
+
+        // Get cost array for the project
+        const cost = gfk.getScheduleCostsByProjectID.call(this, projectid);
+        if (!Array.isArray(cost)) return false;
+
+        // Find the index
+        const index = cost.findIndex(item => item.costid === costid);
+
+        return index >= 0 ? index : false;
+    }
+
+
+
     getCostByID(projectid, costid) {
         const gfk = new GFK();
 
@@ -1044,6 +1117,13 @@ class GFK {
         const index = cost.findIndex(item => item.costid === costid);
 
         return index >= 0 ? index : false;
+    }
+
+     getProposalByProjectID(projectid) {
+        const gfk = new GFK();
+        const timesheet = gfk.getScheduleByProjectID.call(this, projectid);
+
+        return timesheet?.proposals ?? false;
     }
 
 
@@ -1075,6 +1155,30 @@ class GFK {
 
         // Find the index
         const index = invoice.findIndex(item => item.invoiceid === invoiceid);
+
+        return index >= 0 ? index : false;
+    }
+
+          getProposalByID(projectid, proposalid) {
+        const gfk = new GFK();
+
+        // Get proposal array for the project
+        const proposal = gfk.getProposalByProjectID.call(this, projectid);
+        if (!Array.isArray(proposal)) return false;
+
+        // Find the matching proposal entry
+        return proposal.find(item => item.proposalid === proposalid) || false;
+    }
+
+    getProposalIndexByID(projectid, proposalid) {
+        const gfk = new GFK();
+
+        // Get proposal array for the project
+        const proposal = gfk.getProposalByProjectID.call(this, projectid);
+        if (!Array.isArray(proposal)) return false;
+
+        // Find the index
+        const index = proposal.findIndex(item => item.proposalid === proposalid);
 
         return index >= 0 ? index : false;
     }
@@ -1112,6 +1216,41 @@ class GFK {
             alert(`Error saving timesheet: ${err.message}`);
         }
     }
+
+
+        async saveSchedule() {
+            try {
+                const gfk = new GFK();
+                const { projectid } = this.props.match.params;
+    
+                if (!projectid) {
+                    throw new Error("Project ID is required.");
+                }
+    
+                const schedule = gfk.getScheduleByProjectID.call(this, projectid);
+                const values = { projectid, schedule };
+    
+                const projects = gfk.getProjects.call(this);
+                const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+    
+                if (projectIndex === -1) {
+                    throw new Error(`Project not found: ${projectid}`);
+                }
+    
+                const response = await SaveSchedule(values);
+                console.log(response)
+    
+                if (response.schedule) {
+                    projects[projectIndex].schedule = response.schedule;
+                    this.props.reduxProjects(projects);
+                    this.setState({ message: response.message });
+                }
+    
+            } catch (err) {
+                console.error("Error saving schedule:", err);
+                alert(`Error saving schedule: ${err.message}`);
+            }
+        }
 
 
     getCompany() {

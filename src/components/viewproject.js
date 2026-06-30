@@ -21,6 +21,8 @@ import SlopeStability from './slopestabilty'
 import Compaction from './compaction'
 import Invoice from './invoice';
 import ClientID from './clientid';
+import Schedule from './schedule'
+import Proposal from './proposals'
 
 
 class ViewProject extends Component {
@@ -107,7 +109,8 @@ class ViewProject extends Component {
                 seismic: result.seismic,
                 ptslab: result.ptslab,
                 slope: result.slope,
-                timesheet: result.timesheet
+                timesheet: result.timesheet,
+                schedule:result.schedule
             };
 
             // Update Redux store or local state
@@ -329,6 +332,36 @@ class ViewProject extends Component {
                 </div>
             </div>
 
+             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/compaction`}>
+                        /Compaction
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                   <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/schedule`}>
+                        /Schedule
+                    </Link>
+                </div>
+            </div>
+
+             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/proposals`}>
+                        /Proposals
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                   &nbsp;
+                </div>
+            </div>
+
 
 
 
@@ -370,7 +403,9 @@ class ViewProject extends Component {
                             <Route exact path={`${path}/ptslab`} component={PTSlab} />
                             <Route exact path={`${path}/seismic`} component={Seismic} />
                             <Route exact path={`${path}/timesheet`} component={Timesheet} />
+                            <Route exact path={`${path}/schedule`} component={Schedule} />
                             <Route exact path={`${path}/invoice`} component={Invoice} />
+                            <Route exact path={`${path}/proposals`} component={Proposal} />
                             <Route exact path={`${path}/slopestability`} component={SlopeStability} />
                             <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
                             <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />

@@ -13,7 +13,7 @@ class ClientID {
                 Select A Client
             </option>,
             ...clients.map(client => (
-                <option key={client.clientid} value={client.clientid}>
+                <option key={client.clientid} value={client._id}>
                     {client.firstname} {client.lastname}
                 </option>
             ))

@@ -55,6 +55,7 @@ class Projects extends Component {
         }
 
         const project = gfk.getProjectById.call(this, activeprojectid);
+        console.log(project)
 
         return project ? project[prop] : ""
     }

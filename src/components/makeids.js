@@ -268,7 +268,7 @@ class MakeID {
     }
 
     makeClientID() {
-   
+
         const gfk = new GFK();
 
         const clients = gfk.getClients.call(this) || [];
@@ -410,6 +410,23 @@ class MakeID {
         return id;
     }
 
+    schedulelaborid(projectid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+        const projectIndex = projects.findIndex(p => p.projectid === projectid);
+        if (projectIndex === -1) throw new Error('Project not found');
+
+        // Get all existing labor IDs for this project
+        const laborIds = projects[projectIndex]?.schedule?.labor?.map(l => l.laborid) || [];
+
+        let id;
+        do {
+            id = makeID(16);  // Use your makeID function
+        } while (laborIds.includes(id));
+
+        return id;
+    }
+
     laborid(projectid) {
         const gfk = new GFK();
         const projects = gfk.getProjects.call(this);
@@ -448,7 +465,48 @@ class MakeID {
         return id;
     }
 
+    schedulecostid(projectid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
 
+        // Find project
+        const project = projects.find(p => p.projectid === projectid);
+        if (!project) throw new Error("Project not found");
+
+        // Extract existing cost IDs (safe even if undefined)
+        const costIds =
+            project?.schedule?.costs?.map(c => c.costid) || [];
+
+        // Generate unique cost ID
+        let id;
+        do {
+            id = makeID(16);
+        } while (costIds.includes(id));
+
+        return id;
+    }
+
+
+    proposalid(projectid) {
+        const gfk = new GFK();
+        const projects = gfk.getProjects.call(this);
+
+        // Find project
+        const project = projects.find(p => p.projectid === projectid);
+        if (!project) throw new Error("Project not found");
+
+        // Extract existing proposal IDs (safe even if undefined)
+        const proposalIds =
+            project?.schedule?.proposals?.map(c => c.proposalid) || [];
+
+        // Generate unique proposal ID
+        let id;
+        do {
+            id = makeID(16);
+        } while (proposalIds.includes(id));
+
+        return id;
+    }
 
 
     invoiceid(projectid) {
