@@ -1277,6 +1277,15 @@ class GFK {
         return clients?.find(client => client.clientid === clientid) || null;
     }
 
+    
+
+     getClientBy_Id(client_id) {
+        const gfk = new GFK();
+        const clients = gfk.getClients.call(this);
+
+        return clients?.find(client => client._id === client_id) || null;
+    }
+
     getClientIndexById(clientid) {
         const gfk = new GFK();
         const clients = gfk.getClients.call(this);

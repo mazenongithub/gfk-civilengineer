@@ -5,7 +5,7 @@ import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
 import { addIcon, removeIconSmall, radioIcon, saveSF } from './svg';
-import { calculateLaborCost, formatDate, calculateCost, calculateHours } from './functions';
+import { calculateLaborCost, formatDate, formatDateTime, calculateCost, calculateHours, formatTime } from './functions';
 import MakeID from './makeids';
 import Datetime from "react-datetime";
 import moment from "moment";
@@ -490,6 +490,24 @@ class Proposal extends Component {
         return total;
     }
 
+    getApprovedBy() {
+        const gfk = new GFK();
+
+        const approvedby = this.getProposalField("approvedby");
+
+        if (!approvedby) {
+            return "";
+        }
+
+        const client = gfk.getClientBy_Id.call(this, approvedby);
+
+        if (!client) {
+            return "";
+        }
+
+        return `${client.firstname} ${client.lastname}`;
+    }
+
 
 
 
@@ -563,6 +581,8 @@ class Proposal extends Component {
                         <span style={{ ...regularFont }}>Date Proposal</span>
 
                     </div>
+
+
                     <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
 
                         <Datetime
@@ -575,6 +595,18 @@ class Proposal extends Component {
                                 style: { ...styles.generalFont, ...regularFont, ...styles.generalField, ...styles.mediumWidth }
                             }} // disables the time picker
                         />
+                    </div>
+
+
+                    <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                        <div style={{ ...styles.flex1, ...styles.generalFont }}>
+
+                            Approved By: {this.getApprovedBy()}
+
+                        </div>
+                        <div style={{ ...styles.flex1, ...styles.generalFont }}>
+                            Date Approved:{formatDateTime(this.getProposalField("dateapproved"))}
+                        </div>
                     </div>
 
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>

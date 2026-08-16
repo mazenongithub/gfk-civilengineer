@@ -23,6 +23,7 @@ import Invoice from './invoice';
 import ClientID from './clientid';
 import Schedule from './schedule'
 import Proposal from './proposals'
+import { browserLocalPersistence } from 'firebase/auth';
 
 
 class ViewProject extends Component {
@@ -43,6 +44,221 @@ class ViewProject extends Component {
         if (projects && projects.length > 0) {
             await this.loadProjectData();
         }
+
+
+        const { engineerid, projectid } = this.props.match.params;
+        const wsHost = `${process.env.REACT_APP_SERVER_API.replace(/^https?:\/\//, "")}`;
+        //  const wsHost = '100.65.74.20:3002'
+        const socket = new WebSocket(`wss://${wsHost}/${engineerid}/projects/${projectid}/websocketapi`)
+        // const socket = new WebSocket(`wss://192.168.1.6:3001/test-ws`)
+        //  const socket = new WebSocket(`wss://masterserver.civilengineer.io/test-ws`)
+        socket.onopen = (evt) => {
+
+            console.log("socket open ")
+            const data = { type: "join", engineerid };
+            socket.send(JSON.stringify(data));
+            console.log("Project Web Socket Open", data)
+
+        }
+
+        socket.onmessage = (evt) => {
+            console.log("message received");
+            console.log("raw message:", evt.data);
+
+            let msg;
+
+            try {
+                msg = JSON.parse(evt.data);
+            } catch (err) {
+                console.error("Invalid WebSocket message:", evt.data);
+                return;
+            }
+
+            console.log("parsed message:", msg);
+
+            const { projectid } = this.props.match.params;
+
+            const gfk = new GFK();
+
+            const projects = gfk.getProjects.call(this);
+            const i = gfk.getProjectKeyById.call(this, projectid);
+
+            if (i === null || i === undefined) {
+                console.error("Project not found:", projectid);
+                return;
+            }
+
+            switch (msg.type) {
+
+                case "viewproject-client": {
+
+                    const {
+                        title,
+                        sow,
+                        projectcity,
+                        projectaddress,
+                        projectapn
+                    } = msg.updatedProject;
+
+                    const updatedProjects = [...projects];
+
+                    updatedProjects[i] = {
+                        ...updatedProjects[i],
+                        title,
+                        sow,
+                        projectcity,
+                        projectaddress,
+                        projectapn
+                    };
+
+                    this.props.reduxProjects(updatedProjects);
+
+                    this.setState({
+                        render: "render"
+                    });
+
+                    break;
+                }
+
+                case "viewproposal-client": {
+
+                    const {
+                        proposalid,
+                        approvedby,
+                        dateapproved
+                    } = msg.updatedProposal;
+
+                    const proposal = gfk.getProposalByID.call(
+                        this,
+                        projectid,
+                        proposalid
+                    );
+
+                    if (!proposal) {
+                        console.error("Proposal not found:", proposalid);
+                        break;
+                    }
+
+                    const j = gfk.getProposalIndexByID.call(
+                        this,
+                        projectid,
+                        proposalid
+                    );
+
+                    if (j === null || j === undefined) {
+                        console.error("Proposal index not found:", proposalid);
+                        break;
+                    }
+
+                    const updatedProjects = [...projects];
+
+                    updatedProjects[i] = {
+                        ...updatedProjects[i],
+                        schedule: {
+                            ...updatedProjects[i].schedule,
+                            proposals: [
+                                ...updatedProjects[i].schedule.proposals
+                            ]
+                        }
+                    };
+
+                    updatedProjects[i].schedule.proposals[j] = {
+                        ...updatedProjects[i].schedule.proposals[j],
+                        approvedby,
+                        dateapproved
+                    };
+
+                    this.props.reduxProjects(updatedProjects);
+
+                    this.setState({
+                        render: "render"
+                    });
+
+                    break;
+                }
+
+                case "invoicepayment-submitted": {
+
+                    const {
+                        invoiceid,
+                        paymentstatus,
+                        transactionid,
+                        datepaid
+                    } = msg.updatedInvoice;;
+
+                    const paymentcost = msg.paymentcost;
+
+                    const invoiceIndex =
+                        gfk.getInvoiceIndexByID.call(
+                            this,
+                            projectid,
+                            invoiceid
+                        );
+
+                    if (
+                        invoiceIndex === null ||
+                        invoiceIndex === undefined
+                    ) {
+                        console.error("Invoice not found:", invoiceid);
+                        break;
+                    }
+
+                    const updatedProjects = [...projects];
+
+                    updatedProjects[i] = {
+                        ...updatedProjects[i],
+                        timesheet: {
+                            ...updatedProjects[i].timesheet,
+                            costs: [
+                                ...updatedProjects[i].timesheet.costs,
+                                paymentcost
+                            ],
+                            invoices: [
+                                ...updatedProjects[i].timesheet.invoices
+                            ]
+                        }
+                    };
+
+                    updatedProjects[i].timesheet.invoices[invoiceIndex] = {
+                        ...updatedProjects[i].timesheet.invoices[invoiceIndex],
+                        paymentstatus,
+                        transactionid,
+                        datepaid,
+                        costs: [
+                            ...updatedProjects[i].timesheet.invoices[invoiceIndex].costs,
+                            paymentcost.costid
+                        ]
+                    };
+
+                    this.props.reduxProjects(updatedProjects);
+
+                    this.setState({
+                        render: "render"
+                    });
+
+                    break;
+                }
+                default:
+                    console.log("Unhandled WebSocket message type:", msg.type);
+                    break;
+            }
+        };
+
+
+
+        socket.onerror = (evt) => {
+            console.log("SOMETHING WENT WRONG!");
+            console.log(evt);
+        };
+
+        socket.onclose = (evt) => {
+            console.log("WEB SOCKET HAS BEEN CLOSED!!!!");
+        };
+
+        this.socket = socket;
+
+
+
 
     }
 
@@ -110,7 +326,7 @@ class ViewProject extends Component {
                 ptslab: result.ptslab,
                 slope: result.slope,
                 timesheet: result.timesheet,
-                schedule:result.schedule
+                schedule: result.schedule
             };
 
             // Update Redux store or local state
@@ -147,40 +363,40 @@ class ViewProject extends Component {
         return projectkey;
     }
 
-  
 
-       getProjectProp(prop) {
-            const gfk = new GFK();
-            const {projectid} = this.props.match.params;
-    
-            if (!projectid) {
-                return this.state[prop];
-            }
-    
-            const project = gfk.getProjectById.call(this, projectid);
-    
-            return project ? project[prop] : ""
+
+    getProjectProp(prop) {
+        const gfk = new GFK();
+        const { projectid } = this.props.match.params;
+
+        if (!projectid) {
+            return this.state[prop];
         }
-    
-        setProjectProp(prop, value) {
-            const gfk = new GFK();
-            let projects = gfk.getProjects.call(this) || [];
-            const {projectid} = this.props.match.params;
-    
-         
-    
-            // --- Updating an existing project ---
-            const project = gfk.getProjectById.call(this, projectid);
-            if (!project) return;
-    
-            const projectIndex = gfk.getProjectKeyById.call(this, projectid);
-    
-            projects[projectIndex][prop] = value;
-    
-            // Push update to redux
-            this.props.reduxProjects(projects);
-            this.setState({ render: 'render' })
-        }
+
+        const project = gfk.getProjectById.call(this, projectid);
+
+        return project ? project[prop] : ""
+    }
+
+    setProjectProp(prop, value) {
+        const gfk = new GFK();
+        let projects = gfk.getProjects.call(this) || [];
+        const { projectid } = this.props.match.params;
+
+
+
+        // --- Updating an existing project ---
+        const project = gfk.getProjectById.call(this, projectid);
+        if (!project) return;
+
+        const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+
+        projects[projectIndex][prop] = value;
+
+        // Push update to redux
+        this.props.reduxProjects(projects);
+        this.setState({ render: 'render' })
+    }
 
     showViewProject() {
 
@@ -239,17 +455,24 @@ class ViewProject extends Component {
 
             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.bottomMargin15 }}>
                 <div style={{ ...styles.flex1 }}>
-                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Address</span></div>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Project Address</span></div>
                     <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
                         value={this.getProjectProp("projectaddress")}
                         onChange={(event) => { this.setProjectProp("projectaddress", event.target.value) }}
                     />
                 </div>
                 <div style={{ ...styles.flex1 }}>
-                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>City</span></div>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Project City</span></div>
                     <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
                         value={this.getProjectProp("projectcity")}
                         onChange={event => { this.setProjectProp("projectcity", event.target.value) }}
+                    />
+                </div>
+                <div style={{ ...styles.flex1 }}>
+                    <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Project APN</span></div>
+                    <input type="text" style={{ ...styles.generalFont, ...regularFont, ...styles.generalField }}
+                        value={this.getProjectProp("projectapn")}
+                        onChange={event => { this.setProjectProp("projectapn", event.target.value) }}
                     />
                 </div>
             </div>
@@ -257,11 +480,11 @@ class ViewProject extends Component {
             <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
                 <textarea style={{ ...styles.generalField, ...regularFont, ...styles.generalFont, ...styles.minHeight150 }}
                     value={this.getProjectProp("sow")}
-                    onChange={event => { this.setProjectProp("sow",event.target.value) }}>
+                    onChange={event => { this.setProjectProp("sow", event.target.value) }}>
 
                 </textarea>
                 <div style={{ ...styles.generalContainer }}>
-                    <span style={{ ...styles.generalFont, ...regularFont }}>Scope of Work</span>
+                    <span style={{ ...styles.generalFont, ...regularFont }}>Scope of Work (SOW)</span>
                 </div>
             </div>
 
@@ -332,7 +555,7 @@ class ViewProject extends Component {
                 </div>
             </div>
 
-             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                 <div style={{ ...styles.flex1, ...styles.alignCenter }}>
                     <Link
                         style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
@@ -341,7 +564,7 @@ class ViewProject extends Component {
                     </Link>
                 </div>
                 <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                   <Link
+                    <Link
                         style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                         to={`/${engineerid}/projects/${projectid}/schedule`}>
                         /Schedule
@@ -349,7 +572,7 @@ class ViewProject extends Component {
                 </div>
             </div>
 
-             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                 <div style={{ ...styles.flex1, ...styles.alignCenter }}>
                     <Link
                         style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
@@ -358,7 +581,7 @@ class ViewProject extends Component {
                     </Link>
                 </div>
                 <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                   &nbsp;
+                    &nbsp;
                 </div>
             </div>
 
@@ -439,7 +662,7 @@ function mapStateToProps(state) {
     return {
         myuser: state.myuser,
         projects: state.projects,
-        company:state.company
+        company: state.company
     }
 }
 export default connect(mapStateToProps, actions)(ViewProject)
