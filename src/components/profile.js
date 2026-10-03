@@ -1,8 +1,9 @@
 import React from 'react';
 import { MyStylesheet } from './styles'
 import GFK from './gfk'
-import { goToIcon } from './svg';
+import { goToIcon, saveProfile } from './svg';
 import { Link } from 'react-router-dom';
+import { SaveEngineerProfile } from './actions/api';
 
 class Profile {
 
@@ -113,6 +114,30 @@ class Profile {
 
     }
 
+    async saveProfile() {
+
+        try {
+
+            const gfk = new GFK();
+
+            const myuser = gfk.getUser.call(this)
+            if (!myuser) {
+                alert(`Error user not found `)
+                return;
+            }
+            const engineer_id = myuser._id;
+            const { firstname, lastname, emailaddress, profileurl, phonenumber } = myuser;
+            const profile = { firstname, lastname, emailaddress, profileurl, phonenumber }
+            const myprofile = await SaveEngineerProfile(engineer_id, profile)
+
+
+
+        } catch (err) {
+
+            alert(`Error: Could not save profile ${err}`)
+        }
+    }
+
     handleProfile(profile) {
         const gfk = new GFK();
         const myuser = gfk.getUser.call(this)
@@ -134,6 +159,7 @@ class Profile {
         const goIconWidth = gfk.getgotoicon.call(this)
         const profile = new Profile();
         const engineerid = profile.getProfile.call(this)
+        const buttonWidth = { width: '168px' }
         return (<div style={{ ...styles.generalContainer }}>
 
             <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.alignCenter }}>
@@ -191,14 +217,18 @@ class Profile {
                 </div>
             </div>
 
+            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.alignCenter }}>
+                <button onClick={() => { profile.saveProfile.call(this) }} className={`generalButton`} style={{ ...buttonWidth }}>{saveProfile()}</button>
+            </div>
+
             <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                 <div style={{ ...styles.flex1 }}>
-                <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
+                    <Link style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink }}
                         to={`/${engineerid}/projects`}>
-                    <button style={{ ...styles.generalButton, ...goIconWidth }}>
-                        {goToIcon()}
-                    </button>
-                </Link>
+                        <button style={{ ...styles.generalButton, ...goIconWidth }}>
+                            {goToIcon()}
+                        </button>
+                    </Link>
 
                 </div>
                 <div style={{ ...styles.flex6 }}>

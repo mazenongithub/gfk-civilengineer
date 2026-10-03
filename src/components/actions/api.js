@@ -305,6 +305,33 @@ export async function SaveBorings(values) {
     }
 }
 
+export async function SaveEngineerProfile(engineer_id, profile) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${engineer_id}/saveprofile`;
+
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({profile}),
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            const message =
+                data.message || 'Request failed or server is not responding';
+            throw new Error(message);
+        }
+
+        return await response.json();
+
+    } catch (err) {
+        throw err instanceof Error ? err : new Error(String(err));
+    }
+}
+
 
 export async function SaveFieldReports(values) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/savefieldreports`;

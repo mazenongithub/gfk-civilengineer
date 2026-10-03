@@ -1219,37 +1219,11 @@ class GFK {
 
 
         async saveSchedule() {
-            try {
-                const gfk = new GFK();
-                const { projectid } = this.props.match.params;
-    
-                if (!projectid) {
-                    throw new Error("Project ID is required.");
-                }
-    
-                const schedule = gfk.getScheduleByProjectID.call(this, projectid);
-                const values = { projectid, schedule };
-    
-                const projects = gfk.getProjects.call(this);
-                const projectIndex = gfk.getProjectKeyById.call(this, projectid);
-    
-                if (projectIndex === -1) {
-                    throw new Error(`Project not found: ${projectid}`);
-                }
-    
-                const response = await SaveSchedule(values);
-                console.log(response)
-    
-                if (response.schedule) {
-                    projects[projectIndex].schedule = response.schedule;
-                    this.props.reduxProjects(projects);
-                    this.setState({ message: response.message });
-                }
-    
-            } catch (err) {
-                console.error("Error saving schedule:", err);
-                alert(`Error saving schedule: ${err.message}`);
-            }
+            const gfk = new GFK();
+            const myuser = gfk.getUser.call(this)
+       
+           
+         
         }
 
 

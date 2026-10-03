@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { MyStylesheet } from './styles'
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
+import { SaveSchedule } from './actions/api';
 import { addIcon, removeIconSmall, radioIcon, saveSF } from './svg';
 import { calculateLaborCost, formatDate, formatDateTime, calculateCost, calculateHours, formatTime } from './functions';
 import MakeID from './makeids';
@@ -147,6 +148,7 @@ class Proposal extends Component {
     }
 
     setProposalField(field, value) {
+    
 
         const makeid = new MakeID();
         const { projectid } = this.props.match.params;
@@ -175,7 +177,7 @@ class Proposal extends Component {
 
 
         // -------------------------------------------------
-        // 1) UPDATE EXISTING INVOICE
+        // 1) UPDATE EXISTING PROPOSAL
         // -------------------------------------------------
         if (activeproposalid) {
             const proposalIndex = schedule.proposals.findIndex(
@@ -187,6 +189,7 @@ class Proposal extends Component {
 
                 project.schedule = schedule;
                 projects[projectIndex] = project;
+                
 
                 this.props.reduxProjects(projects);
                 this.setState({});
@@ -195,7 +198,7 @@ class Proposal extends Component {
         }
 
         // -------------------------------------------------
-        // 2) CREATE NEW INVOICE ENTRY
+        // 2) CREATE NEW PROPOSAL
         // -------------------------------------------------
         activeproposalid = makeid.proposalid.call(this, projectid);
 
@@ -203,6 +206,7 @@ class Proposal extends Component {
 
             proposalid: activeproposalid,
             dateproposal: this.state.dateproposal,
+            updatedby:null,
             costs: [],
             labor: [],
             status: "Draft",
@@ -507,6 +511,49 @@ class Proposal extends Component {
 
         return `${client.firstname} ${client.lastname}`;
     }
+    
+
+    async saveSchedule() {
+        const gfk = new GFK();
+        const myuser = gfk.getUser.call(this)
+        this.setProposalField("updatedby", myuser._id)
+        this.setProposalField("dateproposal", new Date())
+        const newSchedule = await gfk.saveSchedule.call(this)
+
+        try {
+            const gfk = new GFK();
+            const { projectid } = this.props.match.params;
+
+            if (!projectid) {
+                throw new Error("Project ID is required.");
+            }
+
+
+            const schedule = gfk.getScheduleByProjectID.call(this, projectid);
+            const values = { projectid, schedule };
+
+            const projects = gfk.getProjects.call(this);
+            const projectIndex = gfk.getProjectKeyById.call(this, projectid);
+
+            if (projectIndex === -1) {
+                throw new Error(`Project not found: ${projectid}`);
+            }
+
+            const response = await SaveSchedule(values);
+            console.log(response)
+
+            if (response.schedule) {
+                projects[projectIndex].schedule = response.schedule;
+                this.props.reduxProjects(projects);
+                this.setState({ message: response.message });
+            }
+
+        } catch (err) {
+            console.error("Error saving schedule:", err);
+            alert(`Error saving schedule: ${err.message}`);
+        }
+
+    }
 
 
 
@@ -657,7 +704,7 @@ class Proposal extends Component {
                     </div>
 
                     <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
-                        <button style={{ ...styles.generalButton, ...saveWidth }} onClick={() => { gfk.saveSchedule.call(this) }}>{saveSF()}</button>
+                        <button style={{ ...styles.generalButton, ...saveWidth }} onClick={() => { this.saveSchedule() }}>{saveSF()}</button>
                     </div>
 
 

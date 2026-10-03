@@ -559,6 +559,35 @@
   background-color: #54A2EF;
 }
 
+.save_profile-1 {
+  fill: #fff;
+  stroke-width: .75px;
+}
+
+.save_profile-1,
+.save_profile-2 {
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
+
+.save_profile-2 {
+  fill: #6485c3;
+  stroke-width: .5px;
+}
+
+
+.generalButton {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 1px;
+  cursor: pointer;
+  transition: border-color 0.1s ease, transform 0.1s ease
+}
+
+.generalButton:active {
+  transform: translateY(2px);
+}
 
 
 @media (prefers-reduced-motion: no-preference) {
