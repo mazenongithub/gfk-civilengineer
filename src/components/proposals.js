@@ -148,7 +148,7 @@ class Proposal extends Component {
     }
 
     setProposalField(field, value) {
-    
+
 
         const makeid = new MakeID();
         const { projectid } = this.props.match.params;
@@ -189,7 +189,7 @@ class Proposal extends Component {
 
                 project.schedule = schedule;
                 projects[projectIndex] = project;
-                
+
 
                 this.props.reduxProjects(projects);
                 this.setState({});
@@ -206,7 +206,7 @@ class Proposal extends Component {
 
             proposalid: activeproposalid,
             dateproposal: this.state.dateproposal,
-            updatedby:null,
+            updatedby: null,
             costs: [],
             labor: [],
             status: "Draft",
@@ -511,7 +511,7 @@ class Proposal extends Component {
 
         return `${client.firstname} ${client.lastname}`;
     }
-    
+
 
     async saveSchedule() {
         const gfk = new GFK();
@@ -546,6 +546,22 @@ class Proposal extends Component {
                 projects[projectIndex].schedule = response.schedule;
                 this.props.reduxProjects(projects);
                 this.setState({ message: response.message });
+
+
+                if (
+                    this.props.socket &&
+                    this.props.socket.readyState === WebSocket.OPEN
+                ) {
+                    this.props.socket.send(JSON.stringify({
+                        type: "updatedschedule-gfk",
+                        message: "project schedule updated",
+                        updatedSchedule: response.schedule
+                    }));
+                } else {
+                    console.log(`Web socket not ready to send `)
+                }
+
+
             }
 
         } catch (err) {

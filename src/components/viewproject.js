@@ -628,7 +628,16 @@ class ViewProject extends Component {
                             <Route exact path={`${path}/timesheet`} component={Timesheet} />
                             <Route exact path={`${path}/schedule`} component={Schedule} />
                             <Route exact path={`${path}/invoice`} component={Invoice} />
-                            <Route exact path={`${path}/proposals`} component={Proposal} />
+                            <Route
+                                exact
+                                path={`${path}/proposals`}
+                                render={(props) => (
+                                    <Proposal
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
                             <Route exact path={`${path}/slopestability`} component={SlopeStability} />
                             <Route exact path={`${path}/borings/:boringid/logdraft`} component={LogDraft} />
                             <Route exact path={`${path}/borings/:boringid/samples`} component={Samples} />
