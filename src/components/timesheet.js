@@ -260,7 +260,7 @@ class Timesheet extends Component {
                 <span style={{ ...regularFont }}>Date In: {formatDate(cost.datein)} </span> <span style={{ ...regularFont }}>Quantity {cost.quantity}</span> <span style={{ ...regularFont }}>Unit: {cost.unit} </span> <span style={{ ...regularFont }}>Unit Cost: {cost.unitcost} </span> <span style={{ ...regularFont }}>{cost.description}</span>
             </div>
             <div style={{ ...styles.flex1 }}>
-                <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={()=>{this.removeCost(cost.costid)}}>{removeIconSmall()}</button>
+                <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={() => { this.removeCost(cost.costid) }}>{removeIconSmall()}</button>
             </div>
         </div>)
     }
@@ -470,6 +470,22 @@ class Timesheet extends Component {
                 projects[projectIndex].timesheet = response.timesheet;
                 this.props.reduxProjects(projects);
                 this.setState({ message: response.message });
+
+
+                if (
+                    this.props.socket &&
+                    this.props.socket.readyState === WebSocket.OPEN
+                ) {
+                    this.props.socket.send(JSON.stringify({
+                        type: "updatedtimesheet-gfk",
+                        message: "project timesheet updated",
+                        updatedtimesheet: response.timesheet
+                    }));
+                } else {
+                    console.log(`Web socket not ready to send `)
+                }
+
+
             }
 
         } catch (err) {
