@@ -13,15 +13,12 @@ import { MyStylesheet } from "./styles";
 class Login extends Component {
     constructor(props) {
         super(props)
-        this.state = { email: '', setEmail: "", password: "", setPassword: "", firstname: "", lastname: "", emailaddress: "", profileurl: "", phonenumber: "", apple: "" }
+        this.state = { email: '', setEmail: "", password: "", setPassword: "", firstname: "", lastname: "", emailaddress: "", profileurl: "", phonenumber: "", apple: "", authToken:'' }
     }
 
     async handleAppleLogin() {
 
-
         const auth = getAuth();
-
-
 
 
         try {
@@ -35,11 +32,14 @@ class Login extends Component {
             let phonenumber = "";
             let user = {}
             let apple = "";
+            let authToken = ''
 
             if (result.hasOwnProperty("user")) {
 
                 user = result.user;
                 apple = user.providerData[0].uid;
+                authToken = await user.getIdToken();
+            
 
 
                 if (user.providerData[0].displayName) {
@@ -52,7 +52,7 @@ class Login extends Component {
                 phonenumber = user.phoneNumber;
             }
 
-            this.setState({ firstname, lastname, emailaddress, profileurl, phonenumber, apple })
+            this.setState({ firstname, lastname, emailaddress, profileurl, phonenumber, apple, authToken })
 
 
 
@@ -80,6 +80,7 @@ class Login extends Component {
             let profileurl = "";
             let phonenumber = "";
             let user = {}
+            let authToken
 
 
             const result = await signInWithPopup(auth, googleProvider);
@@ -88,6 +89,7 @@ class Login extends Component {
 
                 user = result.user;
                 google = user.providerData[0].uid;
+                authToken = await user.getIdToken();
                 firstname = user.providerData[0].displayName.split(' ')[0]
                 lastname = user.providerData[0].displayName.split(' ')[1]
                 emailaddress = user.providerData[0].email
@@ -95,7 +97,7 @@ class Login extends Component {
                 phonenumber = user.phoneNumber;
             }
 
-            this.setState({ firstname, lastname, emailaddress, profileurl, phonenumber, google })
+            this.setState({ firstname, lastname, emailaddress, profileurl, phonenumber, google, authToken })
 
             this.clientLogin()
 
@@ -115,7 +117,8 @@ class Login extends Component {
             profileurl,
             phonenumber,
             apple,
-            google
+            google,
+            authToken
         } = this.state;
 
         const values = {
@@ -125,7 +128,8 @@ class Login extends Component {
             profileurl,
             phonenumber,
             apple,
-            google
+            google,
+            authToken
         };
 
         try {
