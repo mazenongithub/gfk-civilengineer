@@ -116,8 +116,6 @@ class Login extends Component {
             emailaddress,
             profileurl,
             phonenumber,
-            apple,
-            google,
             authToken
         } = this.state;
 
@@ -127,8 +125,6 @@ class Login extends Component {
             emailaddress,
             profileurl,
             phonenumber,
-            apple,
-            google,
             authToken
         };
 

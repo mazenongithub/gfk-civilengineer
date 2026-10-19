@@ -589,6 +589,16 @@
   transform: translateY(2px);
 }
 
+.saveprojectbutton-1 {
+  fill: #fff;
+}
+
+.saveprojectbutton-2 {
+  fill: #9e1c33;
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
+
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {

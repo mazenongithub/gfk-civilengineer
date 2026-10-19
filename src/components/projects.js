@@ -256,6 +256,8 @@ class Projects extends Component {
             }
         }
         const engineerid = this.props.match.params.engineerid
+        const myuser = gfk.getUser.call(this)
+        if(myuser) {
         return (
             <div style={{ ...styles.generalFlex }}>
                 <div style={{ ...styles.flex1 }}>
@@ -294,7 +296,7 @@ class Projects extends Component {
 
                     <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                         <div style={{ ...styles.flex1, ...regularFont, ...styles.generalFont, ...styles.alignCenter }}>
-                            <button style={{ ...styles.generalButton, ...saveprojecticon }} onClick={() => { this.saveprojects() }}>{saveProjectIcon()}</button>
+                            <button className={`generalButton`} style={{ ...saveprojecticon }} onClick={() => { this.saveprojects() }}>{saveProjectIcon()}</button>
                         </div>
                     </div>
 
@@ -302,6 +304,18 @@ class Projects extends Component {
                 </div>
             </div>
         )
+
+    } else {
+
+        return(  
+                        <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.alignCenter }}>
+                           <span style={{...regularFont}}>No User Found, Login to View MyProjects</span> 
+                        </div>
+                    
+)
+
+    }
+
     }
 
 }

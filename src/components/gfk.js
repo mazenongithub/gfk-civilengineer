@@ -820,18 +820,18 @@ class GFK {
     getRegularFont() {
 
         if (this.state.width > 800) {
-            return ({ fontSize: '30px' })
-        } else {
             return ({ fontSize: '24px' })
+        } else {
+            return ({ fontSize: '20px' })
         }
 
     }
     getHeaderFont() {
 
         if (this.state.width > 800) {
-            return ({ fontSize: '40px' })
-        } else {
             return ({ fontSize: '30px' })
+        } else {
+            return ({ fontSize: '24px' })
         }
 
     }
