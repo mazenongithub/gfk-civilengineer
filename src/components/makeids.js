@@ -3,6 +3,10 @@ import { makeID } from './functions'
 
 class MakeID {
 
+    reportid() {
+        return `report_${crypto.randomUUID()}`;
+    }
+    
     pointID(projectid) {
         const gfk = new GFK();
         const slope = gfk.getSlopeByProjectID.call(this, projectid);

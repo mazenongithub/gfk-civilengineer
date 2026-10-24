@@ -2,6 +2,7 @@ import React from 'react';
 import { saveBoringIcon } from './svg'
 import { MyStylesheet } from './styles';
 import { SaveBorings, SaveTimesheet, SaveSchedule } from './actions/api'
+import reports from './reports';
 
 class GFK {
 
@@ -37,13 +38,33 @@ class GFK {
     }
     getsaveprojecticon() {
         if (this.state.width > 1200) {
-            return ({ width: '328px', height: '76px' })
+            return ({ width: '20%' })
         } else if (this.state.width > 800) {
-            return ({ width: '265px', height: '61px' })
+            return ({ width: '30%' })
         } else {
-            return ({ width: '199px', height: '46px' })
+            return ({ width: '35%' })
         }
     }
+
+    getReportByID(projectid, reportid) {
+        const gfk = new GFK();
+        const project = gfk.getProjectById.call(this, projectid);
+
+        const reports = project?.reports || [];
+
+        return reports.find(report => report.reportid === reportid) || null;
+    }
+
+
+
+    getReportsByProject(projectid) {
+        const gfk = new GFK();
+
+        const project = gfk.getProjectById.call(this, projectid);
+
+        return project?.reports || [];
+    }
+
     getsavetime() {
         if (this.state.width > 1200) {
             return ({ width: '364px', height: '87px' })
@@ -820,18 +841,18 @@ class GFK {
     getRegularFont() {
 
         if (this.state.width > 800) {
-            return ({ fontSize: '24px' })
-        } else {
             return ({ fontSize: '20px' })
+        } else {
+            return ({ fontSize: '18px' })
         }
 
     }
     getHeaderFont() {
 
         if (this.state.width > 800) {
-            return ({ fontSize: '30px' })
-        } else {
             return ({ fontSize: '24px' })
+        } else {
+            return ({ fontSize: '20px' })
         }
 
     }
@@ -1119,7 +1140,7 @@ class GFK {
         return index >= 0 ? index : false;
     }
 
-     getProposalByProjectID(projectid) {
+    getProposalByProjectID(projectid) {
         const gfk = new GFK();
         const timesheet = gfk.getScheduleByProjectID.call(this, projectid);
 
@@ -1159,7 +1180,7 @@ class GFK {
         return index >= 0 ? index : false;
     }
 
-          getProposalByID(projectid, proposalid) {
+    getProposalByID(projectid, proposalid) {
         const gfk = new GFK();
 
         // Get proposal array for the project
@@ -1218,13 +1239,13 @@ class GFK {
     }
 
 
-        async saveSchedule() {
-            const gfk = new GFK();
-            const myuser = gfk.getUser.call(this)
-       
-           
-         
-        }
+    async saveSchedule() {
+        const gfk = new GFK();
+        const myuser = gfk.getUser.call(this)
+
+
+
+    }
 
 
     getCompany() {
@@ -1251,9 +1272,9 @@ class GFK {
         return clients?.find(client => client.clientid === clientid) || null;
     }
 
-    
 
-     getClientBy_Id(client_id) {
+
+    getClientBy_Id(client_id) {
         const gfk = new GFK();
         const clients = gfk.getClients.call(this);
 

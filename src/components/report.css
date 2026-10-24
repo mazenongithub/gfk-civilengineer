@@ -1,0 +1,382 @@
+
+.vr-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    position: relative;
+    overflow: hidden;
+    background: #f2f2f3;
+    color: #242a30;
+    font-family: Arial, sans-serif;
+}
+
+/* Left panel: 1/5 of viewport */
+.vr-sidebar {
+    flex: 0 0 20vw;
+    width: 20vw;
+    max-width: 20vw;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-right: 1px solid #dfe3e8;
+    overflow: hidden;
+    z-index: 20;
+}
+
+.vr-sidebar-header {
+    padding: 20px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.vr-sidebar-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #244f74;
+}
+
+.vr-report-name {
+    font-size: 13px;
+    margin-top: 8px;
+    color: #667085;
+    overflow-wrap: anywhere;
+}
+
+.vr-navigation {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+}
+
+.vr-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 8px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    color: #344054;
+    font-size: 13px;
+}
+
+.vr-nav-item:hover {
+    background: #f2f5f8;
+}
+
+.vr-nav-item.active {
+    background: #e8f0f7;
+    color: #244f74;
+    font-weight: 600;
+}
+
+.vr-nav-number {
+    flex: 0 0 auto;
+    font-size: 11px;
+    color: #667085;
+}
+
+.vr-nav-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Right panel: 4/5 of viewport */
+.vr-main {
+    flex: 1 1 80vw;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.vr-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 60px;
+    padding: 0 24px;
+    background: #fff;
+    border-bottom: 1px solid #dfe3e8;
+}
+
+.vr-toolbar-title {
+    font-size: 16px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vr-menu-toggle {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: #244f74;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.vr-menu-icon {
+    display: block;
+    line-height: 1;
+}
+
+.vr-editor {
+    width: 100%;
+    max-width: 1100px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+.vr-breadcrumb {
+    color: #667085;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+    margin-bottom: 28px;
+}
+
+.vr-field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475467;
+    margin: 20px 0 8px;
+}
+
+.vr-section-number,
+.vr-section-title,
+.vr-content {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    background: #fff;
+    color: #242a30;
+    font: inherit;
+}
+
+.vr-section-number {
+    max-width: 180px;
+}
+
+.vr-section-title {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.vr-content {
+    min-height: 280px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.vr-section-number:focus,
+.vr-section-title:focus,
+.vr-content:focus {
+    outline: 2px solid #8ab4d6;
+    outline-offset: 1px;
+    border-color: #244f74;
+}
+
+.vr-children {
+    margin-top: 36px;
+}
+
+.vr-children h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.vr-child-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 8px;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #dfe3e8;
+    border-radius: 6px;
+    color: #244f74;
+    cursor: pointer;
+}
+
+.vr-child-link:hover {
+    background: #f5f8fb;
+}
+
+.vr-empty {
+    padding: 32px;
+    color: #667085;
+}
+
+.vr-backdrop {
+    display: none;
+}
+
+.vr-section-toolbar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 8px;
+    border-top: 1px solid #d8dde3;
+    margin-top: 12px;
+}
+
+.vr-tool-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    min-height: 64px;
+    padding: 8px 4px;
+    border: 1px solid #d5dce3;
+    border-radius: 8px;
+    background: #fff;
+    color: #244f74;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.vr-tool-button svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.vr-tool-button span {
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.vr-tool-button:hover {
+    background: #edf3f8;
+    border-color: #244f74;
+}
+
+.vr-tool-button:focus-visible {
+    outline: 2px solid #244f74;
+    outline-offset: 2px;
+}
+
+/* Tablet and narrow sidebar */
+@media (max-width: 900px) {
+    .vr-section-toolbar {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+
+/* Mobile layout */
+@media (max-width: 767px) {
+    .vr-layout {
+        min-height: 100%;
+        height: 100%;
+    }
+
+    .vr-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 62.5vw;
+        max-width: 62.5vw;
+        min-width: 0;
+        transform: translateX(-100%);
+        visibility: hidden;
+        transition:
+            transform 0.22s ease,
+            visibility 0.22s ease;
+        box-shadow: none;
+    }
+
+    .vr-sidebar.mobile-open {
+        transform: translateX(0);
+        visibility: visible;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .vr-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 19;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: rgba(16, 24, 40, 0.4);
+    }
+
+    .vr-main {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .vr-toolbar {
+        min-height: 54px;
+        padding: 0 12px;
+    }
+
+    .vr-menu-toggle {
+        display: block;
+        flex: 0 0 auto;
+    }
+
+    .vr-toolbar-title {
+        font-size: 14px;
+    }
+
+    .vr-editor {
+        padding: 18px 14px;
+    }
+
+    .vr-section-title {
+        font-size: 19px;
+    }
+
+    .vr-content {
+        min-height: 220px;
+    }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+    .vr-section-toolbar {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        padding: 10px 4px;
+    }
+
+    .vr-tool-button {
+        min-height: 60px;
+        padding: 8px 2px;
+    }
+
+    .vr-tool-button span {
+        font-size: 10px;
+    }
+}

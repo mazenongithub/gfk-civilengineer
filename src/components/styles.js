@@ -115,6 +115,9 @@ export function MyStylesheet() {
         rightMargin10: {
             marginRight: '10px'
         },
+          marginLeft15:{
+            marginLeft:'15px'
+        },
           marginLeft25:{
             marginLeft:'25px'
         },

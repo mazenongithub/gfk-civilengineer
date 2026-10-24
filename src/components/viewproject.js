@@ -23,7 +23,8 @@ import Invoice from './invoice';
 import ClientID from './clientid';
 import Schedule from './schedule'
 import Proposal from './proposals'
-import { browserLocalPersistence } from 'firebase/auth';
+import Reports from './reports';
+import Report from './report'
 
 
 class ViewProject extends Component {
@@ -326,7 +327,8 @@ class ViewProject extends Component {
                 ptslab: result.ptslab,
                 slope: result.slope,
                 timesheet: result.timesheet,
-                schedule: result.schedule
+                schedule: result.schedule,
+                reports: result.reports
             };
 
             // Update Redux store or local state
@@ -408,6 +410,7 @@ class ViewProject extends Component {
         const headerFont = gfk.getHeaderFont.call(this)
         const project = gfk.getProjectById.call(this, projectid)
         const clientid = new ClientID();
+
 
         return (<div style={{ ...styles.generalContainer }}>
             <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
@@ -581,7 +584,11 @@ class ViewProject extends Component {
                     </Link>
                 </div>
                 <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                    &nbsp;
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/reports`}>
+                        /Reports
+                    </Link>
                 </div>
             </div>
 
@@ -624,6 +631,26 @@ class ViewProject extends Component {
                             <Route exact path={`${path}/labsummary`} component={LabSummary} />
                             <Route exact path={`${path}/ptslab`} component={PTSlab} />
                             <Route exact path={`${path}/seismic`} component={Seismic} />
+                            <Route
+                                exact
+                                path={`${path}/reports`}
+                                render={(props) => (
+                                    <Reports
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
+                            <Route
+                                exact
+                                path={`${path}/reports/:reportid`}
+                                render={(props) => (
+                                    <Report
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
                             <Route
                                 exact
                                 path={`${path}/timesheet`}
