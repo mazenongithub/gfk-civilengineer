@@ -169,6 +169,7 @@ class Report extends Component {
         }
 
         section[property] = value;
+        this.props.reduxProjects(this.props.projects)
 
         this.forceUpdate();
     };
@@ -611,11 +612,16 @@ class Report extends Component {
         const project = gfk.getProjectById.call(this, projectid)
         const report = this.getReport();
 
+
+        if (!project || !report || !user) {
+            return <div>Loading report...</div>;
+        }
+
         return (
 
 
             <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-             
+
                 <Link
                     style={{ ...styles.generalFont, ...regularFont, ...styles.generalLink, ...styles.boldFont }}
                     to={`/${user.engineerid}/projects`}>
@@ -631,10 +637,15 @@ class Report extends Component {
                     to={`/${user.engineerid}/projects/${project.projectid}/reports`}>
                     /reports
                 </Link>
-                 <Link
+                <Link
                     style={{ ...styles.generalFont, ...regularFont, ...styles.generalLink, ...styles.boldFont, ...styles.bottomMargin15 }}
                     to={`/${user.engineerid}/projects/${project.projectid}/reports/${reportid}`}>
                     /{report.reporttitle}
+                </Link>
+                <Link
+                    style={{ ...styles.generalFont, ...regularFont, ...styles.generalLink, ...styles.boldFont, ...styles.bottomMargin15 }}
+                    to={`/${user.engineerid}/projects/${project.projectid}/reports/${reportid}/viewreport`}>
+                    /viewreport
                 </Link>
 
             </div>)

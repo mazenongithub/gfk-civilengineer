@@ -24,7 +24,8 @@ import ClientID from './clientid';
 import Schedule from './schedule'
 import Proposal from './proposals'
 import Reports from './reports';
-import Report from './report'
+import Report from './report';
+import ViewReport from './viewreport'
 
 
 class ViewProject extends Component {
@@ -646,6 +647,16 @@ class ViewProject extends Component {
                                 path={`${path}/reports/:reportid`}
                                 render={(props) => (
                                     <Report
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
+                            <Route
+                                exact
+                                path={`${path}/reports/:reportid/viewreport`}
+                                render={(props) => (
+                                    <ViewReport
                                         {...props}
                                         socket={this.socket}
                                     />
