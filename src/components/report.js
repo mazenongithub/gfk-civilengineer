@@ -9,6 +9,8 @@ import GFK from './gfk'
 import { removeSectionIcon, scrollIconDown, scrollIconUp, subSectionIcon, nextSectionIcon, saveReportIcon, gfkLogin } from './svg'
 import { SaveReport } from './actions/api';
 import { formatDateTime } from './functions'
+import OpenAI from './openai';
+
 
 
 class Report extends Component {
@@ -20,7 +22,12 @@ class Report extends Component {
             height: window.innerHeight,
             mobileMenuOpen: false,
             activePath: [0],
-            message: ""
+            message: "",
+            question: "",
+            answer: "",
+            loading: false,
+            error: '',
+            showOpenAI: false
         };
 
         this.updateWindowDimensions =
@@ -620,7 +627,7 @@ class Report extends Component {
         return (
 
 
-            <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+            <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
 
                 <Link
                     style={{ ...styles.generalFont, ...regularFont, ...styles.generalLink, ...styles.boldFont }}
@@ -657,6 +664,7 @@ class Report extends Component {
         const saveIconWidth = this.state.width > 900 ? { width: '120px' } : { width: '90px' }
         const gfk = new GFK();
         const regularFont = gfk.getRegularFont.call(this)
+        const openai = new OpenAI();
         const {
             mobileMenuOpen,
             activePath
@@ -676,6 +684,8 @@ class Report extends Component {
             <div style={{ ...styles.generalContainer }}>
 
                 {this.showTopLinks()}
+
+                {openai.showOpenAI.call(this)}
 
                 <div className="vr-layout">
 
@@ -745,6 +755,8 @@ class Report extends Component {
                             {section ? (
                                 <>
                                     {this.renderBreadcrumb(report)}
+
+
 
                                     <label className="vr-field-label">
                                         Section number

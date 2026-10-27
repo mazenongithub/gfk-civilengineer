@@ -525,6 +525,29 @@
   stroke-width: 2px;
 }
 
+.sendicon-1 {
+  fill: #94aeda;
+  stroke-width: .5px;
+}
+
+.sendicon-1,
+.sendicon-2 {
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
+
+.sendicon-2 {
+  fill: #f1f2f2;
+  stroke-width: .25px;
+}
+
+.plusminusicon-1 {
+  fill: #94aeda;
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+  stroke-width: .5px;
+}
+
 .sfsave-1 {
   fill: #a91e22;
   stroke: #030202;

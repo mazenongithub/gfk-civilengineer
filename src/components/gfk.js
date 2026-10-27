@@ -838,6 +838,17 @@ class GFK {
             lineHeight: '1.2'
         };
     }
+
+     getSmallFont() {
+
+        if (this.state.width > 800) {
+            return ({ fontSize: '16px' })
+        } else {
+            return ({ fontSize: '14px' })
+        }
+
+    }
+
     getRegularFont() {
 
         if (this.state.width > 800) {
