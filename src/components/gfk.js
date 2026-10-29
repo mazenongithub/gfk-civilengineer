@@ -1,8 +1,7 @@
 import React from 'react';
 import { saveBoringIcon } from './svg'
 import { MyStylesheet } from './styles';
-import { SaveBorings, SaveTimesheet, SaveSchedule } from './actions/api'
-import reports from './reports';
+import { SaveBorings, SaveTimesheet } from './actions/api'
 
 class GFK {
 
@@ -44,6 +43,33 @@ class GFK {
         } else {
             return ({ width: '35%' })
         }
+    }
+
+    getCompactionTestbyProjectID(projectid) {
+        const gfk = new GFK();
+
+        const project = gfk.getProjectById.call(this, projectid);
+
+        if (!project) {
+            return [];
+        }
+
+        return (project.fieldreports || []).flatMap(fieldreport =>
+            Array.isArray(fieldreport.compactiontests)
+                ? fieldreport.compactiontests
+                : []
+        );
+    }
+
+
+    getProjectSoilsReport(projectid) {
+        const gfk = new GFK();
+
+        const project = gfk.getProjectById.call(this, projectid);
+
+        return project?.reports?.find(
+            report => report.type === 'Geotechnical Investigation Report'
+        ) || null;
     }
 
     getReportByID(projectid, reportid) {
@@ -405,15 +431,7 @@ class GFK {
 
         return zonecharts;
     }
-    getSmallFont() {
-
-        if (this.state.width > 800) {
-            return ({ fontSize: '20px' })
-        } else {
-            return ({ fontSize: '18px' })
-        }
-
-    }
+  
     getremoveicon() {
         if (this.state.width > 800) {
             return ({ width: '47px', height: '47px' })
@@ -839,7 +857,7 @@ class GFK {
         };
     }
 
-     getSmallFont() {
+    getSmallFont() {
 
         if (this.state.width > 800) {
             return ({ fontSize: '16px' })
@@ -1247,15 +1265,6 @@ class GFK {
             console.error("Error saving timesheet:", err);
             alert(`Error saving timesheet: ${err.message}`);
         }
-    }
-
-
-    async saveSchedule() {
-        const gfk = new GFK();
-        const myuser = gfk.getUser.call(this)
-
-
-
     }
 
 

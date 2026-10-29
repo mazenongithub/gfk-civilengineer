@@ -50,6 +50,72 @@ export async function EngineerLogin(values) {
     }
 }
 
+export async function GenerateReportSection(question,
+    parameters = {},
+    instructions = '') {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/civilengineer/generatereportsection`;
+
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+             body: JSON.stringify({ question, parameters, instructions })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || `Request failed with status ${response.status}`
+            );
+        }
+
+        return data;
+
+    } catch (err) {
+        throw err instanceof Error
+            ? err
+            : new Error(String(err));
+    }
+}
+
+
+export async function GenerateReport(question,
+    parameters = {},
+    instructions = '') {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/civilengineer/generatereport`;
+
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+             body: JSON.stringify({ question, parameters, instructions })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || `Request failed with status ${response.status}`
+            );
+        }
+
+        return data;
+
+    } catch (err) {
+        throw err instanceof Error
+            ? err
+            : new Error(String(err));
+    }
+}
+
+
 export async function AskOpenAI(question) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/civilengineer/askopenai`;
 

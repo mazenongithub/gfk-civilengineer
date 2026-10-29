@@ -276,12 +276,12 @@ class ViewProject extends Component {
             : this.props.projects?.projects || [];
 
         // Debug what’s really happening
-        console.log("Prev projects:", prevProjects.length);
-        console.log("Current projects:", currentProjects.length);
+       // console.log("Prev projects:", prevProjects.length);
+      //  console.log("Current projects:", currentProjects.length);
 
         // Run when projects just became available
         if (prevProjects.length === 0 && currentProjects.length > 0 && !this.state.project) {
-            console.log("✅ Detected projects loaded — calling loadProjectData()");
+           // console.log("✅ Detected projects loaded — calling loadProjectData()");
             await this.loadProjectData();
         }
     }

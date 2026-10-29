@@ -253,7 +253,7 @@ class Reports extends Component {
                                 <option value="">Select Report Type</option>
                                 <option value="Geotechnical Investigation Report">Geotechnical Investigation Report </option>
                                 <option value="Proposal">Proposal </option>
-                                <option value="Grading/Compation">Grading/Compaction</option>
+                                <option value="Grading/Compaction">Grading/Compaction</option>
                                 <option value="Other Technical">Other Technical </option>
                             </select>
                         </div>

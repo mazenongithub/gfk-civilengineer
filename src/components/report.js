@@ -6,10 +6,11 @@ import { MyStylesheet } from './styles'
 import { Link } from 'react-router-dom';
 import './report.css';
 import GFK from './gfk'
-import { removeSectionIcon, scrollIconDown, scrollIconUp, subSectionIcon, nextSectionIcon, saveReportIcon, gfkLogin } from './svg'
-import { SaveReport } from './actions/api';
+import { removeSectionIcon, saveReportIcon, scrollIconDown, scrollIconUp, subSectionIcon, nextSectionIcon } from './svg'
+import { SaveReport, GenerateReport, GenerateReportSection } from './actions/api';
 import { formatDateTime } from './functions'
 import OpenAI from './openai';
+
 
 
 
@@ -24,6 +25,8 @@ class Report extends Component {
             activePath: [0],
             message: "",
             question: "",
+            parameters: {},
+            instructions: "",
             answer: "",
             loading: false,
             error: '',
@@ -145,6 +148,8 @@ class Report extends Component {
             </div>
         );
     };
+
+
 
     setActiveSection = (property, value) => {
         const { projectid, reportid } = this.props.match.params;
@@ -480,6 +485,35 @@ class Report extends Component {
         this.forceUpdate();
     };
 
+    createReportSection() {
+
+    }
+
+
+
+    createGradingReport() {
+
+        const report = this.getReport();
+
+        const styles = MyStylesheet();
+        const gfk = new GFK();
+        const regularFont = gfk.getRegularFont.call(this)
+        const openai = new OpenAI();
+
+
+        if (report.type === 'Grading/Compaction' && !this.state.loading) {
+
+
+
+            return (openai.createGradingReport.call(this))
+
+
+
+        } else if (this.state.loading) {
+            return (<div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>loading ...</span></div>)
+        }
+    }
+
     addSection = () => {
         const { projectid, reportid } = this.props.match.params;
 
@@ -609,10 +643,431 @@ class Report extends Component {
         this.forceUpdate();
     };
 
+    replaceActiveSection = (newSection) => {
+        const { projectid, reportid } = this.props.match.params;
+        const activePath = this.state.activePath;
+
+        if (!Array.isArray(activePath) || activePath.length === 0) {
+            throw new Error('Active section path not found.');
+        }
+
+        const replaceSection = (sections, path) => {
+            const [index, ...remainingPath] = path;
+
+            if (!Array.isArray(sections) || !sections[index]) {
+                throw new Error('Section not found at active path.');
+            }
+
+            return sections.map((section, i) => {
+                if (i !== index) return section;
+
+                if (remainingPath.length === 0) {
+                    return { ...newSection };
+                }
+
+                return {
+                    ...section,
+                    subsections: replaceSection(
+                        section.subsections,
+                        remainingPath
+                    )
+                };
+            });
+        };
+
+        const updatedProjects = this.props.projects.map(project => {
+            if (project.projectid !== projectid) return project;
+
+            return {
+                ...project,
+                reports: (project.reports || []).map(report => {
+                    if (report.reportid !== reportid) return report;
+
+                    return {
+                        ...report,
+                        sections: replaceSection(
+                            report.sections,
+                            activePath
+                        )
+                    };
+                })
+            };
+        });
+
+        this.props.reduxProjects(updatedProjects);
+    };
+
+    generateReportSection = async () => {
+        if (this.state.loading) {
+            return;
+        }
+
+        this.setState({
+            loading: true,
+            error: ''
+        });
+
+        try {
+            const gfk = new GFK();
+
+            // Get the active section.
+            const activeSection = this.getActiveSection();
+
+            if (!activeSection) {
+                throw new Error('No active section was selected.');
+            }
+
+            const sectionTitle = activeSection.section || '';
+
+            // Get the project.
+            const { projectid } = this.props.match.params;
+
+            const project = gfk.getProjectById.call(
+                this,
+                projectid
+            );
+
+            if (!project) {
+                throw new Error('Project not found.');
+            }
+
+            // Project and section parameters.
+            const parameters = {
+                projectTitle:
+                    project.projecttitle || project.title || '',
+
+                projectAddress:
+                    project.projectaddress || project.address || '',
+
+                projectCity:
+                    project.projectcity || '',
+
+                section: sectionTitle,
+
+                currentSection: activeSection
+            };
+
+            // Instructions for generating the section.
+            const instructions = `
+You are a professional geotechnical engineering report-writing
+assistant for CivilEngineer.io.
+
+Generate content for the active section of a geotechnical report.
+
+REQUIREMENTS:
+- Follow the supplied report section and project parameters.
+- Keep the existing section title unchanged.
+- Generate content specifically for this section.
+- Use professional engineering language.
+- Do not repeat the entire report or generate unrelated sections.
+- Do not invent project information, field observations,
+  laboratory results, measurements, or engineering conclusions.
+- Preserve placeholders for missing project-specific information.
+- Use the current section as context when improving or expanding it.
+- Return a JSON object with exactly these properties:
+  "section": the existing section title
+  "content": the generated section text
+- Return valid JSON only.
+`;
+
+            const question = `
+Generate the content for the following geotechnical report section:
+
+Section title: ${sectionTitle}
+
+Existing section content:
+${activeSection.content || '[No existing content]'}
+
+Use the supplied project parameters to populate known information.
+Improve or expand the existing content as appropriate for this section.
+Preserve placeholders for missing information.
+
+Return the section title and generated content in the required JSON format.
+`;
+
+            // Generate the section.
+            const result = await GenerateReportSection(
+                question,
+                parameters,
+                instructions
+            );
+
+
+            if (!result?.success) {
+                throw new Error(
+                    result?.error || 'Failed to generate the report section.'
+                );
+            }
+
+            // Accept an object or a JSON string.
+            const candidate = result.specification ?? result.answer;
+
+            const specification =
+                typeof candidate === 'string'
+                    ? JSON.parse(candidate)
+                    : candidate;
+
+            // Replace the entire active section.
+            this.replaceActiveSection(specification);
+
+            this.setState({
+                loading: false,
+                error: ''
+            });
+
+        } catch (err) {
+            console.error('Report section generation failed:', err);
+
+            this.setState({
+                loading: false,
+                error: err.message ||
+                    'Unable to generate the report section.'
+            });
+        }
+    };
+
+    generateGradingReport = async () => {
+        if (this.state.loading) {
+            return;
+        }
+
+        this.setState({
+            loading: true,
+            error: ''
+        });
+
+        try {
+            const gfk = new GFK();
+            const { projectid, reportid } = this.props.match.params;
+
+            // Get the project.
+            const project = gfk.getProjectById.call(this, projectid);
+
+            if (!project) {
+                throw new Error('Project not found.');
+            }
+
+            // Get the active report being edited.
+            const report = project.reports?.find(
+                r => r.reportid === reportid
+            );
+
+            if (!report) {
+                throw new Error('Active report not found.');
+            }
+
+
+            // Get the Geotechnical Investigation Report.
+            const soilReport = gfk.getProjectSoilsReport.call(
+                this,
+                projectid
+            );
+
+            // Get the client.
+            const client = gfk.getClientBy_Id.call(
+                this,
+                project.clientid
+            );
+
+            // Get all project compaction tests.
+            const compactionTests =
+                gfk.getCompactionTestbyProjectID.call(
+                    this,
+                    projectid
+                ) || [];
+
+            // Get the project's laboratory compaction curves.
+            const compactionCurves =
+                gfk.getcurves.call(
+                    this,
+                    projectid
+                ) || [];
+
+            // Project-specific parameters supplied to OpenAI.
+            const parameters = {
+                consultant: 'GFK & Associates',
+
+                projectAddress:
+                    project.projectaddress ||
+                    project.address ||
+                    '',
+
+                projectTitle: project.title || '',
+                projectCity: project.projectcity || '',
+
+                clientName: client
+                    ? `${client.firstname || ''} ${client.lastname || ''}`.trim()
+                    : '',
+
+                // Geotechnical Investigation Report.
+                soilReportTitle: soilReport?.reporttitle || '',
+                soilReportDate: soilReport?.datereport || '',
+
+                geotechnicalInvestigationReport: soilReport
+                    ? {
+                        reporttitle: soilReport.reporttitle || '',
+                        datereport: soilReport.datereport || '',
+                        sections: soilReport.sections || []
+                    }
+                    : null,
+
+                // Laboratory compaction curves.
+                laboratoryCompactionCurves: compactionCurves,
+
+                // Field compaction tests.
+                fieldCompactionTests: compactionTests,
+
+                // Reference methods. Confirm applicability against
+                // the actual project specifications and test records.
+                labCompactionMethod:
+                    'ASTM D1557, Modified Effort, if specified by the project',
+
+                fieldCompactionMethod:
+                    'ASTM D6938, In-Place Density and Water Content of Soil ' +
+                    'and Soil-Aggregate by Nuclear Methods (Shallow Depth), ' +
+                    'if confirmed by the field test records'
+            };
+
+            // General instructions for generating engineering reports.
+            const instructions = `
+You generate professional engineering report specifications
+for CivilEngineer.io.
+
+OUTPUT REQUIREMENTS:
+- Follow the supplied JSON schema exactly.
+- Return structured JSON, not a prose explanation.
+- Follow the user's requested report type and scope.
+- Use projectParameters to populate applicable report content.
+- Use the supplied field compaction tests and laboratory
+  compaction curves when preparing the report.
+
+PARAMETER SUBSTITUTION:
+- Replace matching placeholders with supplied, non-empty values.
+- Use the project information consistently.
+- Preserve placeholders for required missing information.
+- Do not include the projectParameters object as report content.
+
+ENGINEERING ACCURACY:
+- Base technical statements on supplied project data and records.
+- Do not invent testing dates, test locations, density values,
+  moisture contents, maximum dry densities, specifications,
+  or engineering conclusions.
+- Do not claim that compaction requirements have been met unless
+  the supplied evidence supports that conclusion.
+- Do not treat an absent test record as a passing result.
+- Identify missing records or information needed to support
+  an actual certification.
+- Use testing methods only when applicable to the supplied records
+  and project specifications.
+- Include suitable scope limitations and signature placeholders.
+- Do not invent a professional's identity, license number,
+  signature, or approval.
+
+Follow the supplied JSON schema exactly.
+`;
+
+            const question =
+                'Generate a professional building pad compaction ' +
+                'certification letter using the supplied project parameters, ' +
+                'Geotechnical Investigation Report, field compaction test ' +
+                'records, laboratory compaction curves, and applicable ' +
+                'project specifications. Identify the project, testing dates, ' +
+                'test locations, test methods, applicable laboratory maximum ' +
+                'dry density and optimum moisture content, specified minimum ' +
+                'relative compaction, and field test results wherever ' +
+                'documented. Evaluate whether the documented test results ' +
+                'meet the applicable criteria. Include the conclusion, ' +
+                'scope limitations, and signature and credential placeholders. ' +
+                'Replace available placeholders with supplied project ' +
+                'information. Preserve placeholders for missing information. ' +
+                'If required records are unavailable, identify the missing ' +
+                'information rather than inventing results or asserting ' +
+                'compliance. Return the complete letter as structured report ' +
+                'sections matching the required JSON schema.';
+
+            // Request the generated specification.
+            const result = await GenerateReport(
+                question,
+                parameters,
+                instructions
+            );
+
+            // Support either an object or a JSON-string response.
+            if (!result?.success) {
+                throw new Error(
+                    result?.error || 'OpenAI failed to generate the report.'
+                );
+            }
+
+            const candidate =
+                result.specification ?? result.answer;
+
+            const specification =
+                typeof candidate === 'string'
+                    ? JSON.parse(candidate)
+                    : candidate;
+
+            if (
+                !specification ||
+                typeof specification.reporttitle !== 'string' ||
+                !Array.isArray(specification.sections)
+            ) {
+                throw new Error(
+                    'OpenAI returned an invalid report specification.'
+                );
+            }
+
+            let reportFound = false;
+
+            const updatedProjects = this.props.projects.map(project => {
+                if (project.projectid !== projectid) {
+                    return project;
+                }
+
+                return {
+                    ...project,
+                    reports: (project.reports || []).map(report => {
+                        if (report.reportid !== reportid) {
+                            return report;
+                        }
+
+                        reportFound = true;
+
+                        return {
+                            ...report,
+                            reporttitle: specification.reporttitle,
+                            sections: specification.sections
+                        };
+                    })
+                };
+            });
+
+            if (!reportFound) {
+                throw new Error('Report not found.');
+            }
+
+            this.props.reduxProjects(updatedProjects);
+
+            this.setState({
+                answer: specification,
+                loading: false,
+                error: ''
+            });
+
+        } catch (err) {
+            console.error('OpenAI request failed:', err);
+
+            this.setState({
+                loading: false,
+                error: err.message ||
+                    'Unable to generate the grading report.'
+            });
+        }
+    };
+
     showTopLinks() {
         const styles = MyStylesheet();
         const gfk = new GFK();
-        const headerFont = gfk.getHeaderFont.call(this)
         const regularFont = gfk.getRegularFont.call(this)
         const user = gfk.getUser.call(this)
         const { projectid, reportid } = this.props.match.params
@@ -686,6 +1141,9 @@ class Report extends Component {
                 {this.showTopLinks()}
 
                 {openai.showOpenAI.call(this)}
+
+                {this.createGradingReport()}
+
 
                 <div className="vr-layout">
 
@@ -762,6 +1220,8 @@ class Report extends Component {
                                         Section number
                                     </label>
 
+
+
                                     <input
                                         className="vr-section-number"
                                         value={activePath.map(index => index + 1).join('.')}
@@ -781,8 +1241,10 @@ class Report extends Component {
                                         placeholder="Section title"
                                     />
 
+
+
                                     <label className="vr-field-label">
-                                        Content
+                                        Content    {openai.generateReportSection.call(this)}
                                     </label>
 
                                     <textarea
