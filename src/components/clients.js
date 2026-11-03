@@ -203,18 +203,23 @@ class Clients extends Component {
 
                     </div>
                     <div style={{ ...styles.flex3 }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("lastname")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("lastname")}
+                         onChange={event => { this.setClientProperty("lastname", event.target.value) }} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Last Name</span></div>
                     </div>
                 </div>
 
                 <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex1, ...styles.generalFont }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("company")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} 
+                         onChange={event => { this.setClientProperty("company", event.target.value) }}
+                        value={this.getClientProperty("company")} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Company</span></div>
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("address")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} 
+                         onChange={event => { this.setClientProperty("address", event.target.value) }}
+                        value={this.getClientProperty("address")} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Address</span></div>
                     </div>
 
@@ -222,15 +227,20 @@ class Clients extends Component {
 
                 <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex3, ...styles.generalFont, ...styles.addMargin }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("city")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} 
+                        onChange={event => { this.setClientProperty("city", event.target.value) }}
+                        value={this.getClientProperty("city")} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>City</span></div>
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...styles.addMargin }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("contactstate")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} 
+                         onChange={event => { this.setClientProperty("contactstate", event.target.value) }}
+                        value={this.getClientProperty("contactstate")} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>State</span></div>
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont, ...styles.addMargin }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("zipcode")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("zipcode")}
+                         onChange={event => { this.setClientProperty("zipcode", event.target.value) }} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Zipcode</span></div>
                     </div>
 
@@ -238,11 +248,15 @@ class Clients extends Component {
 
                 <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
                     <div style={{ ...styles.flex1, ...styles.generalFont }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("emailaddress")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} 
+                         onChange={event => { this.setClientProperty("emailaddress", event.target.value) }}
+                        value={this.getClientProperty("emailaddress")} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Email Address</span></div>
                     </div>
                     <div style={{ ...styles.flex1, ...styles.generalFont }}>
-                        <input type="text" style={{ ...styles.generalField, ...regularFont }} value={this.getClientProperty("phonenumber")} />
+                        <input type="text" style={{ ...styles.generalField, ...regularFont }} 
+                         onChange={event => { this.setClientProperty("phonenumber", event.target.value) }}
+                        value={this.getClientProperty("phonenumber")} />
                         <div style={{ ...styles.generalContainer }}><span style={{ ...regularFont }}>Phone Number</span></div>
                     </div>
 
