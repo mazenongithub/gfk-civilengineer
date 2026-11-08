@@ -152,68 +152,65 @@ class LogDraft extends Component {
     });
 }
 
-    showgraphic(y1, y2, url) {
-        let graphic = url;
+   showgraphic(y1, y2, url) {
+    const height = (y2 - y1) * 30;
 
-        let style = {
-            backgroundImage: `url(${process.env.REACT_APP_SERVER_API}${graphic}`,
-            width: "100%",
-            height: "100%"
-        }
-        return (
-            <g transform="translate(75.5,131.5)">
-                <foreignObject width="80" height={(y2 - y1) * 30} x="0" y={y1 * 30}>
-                    <div style={style}>
-                        &nbsp;
-                    </div>
-                </foreignObject>
-            </g>)
+    if (!url || height <= 0) return null;
 
-    }
+    return (
+        <g transform="translate(75.5,131.5)">
+            <foreignObject
+                x="0"
+                y={y1 * 30}
+                width="80"
+                height={height}
+            >
+                <div
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundImage: `url("${url}")`,
+                        backgroundRepeat: 'repeat-y',
+                        backgroundSize: '100% auto',
+                        backgroundPosition: 'top center'
+                    }}
+                />
+            </foreignObject>
+        </g>
+    );
+}
 
     loadgraphics() {
-        const makeGraphic = (url, depth) => {
-            return ({ url, depth })
-        }
-        let graphics = [];
-        let graphicArray = []
-        const samples = this.getSamples();
-        if (samples.length > 0) {
-            // eslint-disable-next-line
-            samples.map(sample => {
-                if (sample.graphiclog) {
-                    graphicArray.push(makeGraphic(sample.graphiclog, sample.depth))
-                }
-            })
+    const { projectid, boringid } = this.props.match.params;
+    const samples = this.getSamples() || [];
 
-            if (graphicArray.length > 0) {
-                // eslint-disable-next-line
-                graphicArray.map((graphic, i) => {
-                    if (i === 0) {
+    if (!samples.length) return [];
 
-                        graphics.push(this.showgraphic(0, graphic.depth, graphic.url))
+    const graphics = [];
+    let previousDepth = 0;
 
-                    } else {
+    samples.forEach(sample => {
+        if (!sample.graphiclog) return;
 
-                        graphics.push(this.showgraphic(graphicArray[i - 1].depth, graphic.depth, graphic.url))
+        const imageUrl =
+            `${process.env.REACT_APP_SERVER_API}/gfk/graphiclog/` +
+            `${encodeURIComponent(projectid)}/` +
+            `${encodeURIComponent(boringid)}/` +
+            `${encodeURIComponent(sample.sampleid)}`;
 
-                    }
-                })
-            }
+        graphics.push(
+            this.showgraphic(
+                previousDepth,
+                sample.depth,
+                imageUrl
+            )
+        );
 
+        previousDepth = sample.depth;
+    });
 
-
-
-            return graphics;
-        }
-
-
-
-
-
-        return graphics;
-
-    }
+    return graphics;
+}
 
     showdescription(description, depth) {
 

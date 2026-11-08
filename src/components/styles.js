@@ -7,11 +7,11 @@ export function MyStylesheet() {
         dateButton: {
             width: '54px'
         },
-        alignLeft:{
-            textAlign:'left'
+        alignLeft: {
+            textAlign: 'left'
         },
-        topMargin15:{
-            marginTop:'15px'
+        topMargin15: {
+            marginTop: '15px'
         },
         generalButton: {
             border: '0px',
@@ -57,6 +57,9 @@ export function MyStylesheet() {
         width99: {
             width: '99%'
         },
+        addPadding: {
+            padding: '5px'
+        },
         generalField: {
             width: '95%',
             padding: '3px'
@@ -67,7 +70,7 @@ export function MyStylesheet() {
         marginAuto: {
             margin: 'auto'
         },
-        maxWidth400:{
+        maxWidth400: {
             width: '400px'
         },
         calendarContainer: {
@@ -91,7 +94,7 @@ export function MyStylesheet() {
         flex6: {
             flex: 6
         },
-         flex8: {
+        flex8: {
             flex: 8
         },
         generalFont: {
@@ -115,26 +118,26 @@ export function MyStylesheet() {
         rightMargin10: {
             marginRight: '10px'
         },
-          marginLeft15:{
-            marginLeft:'15px'
+        marginLeft15: {
+            marginLeft: '15px'
         },
-          marginLeft25:{
-            marginLeft:'25px'
+        marginLeft25: {
+            marginLeft: '25px'
         },
-        marginLeft50:{
-            marginLeft:'50px'
+        marginLeft50: {
+            marginLeft: '50px'
         },
-         marginLeft75:{
-            marginLeft:'75px'
+        marginLeft75: {
+            marginLeft: '75px'
         },
-        navColor:{
-            backgroundColor:'#6A7EA6'
+        navColor: {
+            backgroundColor: '#6A7EA6'
         },
-        mobileMenu:{
-            backgroundColor:'#023059'
+        mobileMenu: {
+            backgroundColor: '#023059'
         },
-        mobileColor:{
-            color:'#f2f2f2'
+        mobileColor: {
+            color: '#f2f2f2'
         }
 
     })

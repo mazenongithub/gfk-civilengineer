@@ -50,6 +50,41 @@ export async function EngineerLogin(values) {
     }
 }
 
+
+
+export async function HandleSDC(projectid, sdc) {
+
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/sdc`;
+
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sdc })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.Error || `Request failed with status ${response.status}`
+            );
+        }
+
+        return data;
+
+    } catch (err) {
+        console.error('Error handling Seismic Design Criteria:', err);
+        throw err instanceof Error
+            ? err
+            : new Error(String(err));
+    }
+}
+
+
 export async function GenerateReportSection(question,
     parameters = {},
     instructions = '') {
@@ -62,7 +97,7 @@ export async function GenerateReportSection(question,
             headers: {
                 'Content-Type': 'application/json',
             },
-             body: JSON.stringify({ question, parameters, instructions })
+            body: JSON.stringify({ question, parameters, instructions })
         });
 
         const data = await response.json().catch(() => ({}));
@@ -95,7 +130,7 @@ export async function GenerateReport(question,
             headers: {
                 'Content-Type': 'application/json',
             },
-             body: JSON.stringify({ question, parameters, instructions })
+            body: JSON.stringify({ question, parameters, instructions })
         });
 
         const data = await response.json().catch(() => ({}));
@@ -126,7 +161,7 @@ export async function AskOpenAI(question) {
             headers: {
                 'Content-Type': 'application/json',
             },
-             body: JSON.stringify({ question })
+            body: JSON.stringify({ question })
         });
 
         const data = await response.json().catch(() => ({}));
@@ -734,6 +769,75 @@ export async function SaveCompactionCurves(values) {
             : err.errorMessage ||
             err.message ||
             "Server error while saving compactioncurves";
+    }
+}
+
+
+export async function UploadFileImage(projectid, figureid, formData) {
+
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/uploadfileimage/${figureid}`;
+
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.Error ||
+                data.message ||
+                `Upload failed with status ${response.status}`
+            );
+        }
+
+        return data;
+
+    } catch (err) {
+        console.error('Error uploading figure image:', err);
+
+        throw err instanceof Error
+            ? err
+            : new Error(String(err));
+    }
+}
+
+
+export async function HandleFigures(projectid, figures) {
+
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/figures/savefigures`;
+
+    try {
+        const response = await fetch(APIURL, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ figures })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.Error ||
+                data.message ||
+                `Request failed with status ${response.status}`
+            );
+        }
+
+        return data;
+
+    } catch (err) {
+        console.error('Error saving project figures:', err);
+
+        throw err instanceof Error
+            ? err
+            : new Error(String(err));
     }
 }
 

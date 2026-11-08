@@ -37,11 +37,11 @@ class GFK {
     }
     getsaveprojecticon() {
         if (this.state.width > 1200) {
-            return ({ width: '20%' })
+            return ({ width: '220px' })
         } else if (this.state.width > 800) {
-            return ({ width: '30%' })
+            return ({ width: '180px' })
         } else {
-            return ({ width: '35%' })
+            return ({ width: '140px' })
         }
     }
 
@@ -685,6 +685,16 @@ class GFK {
 
         return sieve;
     }
+
+   getFiguresByProjectID(projectid) {
+    const { projects = [] } = this.props;
+
+    const i = projects.findIndex(
+        project => project.projectid === projectid
+    );
+
+    return i >= 0 ? projects[i].figures || [] : [];
+}
     getcompactiontestsbyfieldid(projectid, fieldid) {
 
         const gfk = new GFK();
@@ -793,6 +803,13 @@ class GFK {
 
         return false;
     }
+
+  getProjectSDC(projectid) {
+    const gfk = new GFK();
+    const project = gfk.getProjectById.call(this, projectid);
+
+    return project?.SDC ?? false;
+}
 
     getProjectById(projectId) {
         const gfk = new GFK();

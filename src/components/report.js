@@ -1113,6 +1113,103 @@ Follow the supplied JSON schema exactly.
             </div>)
     }
 
+    renderSectionType(section) {
+        return (
+            <>
+                <label className="vr-field-label">
+                    Section Type
+                </label>
+
+                <select
+                    className="vr-section-title"
+                    value={section.type || 'text'}
+                    onChange={e => {
+                        this.setActiveSection('type', e.target.value);
+                        this.setActiveSection('referenceid', '');
+                    }}
+                >
+                    <option value="text">Text</option>
+                    <option value="appendix">Appendix</option>
+                    <option value="figure">Figure</option>
+                    <option value="boringlog">Boring Log</option>
+                    <option value="labsummary">Laboratory Summary</option>
+                    <option value="seismic">Seismic Analysis</option>
+                    <option value="spectralresponse">Spectral Response</option>
+                </select>
+            </>
+        );
+    };
+
+    getSectionReferences(type) {
+
+        const { projectid } = this.props.match.params;
+
+        const gfk = new GFK();
+
+
+
+        switch (type) {
+
+            case 'figure':
+                // Replace with your project's figure retrieval method
+                const figures = gfk.getFiguresByProjectID.call(this,projectid)
+                 return figures.map(figure => ({
+                    id: figure.figureid,
+                    name: figure.figuretitle
+                }));
+
+            case 'boringlog':
+                // Retrieve project boring logs
+                const borings = gfk.getBoringsByProjectId.call(this, projectid) || [];
+               
+                return borings.map(boring => ({
+                    id: boring.boringid,
+                    name: `Boring ${boring.boringnumber}`
+                }));
+
+            case 'labsummary':
+                // Retrieve project laboratory summaries
+                return [];
+
+            default:
+                return null;
+        }
+    };
+
+    renderSectionReference(section) {
+
+        const options = this.getSectionReferences(section.type);
+        console.log(options)
+        if (!options) return null;
+
+        return (
+            <>
+                <label className="vr-field-label">
+                    Reference
+                </label>
+
+                <select
+                    className="vr-section-title"
+                    value={section.referenceid || ''}
+                    onChange={e =>
+                        this.setActiveSection('referenceid', e.target.value)
+                    }
+                >
+                    <option value="">Select Reference</option>
+
+                    {options.map(item => (
+                        <option
+                            key={item.id}
+                            value={item.id}
+                        >
+                            {item.name}
+                        </option>
+                    ))}
+                </select>
+            </>
+        );
+    };
+
     render() {
         const report = this.getReport();
         const styles = MyStylesheet();
@@ -1227,6 +1324,10 @@ Follow the supplied JSON schema exactly.
                                         value={activePath.map(index => index + 1).join('.')}
                                         readOnly
                                     />
+
+
+
+
                                     <label className="vr-field-label">
                                         Section title
                                     </label>
@@ -1240,6 +1341,11 @@ Follow the supplied JSON schema exactly.
 
                                         placeholder="Section title"
                                     />
+
+
+                                    {this.renderSectionType(section)}
+
+                                    {this.renderSectionReference(section)}
 
 
 

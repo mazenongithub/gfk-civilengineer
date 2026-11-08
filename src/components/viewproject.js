@@ -26,6 +26,8 @@ import Proposal from './proposals'
 import Reports from './reports';
 import Report from './report';
 import ViewReport from './viewreport'
+import SDC from './sdc';
+import Figures from './figures';
 
 
 class ViewProject extends Component {
@@ -276,12 +278,12 @@ class ViewProject extends Component {
             : this.props.projects?.projects || [];
 
         // Debug what’s really happening
-       // console.log("Prev projects:", prevProjects.length);
-      //  console.log("Current projects:", currentProjects.length);
+        // console.log("Prev projects:", prevProjects.length);
+        //  console.log("Current projects:", currentProjects.length);
 
         // Run when projects just became available
         if (prevProjects.length === 0 && currentProjects.length > 0 && !this.state.project) {
-           // console.log("✅ Detected projects loaded — calling loadProjectData()");
+            // console.log("✅ Detected projects loaded — calling loadProjectData()");
             await this.loadProjectData();
         }
     }
@@ -329,7 +331,9 @@ class ViewProject extends Component {
                 slope: result.slope,
                 timesheet: result.timesheet,
                 schedule: result.schedule,
-                reports: result.reports
+                reports: result.reports,
+                SDC:result.SDC,
+                figures:result.figures
             };
 
             // Update Redux store or local state
@@ -593,6 +597,24 @@ class ViewProject extends Component {
                 </div>
             </div>
 
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/sdc`}>
+                        /Seismic Design Criteria
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/figures`}>
+                        /Figures
+                    </Link>
+                </div>
+            </div>
+
+
 
 
 
@@ -632,6 +654,28 @@ class ViewProject extends Component {
                             <Route exact path={`${path}/labsummary`} component={LabSummary} />
                             <Route exact path={`${path}/ptslab`} component={PTSlab} />
                             <Route exact path={`${path}/seismic`} component={Seismic} />
+                            <Route
+                                exact
+                                path={`${path}/sdc`}
+                                render={(props) => (
+                                    <SDC
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
+
+                            <Route
+                                exact
+                                path={`${path}/figures`}
+                                render={(props) => (
+                                    <Figures
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
+
                             <Route
                                 exact
                                 path={`${path}/reports`}
