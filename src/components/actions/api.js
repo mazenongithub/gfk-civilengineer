@@ -773,6 +773,73 @@ export async function SaveCompactionCurves(values) {
 }
 
 
+
+export async function LoadTables(projectid) {
+
+    try {
+
+        const response = await fetch(
+            `/gfk/${encodeURIComponent(projectid)}/compactiontables`,
+            {
+                method: 'GET',
+                credentials: 'include'
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || result.success === false) {
+            throw new Error(
+                result.message ||
+                result.Error ||
+                'Could not load compaction tables.'
+            );
+        }
+
+        return result;
+
+    } catch (err) {
+
+        console.error('LoadTables Error:', err);
+        throw err;
+    }
+}
+
+
+export async function SaveTables(projectid, tables) {
+
+    try {
+        const response = await fetch(
+            `${process.env.REACT_APP_SERVER_API}/gfk/${encodeURIComponent(projectid)}/compactiontables`,
+            {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tables })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || result.success === false) {
+            throw new Error(
+                result.message ||
+                result.Error ||
+                'Could not save compaction tables.'
+            );
+        }
+
+        return result;
+
+    } catch (err) {
+        console.error('SaveTables Error:', err);
+        throw err;
+    }
+}
+
+
 export async function UploadFileImage(projectid, figureid, formData) {
 
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/uploadfileimage/${figureid}`;

@@ -1113,7 +1113,65 @@ Follow the supplied JSON schema exactly.
             </div>)
     }
 
+
     renderSectionType(section) {
+
+        const report = this.getReport();
+        const reportType = report?.type || '';
+
+        let options = [];
+
+        switch (reportType) {
+
+            case 'Geotechnical Investigation':
+            case 'Geotechnical Investigation Report':
+
+                options = [
+                    { value: 'text', label: 'Text' },
+                    { value: 'appendix', label: 'Appendix' },
+                    { value: 'figure', label: 'Figure' },
+                    { value: 'boringlog', label: 'Boring Log' },
+                    { value: 'labsummary', label: 'Laboratory Summary' },
+                    { value: 'seismic', label: 'Seismic Analysis' },
+                    { value: 'spectralresponse', label: 'Spectral Response' }
+                ];
+
+                break;
+
+            case 'Proposal':
+
+                options = [
+                    { value: 'text', label: 'Text' },
+                    { value: 'cost estimate', label: 'Cost Estimate' }
+                ];
+
+                break;
+
+            case 'Grading/Compaction':
+            case 'Grading/Compaction Report':
+
+                options = [
+                    { value: 'text', label: 'Text' },
+                    { value: 'compactiontables', label: 'Compaction Tables' }
+                ];
+
+                break;
+
+            default:
+
+                options = [
+                    { value: 'text', label: 'Text' }
+                ];
+
+                break;
+        }
+
+        const selectedType = options.some(
+            option => option.value === section?.type
+        )
+            ? section.type
+            : 'text';
+
         return (
             <>
                 <label className="vr-field-label">
@@ -1122,59 +1180,93 @@ Follow the supplied JSON schema exactly.
 
                 <select
                     className="vr-section-title"
-                    value={section.type || 'text'}
+                    value={selectedType}
                     onChange={e => {
-                        this.setActiveSection('type', e.target.value);
+
+                        const newType = e.target.value;
+
+                        this.setActiveSection('type', newType);
+
+                        // Clear the reference when changing type.
                         this.setActiveSection('referenceid', '');
                     }}
                 >
-                    <option value="text">Text</option>
-                    <option value="appendix">Appendix</option>
-                    <option value="figure">Figure</option>
-                    <option value="boringlog">Boring Log</option>
-                    <option value="labsummary">Laboratory Summary</option>
-                    <option value="seismic">Seismic Analysis</option>
-                    <option value="spectralresponse">Spectral Response</option>
+                    {options.map(option => (
+                        <option
+                            key={option.value}
+                            value={option.value}
+                        >
+                            {option.label}
+                        </option>
+                    ))}
                 </select>
             </>
         );
-    };
+    }
+
+
 
     getSectionReferences(type) {
 
         const { projectid } = this.props.match.params;
-
         const gfk = new GFK();
-
-
 
         switch (type) {
 
-            case 'figure':
-                // Replace with your project's figure retrieval method
-                const figures = gfk.getFiguresByProjectID.call(this,projectid)
-                 return figures.map(figure => ({
+            case 'figure': {
+
+                const figures =
+                    gfk.getFiguresByProjectID.call(this, projectid) || [];
+
+                return figures.map(figure => ({
                     id: figure.figureid,
                     name: figure.figuretitle
                 }));
+            }
 
-            case 'boringlog':
-                // Retrieve project boring logs
-                const borings = gfk.getBoringsByProjectId.call(this, projectid) || [];
-               
+            case 'boringlog': {
+
+                const borings =
+                    gfk.getBoringsByProjectId.call(this, projectid) || [];
+
                 return borings.map(boring => ({
                     id: boring.boringid,
                     name: `Boring ${boring.boringnumber}`
                 }));
+            }
+
+            case 'cost estimate': {
+
+                const proposals =
+                    gfk.getProposalByProjectID.call(this, projectid) || [];
+
+                return proposals.map(proposal => ({
+                    id: proposal.proposalid,
+                    name: `Proposal ${proposal.dateproposal || ''}`
+                }));
+            }
+
+
+            case 'compactiontables': {
+
+                const tables = gfk.getCompactionTables.call(this, projectid) || [];
+
+                return tables.map(table => ({
+                    id: table.tableid,
+                    name: table.tabletitle || `Table ${table.tableid}`
+                }));
+            }
 
             case 'labsummary':
-                // Retrieve project laboratory summaries
+                // Lab summary is calculated from project borings.
+                // No reference ID is required.
                 return [];
 
             default:
-                return null;
+                return [];
         }
-    };
+    }
+
 
     renderSectionReference(section) {
 

@@ -28,6 +28,7 @@ import Report from './report';
 import ViewReport from './viewreport'
 import SDC from './sdc';
 import Figures from './figures';
+import CompactionTables from './compactiontables';
 
 
 class ViewProject extends Component {
@@ -333,7 +334,8 @@ class ViewProject extends Component {
                 schedule: result.schedule,
                 reports: result.reports,
                 SDC:result.SDC,
-                figures:result.figures
+                figures:result.figures,
+                tables:result.tables
             };
 
             // Update Redux store or local state
@@ -613,6 +615,19 @@ class ViewProject extends Component {
                     </Link>
                 </div>
             </div>
+            
+            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    <Link
+                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
+                        to={`/${engineerid}/projects/${projectid}/compactiontables`}>
+                        /Compaction Tables
+                    </Link>
+                </div>
+                <div style={{ ...styles.flex1, ...styles.alignCenter }}>
+                    &nbsp;
+                </div>
+            </div>
 
 
 
@@ -659,6 +674,16 @@ class ViewProject extends Component {
                                 path={`${path}/sdc`}
                                 render={(props) => (
                                     <SDC
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
+                              <Route
+                                exact
+                                path={`${path}/compactiontables`}
+                                render={(props) => (
+                                    <CompactionTables
                                         {...props}
                                         socket={this.socket}
                                     />

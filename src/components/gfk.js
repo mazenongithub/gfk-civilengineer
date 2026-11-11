@@ -431,7 +431,7 @@ class GFK {
 
         return zonecharts;
     }
-  
+
     getremoveicon() {
         if (this.state.width > 800) {
             return ({ width: '47px', height: '47px' })
@@ -686,15 +686,26 @@ class GFK {
         return sieve;
     }
 
-   getFiguresByProjectID(projectid) {
-    const { projects = [] } = this.props;
 
-    const i = projects.findIndex(
-        project => project.projectid === projectid
-    );
+    getCompactionTables(projectid) {
 
-    return i >= 0 ? projects[i].figures || [] : [];
-}
+        const project = this.props.projects?.find(
+            project => project.projectid === projectid
+        );
+
+        return project?.tables || [];
+    }
+
+
+    getFiguresByProjectID(projectid) {
+        const { projects = [] } = this.props;
+
+        const i = projects.findIndex(
+            project => project.projectid === projectid
+        );
+
+        return i >= 0 ? projects[i].figures || [] : [];
+    }
     getcompactiontestsbyfieldid(projectid, fieldid) {
 
         const gfk = new GFK();
@@ -804,12 +815,12 @@ class GFK {
         return false;
     }
 
-  getProjectSDC(projectid) {
-    const gfk = new GFK();
-    const project = gfk.getProjectById.call(this, projectid);
+    getProjectSDC(projectid) {
+        const gfk = new GFK();
+        const project = gfk.getProjectById.call(this, projectid);
 
-    return project?.SDC ?? false;
-}
+        return project?.SDC ?? false;
+    }
 
     getProjectById(projectId) {
         const gfk = new GFK();
