@@ -370,6 +370,87 @@ export async function GetSummary(projectid) {
 
 
 
+export async function LoadGraphics(companyid) {
+    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${encodeURIComponent(companyid)}/loadgraphiclogs`;
+
+    const resp = await fetch(APIURL, {
+        credentials: 'include'
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+        throw new Error(data.Error || data.message || resp.statusText);
+    }
+
+    return data;
+}
+
+
+
+export async function SaveGraphics(companyid, graphics) {
+
+    const APIURL =
+        `${process.env.REACT_APP_SERVER_API}/gfk/` +
+        `${encodeURIComponent(companyid)}/savegraphiclogs`;
+
+    const resp = await fetch(APIURL, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ graphics })
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+        throw new Error(
+            data.Error || data.message || resp.statusText
+        );
+    }
+
+    return data;
+}
+
+
+export async function UploadGraphics(
+    companyid,
+    graphicid,
+    graphics,
+    file
+) {
+
+    const APIURL =
+        `${process.env.REACT_APP_SERVER_API}/gfk/` +
+        `${encodeURIComponent(companyid)}/uploadgraphiclog`;
+
+    const formData = new FormData();
+
+    formData.append('graphiclog', file);
+    formData.append('graphicid', graphicid);
+    formData.append('graphics', JSON.stringify(graphics));
+
+    const resp = await fetch(APIURL, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+        throw new Error(data.Error || resp.statusText);
+    }
+
+    return data;
+}
+
+
+
+
+
 export async function LoadProject(projectid) {
     const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/loadproject`;
 
@@ -909,35 +990,7 @@ export async function HandleFigures(projectid, figures) {
 }
 
 
-export async function UploadGraphicLog(formData) {
-    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/uploadgraphiclog`;
 
-    try {
-        const resp = await fetch(APIURL, {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-        });
-
-        // Handle non-OK responses
-        if (!resp.ok) {
-            const errorData = await resp.json().catch(() => null);
-
-            if (resp.status >= 400 && resp.status < 500 && errorData?.message) {
-                throw new Error(errorData.message);
-            }
-
-            throw new Error("Please try again later, server is not responding");
-        }
-
-        // Return successful response
-        return await resp.json();
-
-    } catch (error) {
-        // Normalize error object
-        return Promise.reject(error.message || "Unexpected error occurred");
-    }
-}
 
 
 

@@ -139,6 +139,22 @@ class GFK {
         return failureLayer || false;
     }
 
+    getProjectTables(projectid) {
+        const gfk = new GFK();
+        const project = gfk.getProjectById.call(this,projectid)
+
+        return Array.isArray(project?.tables)
+            ? project.tables
+            : [];
+    }
+
+    getTableByID(projectid, tableid) {
+        const gfk = new GFK();
+        return gfk.getProjectTables.call(this,projectid).find(
+            table => table.tableid === tableid
+        ) || null;
+    }
+
 
     getTopSurface(projectid, sectionid) {
         const gfk = new GFK();
@@ -951,6 +967,19 @@ class GFK {
         return boring.samples.findIndex(s => s.sampleid === sampleId);
     }
 
+    getSDC(projectid) {
+
+        const projects = this.props.projects;
+
+        if (!Array.isArray(projects)) return false;
+
+        const project = projects.find(
+            project => project.projectid === projectid
+        );
+
+        return project?.SDC ?? false;
+    }
+
 
     getsieves() {
         const gfk = new GFK();
@@ -1471,12 +1500,23 @@ class GFK {
         return index >= 0 ? index : false;
     }
 
+
     getUnconfinedTestById(projectId, boringId, sampleId) {
         const gfk = new GFK();
-        const sample = gfk.getSampleById.call(this, projectId, boringId, sampleId);
 
-        return sample?.unconfined || false;
+        const sample = gfk.getSampleById.call(
+            this, projectId, boringId, sampleId
+        );
+
+        const unconfined = sample?.unconfined;
+
+        if (Array.isArray(unconfined)) {
+            return unconfined.length > 0 ? unconfined : false;
+        }
+
+        return unconfined || false;
     }
+
 
     getunconfinedtestkeybyid(sampleid) {
         const gfk = new GFK();

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as actions from './actions';
 import { connect } from 'react-redux';
-import { MyStylesheet } from './styles'
+import { MyStylesheet } from './styles';
 import GFK from './gfk';
 import { Link } from 'react-router-dom';
 import { calcdryden, moist } from './functions';
@@ -10,251 +10,339 @@ import SoilClassification from './soilclassification';
 import { GetSummary } from './actions/api';
 import { downloadIcon } from './svg';
 
+const SIEVE_FIELDS = [
+    'wgt34', 'wgt38', 'wgt4', 'wgt10',
+    'wgt30', 'wgt40', 'wgt100', 'wgt200'
+];
+
+// Empty strings, null, and undefined are missing readings, NOT zero measurements.
+const isRecordedNumber = value =>
+    value !== null &&
+    value !== undefined &&
+    String(value).trim() !== '' &&
+    Number.isFinite(Number(value));
 
 class LabSummary extends Component {
 
-    constructor(props) {
+      constructor(props) {
         super(props);
-        this.state = { width: 0, height: 0 }
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+        this.state = {
+            width: typeof window !== 'undefined' ? window.innerWidth : 0,
+            height: typeof window !== 'undefined' ? window.innerHeight : 0
+           
+        };
+        this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
     }
+
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
-
     }
+
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
-    updateWindowDimensions() {
+
+      updateWindowDimensions() {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
+    }
+
+    // A leftover sieve: {} / [] / { wgt200: '' } must not be treated as a test.
+    // Requiring a positive retained weight also prevents placeholder all-zero
+    // values from generating an unsupported "100% Fines" result.
+    // A genuine all-passing/100%-fines test needs an explicit completion flag.
+    hasSieveData(sieve) {
+        if (!sieve || Array.isArray(sieve) || typeof sieve !== 'object') {
+            return false;
+        }
+
+        const entries = SIEVE_FIELDS
+            .filter(field => isRecordedNumber(sieve[field]))
+            .map(field => Number(sieve[field]));
+
+        if (entries.length === 0 || entries.some(value => value < 0)) {
+            return false;
+        }
+
+        return entries.some(value => value > 0) || sieve.isComplete === true;
+    }
+
+    getSieveResult(sample, sieve) {
+        if (!this.hasSieveData(sieve)) return '';
+
+        const netWeight = Number(sample.drywgt) - Number(sample.tarewgt);
+        if (!isRecordedNumber(sample.drywgt) ||
+            !isRecordedNumber(sample.tarewgt) ||
+            !Number.isFinite(netWeight) || netWeight <= 0) {
+            return '';
+        }
+
+        const weights = SIEVE_FIELDS.map(field =>
+            isRecordedNumber(sieve[field]) ? Number(sieve[field]) : 0
+        );
+
+        const classifier = new SoilClassification(
+            netWeight,
+            isRecordedNumber(sample.ll) ? Number(sample.ll) : 0,
+            isRecordedNumber(sample.pi) ? Number(sample.pi) : 0,
+            ...weights
+        );
+
+        const fractions = [
+            ['Gravel', classifier.getGravFrac()],
+            ['Sand', classifier.getSandFrac()],
+            ['Fines', classifier.getFines()]
+        ];
+
+        return fractions
+            .filter(([, value]) =>
+                Number.isFinite(Number(value)) && Number(value) > 0
+            )
+            .map(([name, value]) => `${name} ${Number(value)}%`)
+            .join(', ');
+    }
+
+    getUnconfinedResult(gfk, unconfinedcalcs, projectid, boringid, sampleid) {
+        const test = gfk.getUnconfinedTestById.call(
+            this, projectid, boringid, sampleid
+        );
+
+        const hasTest = Array.isArray(test)
+            ? test.length > 0
+            : test && typeof test === 'object' && Object.keys(test).length > 0;
+
+        if (!hasTest) return { strength: '', strain: '' };
+
+        const strength = unconfinedcalcs.getMaxStress.call(
+            this, projectid, boringid, sampleid
+        );
+        const strain = unconfinedcalcs.getMaxStrain.call(
+            this, projectid, boringid, sampleid
+        );
+
+        // Do not show numeric defaults for an incomplete unconfined test.
+        if (!isRecordedNumber(strength) || Number(strength) <= 0 ||
+            !isRecordedNumber(strain) || Number(strain) < 0) {
+            return { strength: '', strain: '' };
+        }
+
+        return { strength, strain };
+    }
+
+    getDensityAndMoisture(sample) {
+        const validDryWeight = isRecordedNumber(sample.drywgt);
+        const validTareWeight = isRecordedNumber(sample.tarewgt);
+        const validWetWeight = isRecordedNumber(sample.wetwgt) ||
+            isRecordedNumber(sample.wetwgt_2);
+        const netDryWeight = Number(sample.drywgt) - Number(sample.tarewgt);
+
+        if (!validDryWeight || !validTareWeight || !validWetWeight ||
+            netDryWeight <= 0) {
+            return { dryDensity: '', moistureContent: '' };
+        }
+
+        const moisture = Number(moist(
+            sample.drywgt, sample.tarewgt, sample.wetwgt, sample.wetwgt_2
+        ));
+
+        const moistureContent = Number.isFinite(moisture) && moisture >= 0
+            ? (moisture * 100).toFixed(1)
+            : '';
+
+        const hasDimensions = isRecordedNumber(sample.diameter) &&
+            Number(sample.diameter) > 0 &&
+            isRecordedNumber(sample.samplelength) &&
+            Number(sample.samplelength) > 0;
+
+        let dryDensity = '';
+        if (hasDimensions) {
+            const density = calcdryden(
+                sample.wetwgt_2, sample.wetwgt,
+                sample.tarewgt, sample.drywgt,
+                sample.diameter, sample.samplelength
+            );
+            dryDensity = Number.isFinite(Number(density)) && Number(density) > 0
+                ? density
+                : '';
+        }
+
+        return { dryDensity, moistureContent };
     }
 
     showrows() {
         const gfk = new GFK();
-        const projectid = this.props.match.params.projectid;
-        const project = gfk.getProjectById.call(this, projectid)
         const unconfinedcalcs = new UnconfinedCalcs();
-        let sampleno = '';
-        let depth = '';
-        let dryden = '';
-        let moisturecontent = '';
-        let ll = '';
-        let pi = '';
-        let maxstress = '';
-        let maxstrain = '';
-        let sieveresult = '';
-        let rows = [];
+        const { projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
 
-        if (project) {
-            const borings = gfk.getBoringsByProjectId.call(this, projectid)
-            if (borings) {
-                // eslint-disable-next-line 
-                borings.map(boring => {
-                    const boringid = boring.boringid;
-                    const boringnumber = boring.boringnumber;
-                    const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid)
-                    if (samples) {
-                        // eslint-disable-next-line 
-                        samples.map(sample => {
+        if (!project) return [];
 
+        const borings = gfk.getBoringsByProjectId.call(this, projectid);
+        if (!Array.isArray(borings)) return [];
 
-                            const sampleid = sample.sampleid;
-                            sampleno = `${boringnumber}-${sample.sampleset}(${sample.samplenumber})`
-                            depth = sample.depth;
-                            dryden = calcdryden(sample.wetwgt_2, sample.wetwgt, sample.tarewgt, sample.drywgt, sample.diameter, sample.samplelength)
-                            moisturecontent = Number(moist(sample.drywgt, sample.tarewgt, sample.wetwgt, sample.wetwgt_2) * 100).toFixed(1)
-                            if (Number(sample.ll) > 0) {
-                                ll = Number(sample.ll);
-                            } else {
-                                ll = '';
-                            }
-                            if (Number(sample.pi) > 0) {
-                                pi = Number(sample.pi);
-                            } else {
-                                pi = '';
-                            }
+        const rows = [];
 
-                            const unconfined = gfk.getUnconfinedTestById.call(this, projectid, boringid, sampleid);
+        borings.forEach(boring => {
+            const { boringid, boringnumber } = boring;
+            const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid);
+            if (!Array.isArray(samples)) return;
 
-                            maxstress = unconfinedcalcs.getMaxStress.call(this, projectid, boringid, sampleid)
-                            maxstrain = unconfinedcalcs.getMaxStrain.call(this, projectid, boringid, sampleid)
+            samples.forEach(sample => {
+                const sampleid = sample.sampleid;
+                const sampleno = `${boringnumber}-${sample.sampleset ?? ''}(${sample.samplenumber ?? ''})`;
+                const depth = sample.depth ?? '';
+                const ll = isRecordedNumber(sample.ll) && Number(sample.ll) > 0
+                    ? Number(sample.ll) : '';
+                const pi = isRecordedNumber(sample.pi) && Number(sample.pi) > 0
+                    ? Number(sample.pi) : '';
 
-                            if (!maxstress || !maxstrain) {
-                                maxstress = '';
-                                maxstrain = '';
-                            }
+                const { dryDensity, moistureContent } =
+                    this.getDensityAndMoisture(sample);
 
+                const { strength, strain } = this.getUnconfinedResult(
+                    gfk, unconfinedcalcs, projectid, boringid, sampleid
+                );
 
-                            const sieve = gfk.getSieveBySampleId.call(this, projectid, boringid, sampleid)
+                // Do not trust truthiness here: {} and [] are truthy in JS.
+                const sieve = gfk.getSieveBySampleId.call(
+                    this, projectid, boringid, sampleid
+                );
+                const sieveresult = this.getSieveResult(sample, sieve);
 
-                            if (sieve) {
-                                const netwgt = Number(sample.drywgt) - Number(sample.tarewgt);
-                                const wgt34 = Number(sieve.wgt34)
-                                const wgt38 = Number(sieve.wgt38)
-                                const wgt4 = Number(sieve.wgt4)
-                                const wgt10 = Number(sieve.wgt10)
-                                const wgt30 = Number(sieve.wgt30)
-                                const wgt40 = Number(sieve.wgt40)
-                                const wgt100 = Number(sieve.wgt100)
-                                const wgt200 = Number(sieve.wgt200)
-                                const getSoilClassification = new SoilClassification(netwgt, ll, pi, wgt34, wgt38, wgt4, wgt10, wgt30, wgt40, wgt100, wgt200)
-                                const gravelfrac = Number(getSoilClassification.getGravFrac())
-                                const sandfrac = Number(getSoilClassification.getSandFrac())
-                                const fines = Number(getSoilClassification.getFines())
+                rows.push(this.showrow(
+                    `${boringid}-${sampleid}`,
+                    sampleno, depth, dryDensity, moistureContent,
+                    ll, pi, strength, strain, sieveresult
+                ));
+            });
+        });
 
-                                if (gravelfrac > 0) {
-                                    sieveresult += ` Gravel ${gravelfrac}%,`
-                                }
-                                if (sandfrac > 0) {
-                                    sieveresult += ` Sand ${sandfrac}%,`
-                                }
-                                if (fines > 0) {
-                                    sieveresult += ` Fines ${fines}%`
-                                }
-
-
-                            } else {
-                                sieveresult = ''
-                            }
-
-
-                            rows.push(this.showrow(sampleid, sampleno, depth, dryden, moisturecontent, ll, pi, maxstress, maxstrain, sieveresult))
-
-                        })
-
-
-                    }
-
-                })
-
-
-
-            }
-
-        }
         return rows;
-
-
-
     }
 
-    showrow(sampleid, sampleno, depth, dryden, moist, ll, pi, unconfined, strain, sieve) {
+    showrow(rowKey, sampleno, depth, dryden, moisture, ll, pi, strength, strain, sieve) {
         const styles = MyStylesheet();
-        return (<tr key={sampleid}>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{sampleno}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{depth}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{dryden}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{moist}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{ll}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{pi}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{unconfined}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{strain}</td>
-            <td style={{ ...styles.showBorder, ...styles.alignCenter }}>{sieve}</td>
-        </tr>)
+        const cellStyle = { ...styles.showBorder, ...styles.alignCenter };
+
+        return (
+            <tr key={rowKey}>
+                <td style={cellStyle}>{sampleno}</td>
+                <td style={cellStyle}>{depth}</td>
+                <td style={cellStyle}>{dryden}</td>
+                <td style={cellStyle}>{moisture}</td>
+                <td style={cellStyle}>{ll}</td>
+                <td style={cellStyle}>{pi}</td>
+                <td style={cellStyle}>{strength}</td>
+                <td style={cellStyle}>{strain}</td>
+                <td style={cellStyle}>{sieve}</td>
+            </tr>
+        );
     }
 
     async getSummary() {
         try {
             const { projectid } = this.props.match.params;
-
-            // Fetch PDF Blob
             const pdfBlob = await GetSummary(projectid);
-
-            // Create a URL and open it
             const url = URL.createObjectURL(pdfBlob);
-            window.open(url, "_blank");
-
+            window.open(url, '_blank');
+            // Allow the new tab time to load the blob URL before cleanup.
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
         } catch (err) {
-            console.error("Error loading summary:", err);
-            alert(err.message || "Failed to load summary.");
+            console.error('Error loading summary:', err);
+            window.alert(err.message || 'Failed to load summary.');
         }
     }
-
-
 
     render() {
         const gfk = new GFK();
         const styles = MyStylesheet();
-        const headerFont = gfk.getHeaderFont.call(this)
-        const engineerid = this.props.match.params.engineerid;
-        const projectid = this.props.match.params.projectid;
-        const regularFont = gfk.getRegularFont.call(this)
-        const project = gfk.getProjectById.call(this, projectid)
-        const buttonWidth = { width: '200px' }
+        const headerFont = gfk.getHeaderFont.call(this);
+        const regularFont = gfk.getRegularFont.call(this);
+        const { engineerid, projectid } = this.props.match.params;
+        const project = gfk.getProjectById.call(this, projectid);
 
-        if (project) {
-
-            return (<div style={{ ...styles.generalContainer }}>
-
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/profile`}>
-                        /{engineerid}
-                    </Link>
+        if (!project) {
+            return (
+                <div style={{ ...styles.generalContainer }}>
+                    <span style={{ ...regularFont }}>Project Not Found</span>
                 </div>
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/projects`}>
-                        /projects
-                    </Link>
-                </div>
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/projects/${projectid}`}>
-                        /{project.projectnumber} - {project.title}
-                    </Link>
-                </div>
+            );
+        }
 
-                <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
-                    <Link
-                        style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
-                        to={`/${engineerid}/projects/${projectid}/labsummary`}>
-                        /labsummary
-                    </Link>
-                </div>
+        const linkStyle = {
+            ...styles.generalFont,
+            ...headerFont,
+            ...styles.generalLink,
+            ...styles.boldFont
+        };
+        const navItems = [
+            { to: `/${engineerid}/profile`, label: `/${engineerid}` },
+            { to: `/${engineerid}/projects`, label: '/projects' },
+            {
+                to: `/${engineerid}/projects/${projectid}`,
+                label: `/${project.projectnumber} - ${project.title}`
+            },
+            {
+                to: `/${engineerid}/projects/${projectid}/labsummary`,
+                label: '/labsummary'
+            }
+        ];
 
+        const headerCell = { ...styles.showBorder, ...styles.alignCenter };
+
+        return (
+            <div style={{ ...styles.generalContainer }}>
+                {navItems.map(({ to, label }) => (
+                    <div
+                        key={to}
+                        style={{
+                            ...styles.generalContainer,
+                            ...styles.alignCenter,
+                            ...(label === '/labsummary' ? styles.bottomMargin15 : {})
+                        }}
+                    >
+                        <Link style={linkStyle} to={to}>{label}</Link>
+                    </div>
+                ))}
 
                 <div style={{ ...styles.generalContainer, ...styles.generalFont, ...regularFont }}>
-
                     <table width="99%" border="0" cellPadding="3">
                         <tbody>
                             <tr>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} rowSpan="2">Sample No.</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} rowSpan="2">Depth(ft)</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} rowSpan="2">Dry Density (pcf)</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} rowSpan="2">Moisture Content %</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} colSpan="2">Atterberg Limits</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} colSpan="2">Unconfined Compression</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }} rowSpan="2">Sieve Analysis</td>
+                                <td style={headerCell} rowSpan="2">Sample No.</td>
+                                <td style={headerCell} rowSpan="2">Depth(ft)</td>
+                                <td style={headerCell} rowSpan="2">Dry Density (pcf)</td>
+                                <td style={headerCell} rowSpan="2">Moisture Content %</td>
+                                <td style={headerCell} colSpan="2">Atterberg Limits</td>
+                                <td style={headerCell} colSpan="2">Unconfined Compression</td>
+                                <td style={headerCell} rowSpan="2">Sieve Analysis</td>
                             </tr>
                             <tr>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }}>Liquid Limit%</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }}>Plastic Index</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }}>Strength (pcf)</td>
-                                <td style={{ ...styles.showBorder, ...styles.alignCenter }}>Strain %</td>
+                                <td style={headerCell}>Liquid Limit%</td>
+                                <td style={headerCell}>Plastic Index</td>
+                                <td style={headerCell}>Strength (pcf)</td>
+                                <td style={headerCell}>Strain %</td>
                             </tr>
                             {this.showrows()}
                         </tbody>
                     </table>
                 </div>
 
-                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.alignCenter, ...styles.topMargin15 }}>
-                    <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={() => { this.getSummary() }}>{downloadIcon()}</button>
+                <div style={{
+                    ...styles.generalContainer,
+                    ...styles.bottomMargin15,
+                    ...styles.alignCenter,
+                    ...styles.topMargin15
+                }}>
+                    <button
+                        style={{ ...styles.generalButton, width: '200px' }}
+                        onClick={() => this.getSummary()}
+                    >
+                        {downloadIcon()}
+                    </button>
                 </div>
-
-
-
-            </div>)
-
-        } else {
-            return (<div style={{ ...styles.generalContainer }}>
-                <span style={{ ...regularFont }}>Project Not Found</span>
-            </div>)
-        }
+            </div>
+        );
     }
 }
 
@@ -262,6 +350,7 @@ function mapStateToProps(state) {
     return {
         projects: state.projects,
         myuser: state.myuser
-    }
+    };
 }
+
 export default connect(mapStateToProps, actions)(LabSummary);
