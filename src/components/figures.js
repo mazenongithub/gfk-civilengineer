@@ -523,47 +523,80 @@ class Figures extends Component {
     // SHOW FIGURE EDITOR
     // ----------------------------------------
 
-    showFigureThumbnail() {
+showFigureThumbnail() {
     const styles = MyStylesheet();
     const gfk = new GFK();
 
     const regularFont = gfk.getRegularFont.call(this);
-    const { projectid } = this.props.match.params;
+
+    const { engineerid, projectid } = this.props.match.params;
 
     const activeFigure = this.getActiveFigure();
 
-    if (!activeFigure?.figureurl) {
+    if (!activeFigure?.figureid) {
         return null;
     }
 
     const imageURL =
-        `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/figures/${activeFigure.figureid}/image?v=${encodeURIComponent(activeFigure.figureurl)}`;
+        `${process.env.REACT_APP_SERVER_API}/gfk/${projectid}/figures/${activeFigure.figureid}/image?v=${encodeURIComponent(activeFigure.figureurl || '')}`;
+
+    const viewFigureURL =
+        `/${engineerid}/projects/${projectid}/figures/${activeFigure.figureid}`;
 
     return (
-        <div style={{
-            ...styles.generalContainer,
-            ...styles.alignCenter,
-            ...styles.bottomMargin15
-        }}>
+        <div
+            style={{
+                ...styles.generalContainer,
+                ...styles.alignCenter,
+                ...styles.bottomMargin15
+            }}
+        >
+            {activeFigure.figureurl && (
+                <img
+                    src={imageURL}
+                    alt={activeFigure.figuretitle || 'Figure'}
+                    style={{
+                        width: '200px',
+                        height: '200px',
+                        objectFit: 'contain',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px'
+                    }}
+                />
+            )}
 
-            <img
-                src={imageURL}
-                alt={activeFigure.figuretitle || 'Figure'}
+            <div
                 style={{
-                    width: '200px',
-                    height: '200px',
-                    objectFit: 'contain',
-                    border: '1px solid #ccc',
-                    borderRadius: '5px'
+                    ...styles.generalContainer,
+                    ...styles.alignCenter,
+                    ...styles.bottomMargin15
                 }}
-            />
-
-            <div style={{ ...styles.generalContainer }}>
+            >
                 <span style={{ ...regularFont }}>
                     {activeFigure.figuretitle}
                 </span>
             </div>
 
+            <div
+                style={{
+                    ...styles.generalContainer,
+                    ...styles.alignCenter
+                }}
+            >
+                <Link
+                    to={viewFigureURL}
+                    rel="noopener noreferrer"
+                    style={{
+                        ...regularFont,
+                        ...styles.generalLink,
+                        fontWeight: 'bold',
+                        textDecoration: 'underline',
+                        cursor: 'pointer'
+                    }}
+                >
+                    View Figure
+                </Link>
+            </div>
         </div>
     );
 }

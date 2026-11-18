@@ -29,6 +29,7 @@ import ViewReport from './viewreport'
 import SDC from './sdc';
 import Figures from './figures';
 import CompactionTables from './compactiontables';
+import ViewFigure from './viewfigure'
 
 
 class ViewProject extends Component {
@@ -695,6 +696,17 @@ class ViewProject extends Component {
                                 path={`${path}/figures`}
                                 render={(props) => (
                                     <Figures
+                                        {...props}
+                                        socket={this.socket}
+                                    />
+                                )}
+                            />
+
+                              <Route
+                                exact
+                                path={`${path}/figures/:figureid`}
+                                render={(props) => (
+                                    <ViewFigure
                                         {...props}
                                         socket={this.socket}
                                     />

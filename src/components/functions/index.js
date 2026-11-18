@@ -86,63 +86,21 @@ export function formatTime(date) {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-export function formatDateReport(datestring) {
-    datestring = datestring.replace(/-/g, '/');
-    let dateob = new Date(datestring);
+export function formatDateReport(date) {
+    if (!date) return "";
 
-    let offset = dateob.getTimezoneOffset();
-    offset = offset * 60 * 1000;
+    const dateobj = date instanceof Date
+        ? date
+        : new Date(date);
 
-    let gettime = dateob.getTime() + offset;
-    let dateobj = new Date(gettime);
-    let month = Number(dateob.getMonth());
-    let datereport = "";
-    switch (month) {
-        case 0:
-            datereport += "January";
-            break;
-        case 1:
-            datereport += "February";
-            break;
-        case 2:
-            datereport += "March";
-            break;
-        case 3:
-            datereport += "April";
-            break;
-        case 4:
-            datereport += "May";
-            break;
-        case 5:
-            datereport += "June";
-            break;
-        case 6:
-            datereport += "July";
-            break;
-        case 7:
-            datereport += "August";
-            break;
-        case 8:
-            datereport += "September";
-            break;
-        case 9:
-            datereport += "October";
-            break;
-        case 10:
-            datereport += "November";
-            break;
-        case 11:
-            datereport += "December";
-            break;
-        default:
-            break;
-    }
-    let day = dateobj.getDate();
-    let year = dateobj.getFullYear();
-    return `${datereport} ${day}, ${year}`
+    if (isNaN(dateobj.getTime())) return "";
 
+    return dateobj.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+    });
 }
-
 export function getFirstIsOn(mydate) {
     let monthdisplay = mydate.getMonth() + 1;
     let fullyear = mydate.getFullYear();
@@ -359,36 +317,36 @@ export function netwgt(drywgt, tarewgt) {
 }
 
 export function calculateLaborCost(timeIn, timeOut, laborRate) {
-  const start = new Date(timeIn);
-  const end = new Date(timeOut);
+    const start = new Date(timeIn);
+    const end = new Date(timeOut);
 
-  const diffMs = end - start;                        // difference in milliseconds
-  const hours = diffMs / (1000 * 60 * 60);           // convert to hours
-  const roundedHours = Math.round(hours * 100) / 100; // round to hundredth
+    const diffMs = end - start;                        // difference in milliseconds
+    const hours = diffMs / (1000 * 60 * 60);           // convert to hours
+    const roundedHours = Math.round(hours * 100) / 100; // round to hundredth
 
-  const totalCost = Math.round(roundedHours * laborRate * 100) / 100;
+    const totalCost = Math.round(roundedHours * laborRate * 100) / 100;
 
-  return totalCost;
+    return totalCost;
 }
 
 export function calculateHours(timeIn, timeOut) {
-  const start = new Date(timeIn);
-  const end = new Date(timeOut);
+    const start = new Date(timeIn);
+    const end = new Date(timeOut);
 
-  const diffMs = end - start;                        // difference in ms
-  const hours = diffMs / (1000 * 60 * 60);           // convert to hours
+    const diffMs = end - start;                        // difference in ms
+    const hours = diffMs / (1000 * 60 * 60);           // convert to hours
 
-  return Math.round(hours * 100) / 100;              // round to hundredth
+    return Math.round(hours * 100) / 100;              // round to hundredth
 }
 
 export function calculateCost(quantity, unitCost) {
-  const qty = Number(quantity);
-  const cost = Number(unitCost);
+    const qty = Number(quantity);
+    const cost = Number(unitCost);
 
-  if (isNaN(qty) || isNaN(cost)) return 0;
+    if (isNaN(qty) || isNaN(cost)) return 0;
 
-  // round to hundredth
-  return Math.round(qty * cost * 100) / 100;
+    // round to hundredth
+    return Math.round(qty * cost * 100) / 100;
 }
 
 

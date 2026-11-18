@@ -12,19 +12,52 @@ class LogDraft extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { render: '', width: 0, height: 0 }
+        this.state = { render: '', width: 0, height: 0, graphicLogs: [], graphicLogsError: '' }
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
     }
     componentDidMount() {
         window.addEventListener('resize', this.updateWindowDimensions);
         this.updateWindowDimensions();
-
+        this.loadCompanyGraphicLogs();
+    }
+    componentDidUpdate(prevProps) {
+        const previous = prevProps.match.params;
+        const current = this.props.match.params;
+        const oldCompany = prevProps.company && prevProps.company.companyid;
+        const newCompany = this.props.company && this.props.company.companyid;
+        if (previous.projectid !== current.projectid || oldCompany !== newCompany) {
+            this.loadCompanyGraphicLogs();
+        }
     }
     componentWillUnmount() {
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
     updateWindowDimensions() {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
+    }
+
+    getCompanyId() {
+        return ("gfk")
+    }
+
+    async loadCompanyGraphicLogs() {
+        const companyid = this.getCompanyId();
+        if (!companyid) return;
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_SERVER_API}/gfk/${encodeURIComponent(companyid)}/loadgraphiclogs`,
+                { credentials: 'include' }
+            );
+            if (!response.ok) throw new Error(`Graphic logs request failed (${response.status})`);
+            const data = await response.json();
+            // Accept either the model object, its graphics array, or a wrapped API response.
+            const record = data.graphiclogs || data.graphicLogs || data.data || data;
+            const graphicLogs = Array.isArray(record) ? record : (record.graphics || []);
+            this.setState({ graphicLogs, graphicLogsError: '' });
+        } catch (error) {
+            console.error('Unable to load company graphic logs:', error);
+            this.setState({ graphicLogs: [], graphicLogsError: error.message });
+        }
     }
 
     viewBox() {
@@ -152,20 +185,20 @@ class LogDraft extends Component {
     });
 }
 
-   showgraphic(y1, y2, url) {
+   showgraphic(y1, y2, url, key) {
     const height = (y2 - y1) * 30;
 
     if (!url || height <= 0) return null;
 
     return (
-        <g transform="translate(75.5,131.5)">
+        <g key={key} transform="translate(75.5,131.5)">
             <foreignObject
                 x="0"
                 y={y1 * 30}
                 width="80"
                 height={height}
             >
-                <div
+                <div xmlns="http://www.w3.org/1999/xhtml"
                     style={{
                         width: '100%',
                         height: '100%',
@@ -180,37 +213,36 @@ class LogDraft extends Component {
     );
 }
 
+    getGraphicImageUrl(graphic) {
+        const companyid = this.getCompanyId();
+        if (!companyid || !graphic || !graphic.graphicid || !graphic.graphiclog) return null;
+        return `${process.env.REACT_APP_SERVER_API}/gfk/` +
+            `${encodeURIComponent(companyid)}/graphiclogs/` +
+            `${encodeURIComponent(graphic.graphicid)}/image`;
+    }
+
     loadgraphics() {
-    const { projectid, boringid } = this.props.match.params;
-    const samples = this.getSamples() || [];
-
-    if (!samples.length) return [];
-
-    const graphics = [];
-    let previousDepth = 0;
-
-    samples.forEach(sample => {
-        if (!sample.graphiclog) return;
-
-        const imageUrl =
-            `${process.env.REACT_APP_SERVER_API}/gfk/graphiclog/` +
-            `${encodeURIComponent(projectid)}/` +
-            `${encodeURIComponent(boringid)}/` +
-            `${encodeURIComponent(sample.sampleid)}`;
-
-        graphics.push(
-            this.showgraphic(
-                previousDepth,
-                sample.depth,
-                imageUrl
-            )
-        );
-
-        previousDepth = sample.depth;
-    });
-
-    return graphics;
-}
+        const samples = [...(this.getSamples() || [])]
+            // Only samples assigned a graphic define a soil-pattern boundary.
+            .filter(sample => sample.graphicid && Number.isFinite(Number(sample.depth)))
+            .sort((a, b) => Number(a.depth) - Number(b.depth));
+        const graphicById = new Map(this.state.graphicLogs.map(graphic =>
+            [String(graphic.graphicid), graphic]
+        ));
+        let previousDepth = 0;
+        return samples.map(sample => {
+            const depth = Number(sample.depth);
+            const graphic = graphicById.get(String(sample.graphicid));
+            const imageUrl = this.getGraphicImageUrl(graphic);
+            const element = imageUrl
+                ? this.showgraphic(previousDepth, depth, imageUrl, sample.sampleid)
+                : null;
+            // Advance only at graphic-bearing samples. Samples without
+            // graphicid must not interrupt the pattern above this depth.
+            previousDepth = depth;
+            return element;
+        }).filter(Boolean);
+    }
 
     showdescription(description, depth) {
 
@@ -218,7 +250,7 @@ class LogDraft extends Component {
         return (
             <foreignObject x="156" y={`${Math.ceil(115.5 + (30 * depth))}`} width="431" height="700">
                 <div className="logdraft-description">
-                    <text>{description} </text>
+                    {description}
                 </div>
             </foreignObject>
         )
@@ -323,7 +355,7 @@ class LogDraft extends Component {
     showremarks(remarks, depth) {
         if (remarks) {
             return (<foreignObject x="824" y={`${115.5 + (30 * depth)}`} width="176" height="600">
-                <div className="logdraft-description"><text>{remarks} </text></div></foreignObject>)
+                <div className="logdraft-description">{remarks}</div></foreignObject>)
         }
 
     }
@@ -347,39 +379,219 @@ class LogDraft extends Component {
         return (<text className="logdraft-7" width="22" text-anchor="middle" transform={`translate(12.5 ${130.5 + (30 * depth)}) scale(1 1)`}>{depth}</text>)
     }
 
+ getBoringReportDate(project, boringid) {
+
+    const { projects } = this.props;
+
+    const projectid = project.projectid;
+
+    // Find the project in Redux if projects is an array.
+    const reduxProject = Array.isArray(projects)
+        ? projects.find(p => p.projectid === projectid)
+        : projects;
+
+    // Retrieve the reports associated with this project.
+    const reports =
+        reduxProject?.reports ||
+        project?.reports ||
+        [];
+
+    if (!Array.isArray(reports)) {
+        console.log("Reports not found:", reports);
+        return null;
+    }
+
+    // Recursively search report sections and subsections.
+    const containsBoring = (sections = []) => {
+
+        if (!Array.isArray(sections)) return false;
+
+        return sections.some(section => {
+
+            if (
+                section.type === 'boringlog' &&
+                String(section.referenceid) === String(boringid)
+            ) {
+                return true;
+            }
+
+            return containsBoring(section.subsections);
+        });
+    };
+
+    // Find reports containing this boring.
+    const matchingReports = reports.filter(report =>
+        report.datereport &&
+        containsBoring(report.sections)
+    );
+
+    if (!matchingReports.length) {
+        console.log("No report references boring:", boringid);
+        return null;
+    }
+
+    // Select the latest report containing this boring.
+    matchingReports.sort((a, b) =>
+        new Date(b.datereport) - new Date(a.datereport)
+    );
+
+    const report = matchingReports[0];
+
+    console.log("Matching report:", report);
+
+    return report.datereport;
+}
+
+    showBoringFooter(y, project, datereport, figure) {
+        const x = 28;
+        const width = 944;
+        const footerHeight = 176;
+        const titleCell = 374;
+        const numberCell = 190;
+        const title = project?.title || '';
+        const cells = [
+            { label: 'PROJECT NO.', value: project?.projectnumber || '' },
+            { label: 'DATE', value: datereport ? formatDateReport(datereport) : '' },
+            { label: 'FIGURE', value: figure || '' }
+        ];
+        return (
+            <g key={`boring-footer-${y}`} fontFamily="Arial, Helvetica, sans-serif">
+                <rect x={x} y={y} width={width} height={footerHeight}
+                    fill="white" stroke="#222" strokeWidth="1" />
+                <line x1={x + titleCell} y1={y} x2={x + titleCell} y2={y + footerHeight}
+                    stroke="#222" />
+                <line x1={x + titleCell} y1={y + 104} x2={x + width} y2={y + 104}
+                    stroke="#222" />
+                <line x1={x + titleCell + numberCell} y1={y + 104}
+                    x2={x + titleCell + numberCell} y2={y + footerHeight} stroke="#222" />
+                <line x1={x + titleCell + numberCell * 2} y1={y + 104}
+                    x2={x + titleCell + numberCell * 2} y2={y + footerHeight} stroke="#222" />
+
+                {/* Left cell is reserved for the company logo. */}
+                <foreignObject x={x + titleCell + 12} y={y + 8}
+                    width={numberCell * 3 - 24} height="88">
+                    <div xmlns="http://www.w3.org/1999/xhtml" style={{
+                        height: '100%', display: 'flex', flexDirection: 'column',
+                        justifyContent: 'center', alignItems: 'center', textAlign: 'center',
+                        gap: '5px', fontFamily: 'Arial, Helvetica, sans-serif'
+                    }}>
+                        <div style={{ fontSize: '22px', lineHeight: 1.1, fontWeight: 700 }}>
+                            EXPLORATORY BORING LOG
+                        </div>
+                        <div style={{ fontSize: '18px', lineHeight: 1.1, fontWeight: 600 }}>
+                            {title}
+                        </div>
+                    </div>
+                </foreignObject>
+
+                {cells.map((cell, index) => {
+                    const cellX = x + titleCell + index * numberCell;
+                    return (
+                        <g key={cell.label}>
+                            <text x={cellX + numberCell / 2} y={y + 125}
+                                fontSize="15" fontWeight="bold" textAnchor="middle">
+                                {cell.label}
+                            </text>
+                            <text x={cellX + numberCell / 2} y={y + 158}
+                                fontSize="18" textAnchor="middle">
+                                {cell.value}
+                            </text>
+                        </g>
+                    );
+                })}
+            </g>
+        );
+    }
+
+    getBoringFigureNumber(project, boringid) {
+
+    const { projects } = this.props;
+
+    const projectid = project.projectid;
+
+    const reduxProject = Array.isArray(projects)
+        ? projects.find(p => p.projectid === projectid)
+        : projects;
+
+    const reports =
+        reduxProject?.reports ||
+        project?.reports ||
+        [];
+
+    if (!Array.isArray(reports)) return "";
+
+    const findBoringInSections = (sections, appendixLetter, pageNumber = 0) => {
+
+        if (!Array.isArray(sections)) {
+            return null;
+        }
+
+        let currentPage = pageNumber;
+
+        for (const section of sections) {
+
+            if (section.type === "boringlog") {
+
+                currentPage++;
+
+                if (String(section.referenceid) === String(boringid)) {
+                    return `${appendixLetter}${currentPage}`;
+                }
+            }
+
+            if (Array.isArray(section.subsections)) {
+
+                const result = findBoringInSections(
+                    section.subsections,
+                    appendixLetter,
+                    currentPage
+                );
+
+                if (result) return result;
+            }
+        }
+
+        return null;
+    };
+
+    for (const report of reports) {
+
+        let appendixIndex = 0;
+
+        for (const section of report.sections || []) {
+
+            if (section.type !== "appendix") continue;
+
+            const appendixLetter = String.fromCharCode(
+                65 + appendixIndex
+            );
+
+            appendixIndex++;
+
+            const figureNumber = findBoringInSections(
+                section.subsections,
+                appendixLetter
+            );
+
+            if (figureNumber) {
+                return figureNumber;
+            }
+        }
+    }
+
+    return "";
+}
+
     completeblock() {
         const gfk = new GFK();
-        let projectid = this.props.match.params.projectid;
+        let {projectid, boringid}= this.props.match.params;
         let completeblock = [];
         let bottomdepth = 0;
-        let title = "";
-        let projectnumber = "";
-        let figure = "";
-        let datereport = "";
-        let address = ""
-        let city = "";
+        let datereport = null;
         const project = gfk.getProjectById.call(this, projectid)
-        if (project) {
-
-
-            address = project.projectaddress;
-            projectnumber = project.projectnumber;
-            city = project.projectcity;
-            title = project.title;
-
-
-
-        }
-
-
-
-        const boring = this.getBoring();
-        if (boring) {
-
-            // datereport = boring.datereport;
-            //  figure = boring.figure;
-
-        }
+        if (!project) return completeblock;
+        datereport = this.getBoringReportDate(project, boringid);
+        const figure = this.getBoringFigureNumber(project, boringid);
         const samples = this.getSamples();
         if (samples.length > 0) {
 
@@ -403,35 +615,9 @@ class LogDraft extends Component {
         }
 
         if (Math.ceil(bottomdepth) < 32) {
-            completeblock.push(<rect className="logdraft-2" x="1.5" y="1095.5" width="416" height="198.5" />)
-            completeblock.push(<rect className="logdraft-2" x="417.5" y="1095.5" width="584" height="50" />)
-            completeblock.push(<rect className="logdraft-2" x="417.5" y="1244.5" width="194.33" height="49" />)
-            completeblock.push(<rect className="logdraft-2" x="611.83" y="1244.5" width="194.33" height="49" />)
-            completeblock.push(<rect className="logdraft-2" x="806.17" y="1244.5" width="194.33" height="49" />)
             completeblock.push(<line className="logdraft-2" x1="23.5" y1="1091.5" x2="23.5" y2="1095.5" />)
             completeblock.push(<rect className="logdraft-1" x="1" y="1" width="1000" height="1293" />)
-
-            completeblock.push(<text className="logdraft-16" transform="translate(441.9 1131)">
-                EXP<tspan className="logdraft-17" x="77.27" y="0">L</tspan>
-                <tspan x="99.33" y="0">OR</tspan><tspan className="logdraft-18" x="154.07" y="0">A</tspan>
-                <tspan className="logdraft-19" x="179.62" y="0">T</tspan><tspan x="204.69" y="0">O</tspan>
-                <tspan className="logdraft-20" x="233.25" y="0">R</tspan><tspan x="258.58" y="0">Y BORING </tspan>
-                <tspan className="logdraft-17" x="462.08" y="0">L</tspan><tspan x="484.13" y="0">OG</tspan></text>)
-
-
-            completeblock.push(<text className="logdraft-21" transform="translate(462.54 1263)">P
-                <tspan className="logdraft-22" x="13.3" y="0">r</tspan>
-                <tspan x="20.37" y="0">oject No.</tspan></text>)
-            completeblock.push(<text className="logdraft-21" transform="translate(687.24 1263)">Date</text>)
-            completeblock.push(<text className="logdraft-21" transform="translate(868.08 1263)">FIGURE</text>)
-
-            completeblock.push(<foreignObject x="418" y="1141" width="582" height="140">
-                <div className="logdraft-title"><text>{title} </text></div></foreignObject>)
-            completeblock.push(<foreignObject x="418" y="1191" width="582" height="140">
-                <div className="logdraft-title"><text>{address} {city}, CA </text></div></foreignObject>)
-            completeblock.push(<text x="510" y="1290" text-anchor="middle" className="logdraft-title">{projectnumber} </text>)
-            completeblock.push(<text className="logdraft-title" x="710" y="1290" text-anchor="middle">{formatDateReport(datereport)} </text>)
-            completeblock.push(<text className="logdraft-title" x="904" y="1290" text-anchor="middle">{figure} </text>)
+            completeblock.push(this.showBoringFooter(1095.5, project, datereport, figure))
 
             //add ft labels
             for (let i = 5; i <= 32; i += 5) {
@@ -440,35 +626,11 @@ class LogDraft extends Component {
         }
         else {
 
-            completeblock.push(<rect className="logdraft-2" x="1.5" y={1091.5 + (30 * (Math.ceil(bottomdepth) - 32))} width="416" height="198.5" />)
-            completeblock.push(<rect className="logdraft-2" x="417.5" y={1091.5 + (30 * (Math.ceil(bottomdepth) - 32))} width="584" height="50" />)
-            completeblock.push(<rect className="logdraft-2" x="417.5" y={1240.5 + (30 * (Math.ceil(bottomdepth) - 32))} width="194.33" height="49" />)
-            completeblock.push(<rect className="logdraft-2" x="611.83" y={1240.5 + (30 * (Math.ceil(bottomdepth) - 32))} width="194.33" height="49" />)
-            completeblock.push(<rect className="logdraft-2" x="806.17" y={1240.5 + (30 * (Math.ceil(bottomdepth) - 32))} width="194.33" height="49" />)
             completeblock.push(<rect className="logdraft-1" x="1" y="1" width="1000" height={1289.5 + (30 * (Math.ceil(bottomdepth) - 32))} />)
-
-
-            completeblock.push(<text className="logdraft-16" transform={`translate(441.9 ${1127 + (30 * (Math.ceil(bottomdepth) - 32))})`}>
-                EXP<tspan className="logdraft-17" x="77.27" y="0">L</tspan>
-                <tspan x="99.33" y="0">OR</tspan><tspan className="logdraft-18" x="154.07" y="0">A</tspan>
-                <tspan className="logdraft-19" x="179.62" y="0">T</tspan><tspan x="204.69" y="0">O</tspan>
-                <tspan className="logdraft-20" x="233.25" y="0">R</tspan><tspan x="258.58" y="0">Y BORING </tspan>
-                <tspan className="logdraft-17" x="462.08" y="0">L</tspan><tspan x="484.13" y="0">OG</tspan></text>)
-
-
-            completeblock.push(<text className="logdraft-21" transform={`translate(462.54 ${1259 + + (30 * (Math.ceil(bottomdepth) - 32))})`}>P
-                <tspan className="logdraft-22" x="13.3" y="0">r</tspan>
-                <tspan x="20.37" y="0">oject No.</tspan></text>)
-            completeblock.push(<text className="logdraft-21" transform={`translate(687.24 ${1259 + + (30 * (Math.ceil(bottomdepth) - 32))})`}>Date</text>)
-            completeblock.push(<text className="logdraft-21" transform={`translate(868.08 ${1259 + + (30 * (Math.ceil(bottomdepth) - 32))})`}>FIGURE</text>)
-
-            completeblock.push(<foreignObject x="418" y={1137 + (30 * (Math.ceil(bottomdepth) - 32))} width="582" height="140">
-                <div className="logdraft-title"><text>{title} </text></div></foreignObject>)
-            completeblock.push(<foreignObject x="418" y={1187 + (30 * (Math.ceil(bottomdepth) - 32))} width="582" height="140">
-                <div className="logdraft-title"><text>{address} {city}, CA </text></div></foreignObject>)
-            completeblock.push(<text x="510" y={1286 + (30 * (Math.ceil(bottomdepth) - 32))} text-anchor="middle" className="logdraft-title">{projectnumber} </text>)
-            completeblock.push(<text className="logdraft-title" x="710" y={1286 + (30 * (Math.ceil(bottomdepth) - 32))} text-anchor="middle">{formatDateReport(datereport)} </text>)
-            completeblock.push(<text className="logdraft-title" x="904" y={1286 + (30 * (Math.ceil(bottomdepth) - 32))} text-anchor="middle">{figure} </text>)
+            completeblock.push(this.showBoringFooter(
+                1091.5 + (30 * (Math.ceil(bottomdepth) - 32)),
+                project, datereport, figure
+            ))
 
 
 
@@ -504,45 +666,45 @@ class LogDraft extends Component {
                 return (
                     <div style={{ ...styles.generalContainer }}>
 
-                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                        <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/profile`}>
                                 /{engineerid}
                             </Link>
-                        </div>
-                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                      
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/projects`}>
                                 /projects
                             </Link>
-                        </div>
-                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                       
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/projects/${projectid}`}>
                                 /{project.projectnumber} - {project.title}
                             </Link>
-                        </div>
-
-                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+         
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/projects/${projectid}/borings`}>
                                 /Borings
                             </Link>
-                        </div>
-
-                        <div style={{ ...styles.generalContainer, ...styles.alignCenter }}>
+                   
                             <Link style={{ ...styles.generalLink, ...styles.boldFont, ...headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} </Link>
-                        </div>
-                        <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                 
                             <Link style={{ ...styles.generalLink, ...styles.boldFont, ...headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/logdraft`}>/LogDraft</Link>
                         </div>
 
                         <div style={{ ...styles.generalContainer }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox={this.viewBox()}><defs><style></style></defs><title>logdraftblock</title>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox={this.viewBox()} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+                                <defs><style>{`
+                                    .logdraft-label { font-family: Arial, Helvetica, sans-serif; font-size: 14px; fill: #111; }
+                                    .logdraft-7 { font-family: Arial, Helvetica, sans-serif; fill: #111; }
+                                    .logdraft-description { font: 14px/1.25 Arial, Helvetica, sans-serif; color: #111; overflow-wrap: break-word; }
+                                    .logdraft-title { font: 17px/1.2 Arial, Helvetica, sans-serif; color: #111; }
+                                    text { font-family: Arial, Helvetica, sans-serif; }
+                                `}</style></defs><title>logdraftblock</title>
                                 <g id="Layer_2" data-name="Layer 2"><g id="Frame">
 
                                     <rect className="logdraft-2" x="0.5" y="0.5" width="1000.5" height="61.5" />
