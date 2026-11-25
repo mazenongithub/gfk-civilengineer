@@ -728,7 +728,7 @@ class LogDraft extends Component {
                                     <text className="logdraft-11" transform="translate(706.99 99.5) scale(0.56 0.79)">D<tspan className="logdraft-12" x="12.09" y="0">r</tspan><tspan x="19.54" y="0">y Density</tspan><tspan x="28.27" y="24.05">(pc</tspan><tspan className="logdraft-13" x="56.57" y="24.05">f</tspan><tspan x="64.26" y="24.05">)</tspan></text>
                                     <text className="logdraft-11" transform="translate(773.38 99.5) scale(0.56 0.79)">Moistu<tspan className="logdraft-14" x="59.88" y="0">r</tspan>
 
-                                        <tspan className="logdraft-15" x="67.01" y="0">e</tspan><tspan x="32.02" y="24.05">%</tspan></text>
+                                    <tspan className="logdraft-15" x="67.01" y="0">e</tspan><tspan x="32.02" y="24.05">%</tspan></text>
                                     <text className="logdraft-11" transform="translate(891.6 99.5) scale(0.56 0.79)">Remarks</text>
 
                                     <rect className="logdraft-2" x="0.5" y="61.5" width="1000" height="70" />

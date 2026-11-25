@@ -1,172 +1,440 @@
+
 import React, { Component } from 'react';
-import GFK from './gfk'
+import GFK from './gfk';
 import { MyStylesheet } from './styles';
-import { pressPlay, slideLeft, slideRight, stopButton } from './svg';
+import {
+    pressPlay,
+    slideLeft,
+    slideRight,
+    stopButton
+} from './svg';
 
 class SlideShow extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
-            render: '', width: 0, height: 0, activeslide: 0, isplaying: false,
-            slideshowinterval: null
-        }
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+            width: 0,
+            height: 0,
+            activeslide: 0,
+            isplaying: false
+        };
+
+        this.slideshowinterval = null;
+
+        this.updateWindowDimensions =
+            this.updateWindowDimensions.bind(this);
     }
+
     componentDidMount() {
-        window.addEventListener('resize', this.updateWindowDimensions);
+        window.addEventListener(
+            'resize',
+            this.updateWindowDimensions
+        );
+
         this.updateWindowDimensions();
 
+        // Start automatically unless reduced motion is preferred.
+        const reducedMotion =
+            window.matchMedia &&
+            window.matchMedia(
+                '(prefers-reduced-motion: reduce)'
+            ).matches;
+
+        if (!reducedMotion) {
+            this.startSlideshow();
+        }
     }
 
     componentWillUnmount() {
-        window.removeEventListener('resize', this.updateWindowDimensions);
+        window.removeEventListener(
+            'resize',
+            this.updateWindowDimensions
+        );
+
+        this.clearSlideshow();
     }
 
     updateWindowDimensions() {
-        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.setState({
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
+    }
+
+    getSlides() {
+        return [
+            {
+                title: 'Boring Logs & Soil Profiles',
+                caption:
+                    'Document subsurface conditions with detailed boring logs, sample information, and graphic soil profiles using actual soil sample photographs.',
+                url: '/images/logdraft.jpeg'
+            },
+            {
+                title: 'Slope Stability Analysis',
+                caption:
+                    'Define cross-sections and soil layers, perform Method of Slices calculations, and evaluate factors of safety using graphical and numerical results.',
+                url: '/images/slope.jpeg'
+            },
+            {
+                title: 'Soil Laboratory Testing',
+                caption:
+                    'Manage laboratory test data and visualize material behavior through stress-strain relationships, strength measurements, and engineering graphics.',
+                url: '/images/unconfined.jpeg'
+            },
+            {
+                title: 'Field Reports & Compaction Testing',
+                caption:
+                    'Combine field density tests, inspection observations, construction progress, and site photographs into organized daily engineering reports.',
+                url: '/images/fieldreport.jpeg'
+            },
+            {
+                title: 'Integrated Project Management',
+                caption:
+                    'Manage project information, borings, laboratory data, seismic analysis, engineering reports, proposals, schedules, timesheets, and billing in one workspace.',
+                url: '/images/projects.jpeg'
+            }
+        ];
+    }
+
+    clearSlideshow() {
+        if (this.slideshowinterval) {
+            clearInterval(this.slideshowinterval);
+            this.slideshowinterval = null;
+        }
+    }
+
+    stopSlideshow() {
+        this.clearSlideshow();
+
+        this.setState({
+            isplaying: false
+        });
+    }
+
+    startSlideshow() {
+        this.clearSlideshow();
+
+        const slides = this.getSlides();
+
+        if (slides.length <= 1) return;
+
+        this.slideshowinterval = setInterval(() => {
+            this.setState(prevState => ({
+                activeslide:
+                    (prevState.activeslide + 1) %
+                    slides.length
+            }));
+        }, 5000);
+
+        this.setState({
+            isplaying: true
+        });
     }
 
     handlePrevSlide() {
-        const slides = this.getSlides()
+        this.stopSlideshow();
 
-        if (this.state.slideshowinterval) {
-            clearInterval(this.state.slideshowinterval);
-        }
-
-        this.setState(prevState => {
-
-            const lastIndex = slides.length - 1;
-            return {
-                isplaying: false,
-                slideshowinterval: null,
-                activeslide:
-                    prevState.activeslide === 0
-                        ? lastIndex
-                        : prevState.activeslide - 1
-            };
-        });
-    };
-
-    handleNextSlide() {
-        const slides = this.getSlides()
-
-        if (this.state.slideshowinterval) {
-            clearInterval(this.state.slideshowinterval);
-        }
+        const slides = this.getSlides();
 
         this.setState(prevState => ({
-            isplaying: false,
-            slideshowinterval: null,
             activeslide:
-                prevState.activeslide === slides.length - 1
-                    ? 0
-                    : prevState.activeslide + 1
+                (prevState.activeslide - 1 +
+                    slides.length) % slides.length
         }));
-    };
+    }
 
-    getSlides() {
+    handleNextSlide() {
+        this.stopSlideshow();
 
-        const newSlide = (caption, url) => {
-            return ({ caption, url })
+        const slides = this.getSlides();
 
-        }
+        this.setState(prevState => ({
+            activeslide:
+                (prevState.activeslide + 1) %
+                slides.length
+        }));
+    }
 
+    handleSelectSlide(index) {
+        this.stopSlideshow();
 
-
-        const slide_1 = newSlide("Complete boring log data paired with a graphic soil profile created from real sample photos, making subsurface conditions easier to understand at a glance.", "/images/logdraft.jpeg")
-        const slide_2 = newSlide("Define your cross-section and soil layers, and the application performs a full Method of Slices analysis to calculate the factor of safety. Results are presented graphically and numerically, enabling fast, transparent, and defensible slope stability evaluations.", "/images/slope.jpeg")
-        const slide_3 = newSlide("Laboratory unconfined compression testing visualized with stress–strain plots, demonstrating material behavior and strength through clear, professional graphics.", "/images/unconfined.jpeg")
-        const slide_4 = newSlide("Daily field reports that consolidate compaction test results, inspection summaries, and site photos into a single, organized record for clear documentation and accountability.", "/images/fieldreport.jpeg")
-        const slide_5 = newSlide("A single project workspace connecting every phase of work—from borings and lab data to seismic analysis, slope stability, timesheets, and billing—with reports and proposals coming soon.", "/images/projects.jpeg")
-        const slides = [slide_1, slide_2, slide_3, slide_4, slide_5];
-        return slides;
-
+        this.setState({
+            activeslide: index
+        });
     }
 
     handlePlaySlideshow() {
-
-        const { isplaying, slideshowinterval } = this.state;
-
-        // Pause if already playing
-        if (isplaying) {
-            clearInterval(slideshowinterval);
-            this.setState({
-                isplaying: false,
-                slideshowinterval: null
-            });
-            return;
+        if (this.state.isplaying) {
+            this.stopSlideshow();
+        } else {
+            this.startSlideshow();
         }
-
-        // Start slideshow
-        const interval = setInterval(() => {
-            this.setState(prevState => ({
-                activeslide:
-                    prevState.activeslide === 4
-                        ? 0
-                        : prevState.activeslide + 1
-            }));
-        }, 3000); // 3 seconds per slide
-
-        this.setState({
-            isplaying: true,
-            slideshowinterval: interval
-        });
-    };
-
-
+    }
 
     render() {
         const styles = MyStylesheet();
         const gfk = new GFK();
 
-        const regularFont = gfk.getRegularFont.call(this)
+        const regularFont = gfk.getRegularFont.call(this);
+        const headerFont = gfk.getHeaderFont.call(this);
 
-        const mainslide = this.state.width > 900 ? { width: '100%', maxWidth: '720px' } : { width: '100%', maxWidth: '440px' }
-        const buttonWidth = { width: '100%', maxWidth: '81px' }
         const slides = this.getSlides();
-        const playButton = { width: '100%', maxWidth: '140px', }
+        const { activeslide, isplaying, width } = this.state;
 
-        const { activeslide } = this.state;
+        const slide = slides[activeslide];
+        const isMobile = width < 700;
 
-        const getButton = this.state.isplaying ? stopButton() : pressPlay()
-
+      const colors = {
+    primary: '#6A7EA6',
+    sand: '#6A7EA6',
+    dark: '#303845',
+    muted: '#657084',
+    border: '#DCE3EE',
+    white: '#FFFFFF'
+};
+        const controlStyle = {
+            ...styles.generalButton,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: isMobile ? '55px' : '75px',
+            height: '42px',
+            padding: '8px 12px',
+            cursor: 'pointer'
+        };
 
         return (
-            <div style={{ ...styles.generalContainer, ...styles.generalFont }}>
-                <div style={{ ...styles.generalContainer, ...mainslide, ...styles.marginAuto, ...styles.alignCenter, ...styles.bottomMargin15 }}>
-                    <img style={{ ...styles.width99 }} src={slides[activeslide].url} alt={slides[activeslide].caption} />
+            <div
+                style={{
+                    ...styles.generalContainer,
+                    maxWidth: '1050px',
+                    width: '100%',
+                    margin: 'auto',
+                    boxSizing: 'border-box'
+                }}
+            >
+                {/* MAIN SLIDE */}
 
+                <div
+                    style={{
+                        background: colors.white,
+                        border:
+                            `1px solid ${colors.border}`,
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        boxShadow:
+                            '0 10px 35px rgba(0,0,0,0.08)'
+                    }}
+                >
+                    {/* SLIDE HEADER */}
+
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '10px',
+                            padding: isMobile
+                                ? '14px'
+                                : '18px 25px',
+                            borderBottom:
+                                `1px solid ${colors.border}`
+                        }}
+                    >
+                        <span
+                            style={{
+                                ...headerFont,
+                                fontSize: isMobile
+                                    ? '17px'
+                                    : '21px',
+                                fontWeight: 'bold',
+                                color: colors.dark
+                            }}
+                        >
+                            {slide.title}
+                        </span>
+
+                        <span
+                            style={{
+                                ...regularFont,
+                                fontSize: '13px',
+                                color: colors.muted
+                            }}
+                        >
+                            {activeslide + 1} / {slides.length}
+                        </span>
+                    </div>
+
+                    {/* SCREENSHOT */}
+
+                    <div
+                        style={{
+                            background: '#f1f0ed',
+                            padding: isMobile
+                                ? '10px'
+                                : '22px',
+                            textAlign: 'center'
+                        }}
+                    >
+                        <img
+                            key={slide.url}
+                            src={slide.url}
+                            alt={slide.title}
+                            style={{
+                                display: 'block',
+                                width: '100%',
+                                maxWidth: '100%',
+                                height: 'auto',
+                                maxHeight: isMobile
+                                    ? '350px'
+                                    : '570px',
+                                objectFit: 'contain',
+                                margin: 'auto',
+                                borderRadius: '5px',
+                                boxShadow:
+                                    '0 3px 12px rgba(0,0,0,0.08)'
+                            }}
+                        />
+                    </div>
+
+                    {/* CAPTION */}
+
+                    <div
+                        style={{
+                            padding: isMobile
+                                ? '20px 16px'
+                                : '25px 35px',
+                            textAlign: 'center',
+                            minHeight: isMobile
+                                ? '105px'
+                                : '95px',
+                            boxSizing: 'border-box'
+                        }}
+                        aria-live={isplaying ? 'off' : 'polite'}
+                    >
+                        <p
+                            style={{
+                                ...regularFont,
+                                fontSize: isMobile
+                                    ? '14px'
+                                    : '16px',
+                                lineHeight: 1.7,
+                                color: colors.muted,
+                                maxWidth: '850px',
+                                margin: 'auto'
+                            }}
+                        >
+                            {slide.caption}
+                        </p>
+                    </div>
                 </div>
 
-                <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15, ...styles.alignCenter }}>
-                    <span style={{ ...regularFont }}>{slides[activeslide].caption}</span>
+                {/* SLIDE INDICATORS */}
+
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginTop: '22px',
+                        marginBottom: '20px'
+                    }}
+                    aria-label="Choose a slideshow image"
+                >
+                    {slides.map((item, index) => (
+                        <button
+                            key={index}
+                            type="button"
+                            aria-label={`Show ${item.title}`}
+                            aria-current={
+                                activeslide === index
+                                    ? 'true'
+                                    : undefined
+                            }
+                            onClick={() =>
+                                this.handleSelectSlide(index)
+                            }
+                            style={{
+                                width: activeslide === index
+                                    ? '28px'
+                                    : '11px',
+                                height: '11px',
+                                borderRadius: '20px',
+                                background:
+                                    activeslide === index
+                                        ? colors.sand
+                                        : '#d2cec6',
+                                border: 'none',
+                                padding: 0,
+                                cursor: 'pointer',
+                                transition:
+                                    'width 0.2s ease'
+                            }}
+                        />
+                    ))}
                 </div>
 
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15 }}>
-                    <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                        <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={() => { this.handlePrevSlide() }}>
-                            {slideLeft()}
-                        </button>
-                    </div>
-                    <div style={{ ...styles.flex2, ...styles.alignCenter }}>
-                        <button style={{ ...styles.generalButton, ...playButton }} onClick={() => { this.handlePlaySlideshow() }}>
-                            {getButton}
-                        </button>
-                    </div>
-                    <div style={{ ...styles.flex1, ...styles.alignCenter }}>
-                        <button style={{ ...styles.generalButton, ...buttonWidth }} onClick={() => { this.handleNextSlide() }}>
-                            {slideRight()}
-                        </button>
-                    </div>
+                {/* CONTROLS */}
+
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: isMobile ? '14px' : '25px',
+                        marginBottom: '25px'
+                    }}
+                >
+                    <button
+                        type="button"
+                        aria-label="Previous slide"
+                        style={controlStyle}
+                        onClick={() =>
+                            this.handlePrevSlide()
+                        }
+                    >
+                        {slideLeft()}
+                    </button>
+
+                    <button
+                        type="button"
+                        aria-label={
+                            isplaying
+                                ? 'Pause slideshow'
+                                : 'Play slideshow'
+                        }
+                        style={{
+                            ...controlStyle,
+                            width: isMobile
+                                ? '90px'
+                                : '120px'
+                        }}
+                        onClick={() =>
+                            this.handlePlaySlideshow()
+                        }
+                    >
+                        {isplaying
+                            ? stopButton()
+                            : pressPlay()}
+                    </button>
+
+                    <button
+                        type="button"
+                        aria-label="Next slide"
+                        style={controlStyle}
+                        onClick={() =>
+                            this.handleNextSlide()
+                        }
+                    >
+                        {slideRight()}
+                    </button>
                 </div>
-
-
-
-            </div>)
-
-
+            </div>
+        );
     }
-
 }
 
-export default SlideShow
+export default SlideShow;

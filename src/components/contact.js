@@ -1,349 +1,599 @@
+
 import React, { Component } from 'react';
-import GFK from './gfk'
+import GFK from './gfk';
 import { MyStylesheet } from './styles';
-import { triangleBullet, checkedBox, submitButton, unCheckedBox } from './svg';
 import { SaveContactUs } from './actions/api';
 
 class Contact extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
-            render: '', width: 0, height: 0, lab: false, fullname: '', company: '', emailaddress: '', phonenumber: '', lab: false, liquefaction: false, logdraft: false, field: false, ptslab: false, slope: false, reports: false, invoice: false, description: '', captchaToken: null
-        }
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+            width: 0,
+            height: 0,
+            fullname: '',
+            company: '',
+            emailaddress: '',
+            description: '',
+            captchaToken: null,
+            sending: false,
+            message: '',
+            success: false
+        };
+
+        this.turnstileWidgetId = null;
+        this.updateWindowDimensions =
+            this.updateWindowDimensions.bind(this);
+        this.saveContactUs =
+            this.saveContactUs.bind(this);
     }
 
     componentDidMount() {
-        window.addEventListener('resize', this.updateWindowDimensions);
+        window.addEventListener(
+            'resize',
+            this.updateWindowDimensions
+        );
+
         this.updateWindowDimensions();
 
-        window.onTurnstileSuccess = (token) => {
-            this.setState({ captchaToken: token });
-        };
-
-        window.onTurnstileExpired = () => {
-            this.setState({ captchaToken: null });
-        };
-
-        if (window.turnstile) {
-            window.turnstile.render("#turnstile-container", {
-                sitekey: process.env.REACT_APP_TURNSTILE_SITE_KEY,
-                callback: (token) => {
-                    this.setState({ captchaToken: token });
-                },
-                "expired-callback": () => {
-                    this.setState({ captchaToken: null });
-                },
-                theme: "light"
-            });
-        }
-
+        this.renderTurnstile();
     }
 
     componentWillUnmount() {
-        window.removeEventListener('resize', this.updateWindowDimensions);
+        window.removeEventListener(
+            'resize',
+            this.updateWindowDimensions
+        );
+
+        if (
+            window.turnstile &&
+            this.turnstileWidgetId !== null
+        ) {
+            window.turnstile.remove(
+                this.turnstileWidgetId
+            );
+        }
     }
 
     updateWindowDimensions() {
-        this.setState({ width: window.innerWidth, height: window.innerHeight });
+        this.setState({
+            width: window.innerWidth,
+            height: window.innerHeight
+        });
     }
 
+    renderTurnstile() {
+        if (
+            !window.turnstile ||
+            this.turnstileWidgetId !== null
+        ) {
+            return;
+        }
+
+        const container = document.getElementById(
+            'turnstile-container'
+        );
+
+        if (!container) return;
+
+        this.turnstileWidgetId =
+            window.turnstile.render(container, {
+                sitekey:
+                    process.env.REACT_APP_TURNSTILE_SITE_KEY,
+
+                callback: token => {
+                    this.setState({
+                        captchaToken: token
+                    });
+                },
+
+                'expired-callback': () => {
+                    this.setState({
+                        captchaToken: null
+                    });
+                },
+
+                'error-callback': () => {
+                    this.setState({
+                        captchaToken: null
+                    });
+                },
+
+                theme: 'light'
+            });
+    }
 
     setField(field, value) {
         this.setState({
-            [field]: value
+            [field]: value,
+            message: '',
+            success: false
         });
-    };
-
-    getField(field) {
-        return this.state[field];
-    };
-
-    toggleField(field) {
-        this.setState((prevState) => ({
-            [field]: !prevState[field]
-        }));
     }
 
-    getCheckboxIcon(field) {
-        return this.state[field] ? checkedBox() : unCheckedBox();
-    }
+    async saveContactUs(event) {
+        event.preventDefault();
 
-    async saveContactUs() {
+        const {
+            fullname,
+            company,
+            emailaddress,
+            description,
+            captchaToken
+        } = this.state;
+
+        if (
+            !fullname.trim() ||
+            !emailaddress.trim() ||
+            !description.trim()
+        ) {
+            this.setState({
+                message: 'Please complete all required fields.',
+                success: false
+            });
+            return;
+        }
+
+        if (!captchaToken) {
+            this.setState({
+                message: 'Please complete the security verification.',
+                success: false
+            });
+            return;
+        }
+
+        this.setState({
+            sending: true,
+            message: ''
+        });
+
         try {
-
-            const {
-                fullname,
-                company,
-                emailaddress,
-                phonenumber,
-                lab,
-                liquefaction,
-                logdraft,
-                field,
-                ptslab,
-                slope,
-                reports,
-                invoice,
-                description,
-                captchaToken
-            } = this.state;
-
             const values = {
-                fullname,
-                company,
-                emailaddress,
-                phonenumber,
-                lab,
-                liquefaction,
-                logdraft,
-                field,
-                ptslab,
-                slope,
-                reports,
-                invoice,
-                description,
-                captchaToken
+                fullname: fullname.trim(),
+                company: company.trim(),
+                emailaddress: emailaddress.trim(),
+                description: description.trim(),
+                captchaToken,
+
+                // Preserve compatibility with existing API.
+                phonenumber: '',
+                lab: false,
+                liquefaction: false,
+                logdraft: false,
+                field: false,
+                ptslab: false,
+                slope: false,
+                reports: false,
+                invoice: false
             };
 
-            console.log(values)
+            await SaveContactUs(values);
 
-            const response = await SaveContactUs(values);
-            const created = new Date(response.contactus.created).toLocaleTimeString();
-            const message = `${response.message} ${created}`
             this.setState({
-                message: message || 'Message sent successfully'
+                fullname: '',
+                company: '',
+                emailaddress: '',
+                description: '',
+                sending: false,
+                success: true,
+                message:
+                    'Thank you for contacting GFK. Your message has been received. We will get back to you as soon as possible.',
+                captchaToken: null
             });
 
+            if (
+                window.turnstile &&
+                this.turnstileWidgetId !== null
+            ) {
+                window.turnstile.reset(
+                    this.turnstileWidgetId
+                );
+            }
+
         } catch (err) {
-            console.error('save contact us error:', err);
-            alert('Unable to send message. Please try again.');
+            console.error('Contact form error:', err);
+
+            this.setState({
+                sending: false,
+                success: false,
+                message:
+                    'Unable to send your message. Please try again.'
+            });
+
+            if (
+                window.turnstile &&
+                this.turnstileWidgetId !== null
+            ) {
+                window.turnstile.reset(
+                    this.turnstileWidgetId
+                );
+            }
+
+            this.setState({
+                captchaToken: null
+            });
         }
     }
 
     render() {
-        const styles = MyStylesheet()
-        const bulletStyle = {
-            width: this.state.width > 900 ? '50px' : '35px'
-        };
         const gfk = new GFK();
-        const headerFont = gfk.getWebHeaderFont.call(this);
-        const regularFont = gfk.getWebFont.call(this);
-        const buttonWidth = { width: '3rem' }
-        const areaHeight = { minHeight: '10rem' }
-        const submitWidth = { width: '100%', maxWidth: '10rem' }
-        const getFlex = this.state.width > 900 ? styles.flex5 : styles.flex2
+        const styles = MyStylesheet();
 
-        return (<div style={{ ...styles.generalContainer }}>
+        const headerFont =
+            gfk.getWebHeaderFont.call(this);
 
-            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.generalFont, ...styles.topMargin15 }}>
-                <button style={{ ...styles.generalButton, ...bulletStyle }}>
-                    {triangleBullet()}
-                </button>
-                <span style={{ ...headerFont, ...styles.boldFont }}>
-                    Contact Us
-                </span>
+        const regularFont =
+            gfk.getWebFont.call(this);
 
-            </div>
+        const isMobile = this.state.width < 700;
 
+        const colors = {
+            primary: '#6A7EA6',
+            primaryDark: '#4C6088',
+            background: '#F0F3F8',
+            white: '#FFFFFF',
+            dark: '#303845',
+            muted: '#657084',
+            border: '#DCE3EE'
+        };
 
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Full Name</span>
-            </div>
+        const fieldStyle = {
+            ...regularFont,
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '13px 15px',
+            border: `1px solid ${colors.border}`,
+            borderRadius: '6px',
+            fontSize: '16px',
+            color: colors.dark,
+            background: colors.white,
+            outlineColor: colors.primary
+        };
 
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <input type="text"
-                    value={this.getField("fullname")}
-                    onChange={event => { this.setField("fullname", event.target.value) }}
-                    style={{ ...regularFont, ...styles.generalField }} />
-            </div>
+        const labelStyle = {
+            ...regularFont,
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            color: colors.dark,
+            marginBottom: '9px'
+        };
 
+        const fieldGroup = {
+            marginBottom: '22px'
+        };
 
+        const {
+            fullname,
+            company,
+            emailaddress,
+            description,
+            captchaToken,
+            sending,
+            message,
+            success
+        } = this.state;
 
+        return (
+            <main
+                style={{
+                    ...styles.generalContainer,
+                    ...styles.generalFont,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    color: colors.dark
+                }}
+            >
+                {/* PAGE HEADER */}
 
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Company</span>
-            </div>
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <input type="text" style={{ ...regularFont, ...styles.generalField }}
-                    value={this.getField("company")}
-                    onChange={event => { this.setField("company", event.target.value) }} />
-            </div>
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Email Address</span>
-            </div>
-
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <input type="text" style={{ ...regularFont, ...styles.generalField }}
-                    value={this.getField("emailaddress")}
-                    onChange={event => { this.setField("emailaddress", event.target.value) }} />
-            </div>
-
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Phone Number</span>
-            </div>
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <input type="text" style={{ ...regularFont, ...styles.generalField }}
-                    value={this.getField("phonenumber")}
-                    onChange={event => { this.setField("phonenumber", event.target.value) }} />
-            </div>
-
-
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>What are you interested in?</span>
-            </div>
-
-
-            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                <div style={{ ...styles.flex1 }}>
-                    <button onClick={() => { this.toggleField("lab") }}
-                        style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("lab")}</button>
-                </div>
-                <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                    <span style={{ ...regularFont }}>Soil Lab Reporting Platform </span>
-                </div>
-            </div>
-
-            <div style={{ ...styles.generalContainer, ...styles.marginLeft25, ...styles.generalFont }}>
-                <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}><span style={{ ...regularFont }}>Optional Add Ons</span></div>
-
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                    <div style={{ ...styles.flex1 }}>
-                        <button onClick={() => { this.toggleField("liquefaction") }}
-                            style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("liquefaction")}</button>
-                    </div>
-                    <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                        <span style={{ ...regularFont }}>Liquefaction Analysis </span>
-                    </div>
-                </div>
-
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                    <div style={{ ...styles.flex1 }}>
-                        <button onClick={() => { this.toggleField("ptslab") }}
-                            style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("ptslab")}</button>
-                    </div>
-                    <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                        <span style={{ ...regularFont }}>PT Slab Design & Reporting </span>
-                    </div>
-                </div>
-
-
-                <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                    <div style={{ ...styles.flex1 }}>
-                        <button onClick={() => { this.toggleField("logdraft") }}
-                            style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("logdraft")}</button>
-                    </div>
-                    <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                        <span style={{ ...regularFont }}>Geotechnical Log Drafting </span>
-                    </div>
-                </div>
-            </div>
-
-
-            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                <div style={{ ...styles.flex1 }}>
-                    <button onClick={() => { this.toggleField("field") }}
-                        style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("field")}</button>
-                </div>
-                <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                    <span style={{ ...regularFont }}>Field Reports and Reporting </span>
-                </div>
-            </div>
-
-
-            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                <div style={{ ...styles.flex1 }}>
-                    <button onClick={() => { this.toggleField("slope") }}
-                        style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("slope")}</button>
-                </div>
-                <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                    <span style={{ ...regularFont }}>Slope Stability</span>
-                </div>
-            </div>
-
-            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                <div style={{ ...styles.flex1 }}>
-                    <button onClick={() => { this.toggleField("reports") }}
-                        style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("reports")}</button>
-                </div>
-                <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                    <span style={{ ...regularFont }}>Geotechnical Proposals and Reports</span>
-                </div>
-            </div>
-
-
-            <div style={{ ...styles.generalFlex, ...styles.bottomMargin15, ...styles.generalFont }}>
-                <div style={{ ...styles.flex1 }}>
-                    <button onClick={() => { this.toggleField("invoice") }}
-                        style={{ ...styles.generalButton, ...buttonWidth }}>{this.getCheckboxIcon("invoice")}</button>
-                </div>
-                <div style={{ ...styles.flex8, ...styles.generalFont }}>
-                    <span style={{ ...regularFont }}>Time/Invoice</span>
-                </div>
-            </div>
-
-
-            <div style={{ ...styles.generalContainer, ...styles.generalFont, ...styles.bottomMargin15 }}>
-                <span style={{ ...regularFont }}>Brief Description of your needs</span>
-            </div>
-
-
-
-            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15 }}>
-                <textarea style={{ ...regularFont, ...styles.generalFont, ...styles.generalField, ...areaHeight }}
-                    value={this.getField("description")}
-                    onChange={event => { this.setField("description", event.target.value) }} >
-
-                </textarea>
-            </div>
-
-
-            <div
-                id="turnstile-container"
-                style={{ marginBottom: "15px", textAlign: "center" }}
-            ></div>
-
-
-
-            <div style={{ ...styles.generalFlex }}>
-                <div style={{ ...getFlex }}>
-                    &nbsp;
-                </div>
-                <div style={{ ...styles.flex1 }}>
-                    <button
+                <section
+                    style={{
+                        maxWidth: '850px',
+                        margin: 'auto',
+                        padding: isMobile
+                            ? '40px 18px 30px'
+                            : '65px 30px 40px',
+                        textAlign: 'center'
+                    }}
+                >
+                    <div
                         style={{
-                            ...styles.generalButton, ...submitWidth, opacity: this.state.captchaToken ? 1 : 0.5,
-                            cursor: this.state.captchaToken ? "pointer" : "not-allowed"
+                            color: colors.primary,
+                            letterSpacing: '2px',
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            marginBottom: '18px'
                         }}
-                        disabled={!this.state.captchaToken}
-                        onClick={() => { this.saveContactUs() }}>
-                        {submitButton()}
-                    </button>
-                </div>
-            </div>
+                    >
+                        CIVILENGINEER.IO | GFK
+                    </div>
 
+                    <h1
+                        style={{
+                            ...headerFont,
+                            fontSize: isMobile
+                                ? '30px'
+                                : '42px',
+                            fontWeight: 'bold',
+                            lineHeight: 1.2,
+                            color: colors.dark,
+                            margin: '0 0 20px'
+                        }}
+                    >
+                        Contact Us
+                    </h1>
 
-            <div style={{ ...styles.generalContainer, ...styles.bottomMargin15, ...styles.generalFont, ...styles.alignCenter }}>
-                <span style={{ ...regularFont }}>{this.state.message}</span>
-            </div>
+                    <p
+                        style={{
+                            ...regularFont,
+                            fontSize: isMobile
+                                ? '16px'
+                                : '18px',
+                            color: colors.muted,
+                            lineHeight: 1.8,
+                            margin: 'auto',
+                            maxWidth: '680px'
+                        }}
+                    >
+                        Have questions about GFK or how
+                        it can support your geotechnical
+                        engineering workflow?
 
+                        Send us a message. We'd be happy
+                        to hear from you.
+                    </p>
+                </section>
 
+                {/* CONTACT FORM */}
 
+                <section
+                    style={{
+                        background: colors.background,
+                        padding: isMobile
+                            ? '25px 15px 50px'
+                            : '45px 25px 75px',
+                        borderTop:
+                            `1px solid ${colors.border}`
+                    }}
+                >
+                    <div
+                        style={{
+                            background: colors.white,
+                            maxWidth: '650px',
+                            margin: 'auto',
+                            padding: isMobile
+                                ? '25px 20px'
+                                : '40px 45px',
+                            borderRadius: '10px',
+                            border:
+                                `1px solid ${colors.border}`,
+                            borderTop:
+                                `4px solid ${colors.primary}`,
+                            boxShadow:
+                                '0 8px 30px rgba(40,55,80,0.05)',
+                            boxSizing: 'border-box'
+                        }}
+                    >
+                        <form
+                            onSubmit={this.saveContactUs}
+                        >
+                            {/* NAME */}
 
+                            <div style={fieldGroup}>
+                                <label
+                                    htmlFor="contact-fullname"
+                                    style={labelStyle}
+                                >
+                                    Full Name *
+                                </label>
 
-        </div>)
+                                <input
+                                    id="contact-fullname"
+                                    type="text"
+                                    autoComplete="name"
+                                    required
+                                    maxLength={150}
+                                    value={fullname}
+                                    onChange={event =>
+                                        this.setField(
+                                            'fullname',
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder="Your full name"
+                                    style={fieldStyle}
+                                />
+                            </div>
+
+                            {/* EMAIL */}
+
+                            <div style={fieldGroup}>
+                                <label
+                                    htmlFor="contact-email"
+                                    style={labelStyle}
+                                >
+                                    Email Address *
+                                </label>
+
+                                <input
+                                    id="contact-email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    maxLength={254}
+                                    value={emailaddress}
+                                    onChange={event =>
+                                        this.setField(
+                                            'emailaddress',
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder="you@company.com"
+                                    style={fieldStyle}
+                                />
+                            </div>
+
+                            {/* COMPANY */}
+
+                            <div style={fieldGroup}>
+                                <label
+                                    htmlFor="contact-company"
+                                    style={labelStyle}
+                                >
+                                    Company
+                                    <span
+                                        style={{
+                                            fontWeight: 'normal',
+                                            color: colors.muted
+                                        }}
+                                    >
+                                        {' '}(Optional)
+                                    </span>
+                                </label>
+
+                                <input
+                                    id="contact-company"
+                                    type="text"
+                                    autoComplete="organization"
+                                    maxLength={200}
+                                    value={company}
+                                    onChange={event =>
+                                        this.setField(
+                                            'company',
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder="Engineering firm or organization"
+                                    style={fieldStyle}
+                                />
+                            </div>
+
+                            {/* MESSAGE */}
+
+                            <div style={fieldGroup}>
+                                <label
+                                    htmlFor="contact-description"
+                                    style={labelStyle}
+                                >
+                                    How can we help? *
+                                </label>
+
+                                <textarea
+                                    id="contact-description"
+                                    required
+                                    maxLength={5000}
+                                    value={description}
+                                    onChange={event =>
+                                        this.setField(
+                                            'description',
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder={
+                                        'Tell us about your questions, ' +
+                                        'engineering workflow, or how ' +
+                                        'you would like to use GFK...'
+                                    }
+                                    style={{
+                                        ...fieldStyle,
+                                        fontFamily: 'Arial, Helvetica, sans-serif',
+                                        fontSize: '16px',
+                                        fontWeight: '400',
+                                        minHeight: '165px',
+                                        resize: 'vertical',
+                                        lineHeight: 1.7
+                                    }}
+                                />
+                            </div>
+
+                            {/* TURNSTILE */}
+
+                            <div
+                                id="turnstile-container"
+                                style={{
+                                    marginBottom: '25px',
+                                    display: 'flex',
+                                    justifyContent: 'center'
+                                }}
+                            />
+
+                            {/* SUBMIT */}
+
+                            <button
+                                type="submit"
+                                disabled={
+                                    !captchaToken ||
+                                    sending
+                                }
+                                style={{
+                                    width: '100%',
+                                    padding: '15px 20px',
+                                    background:
+                                        colors.primary,
+                                    color: colors.white,
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    cursor:
+                                        captchaToken && !sending
+                                            ? 'pointer'
+                                            : 'not-allowed',
+                                    opacity:
+                                        captchaToken && !sending
+                                            ? 1
+                                            : 0.55
+                                }}
+                            >
+                                {sending
+                                    ? 'Sending Message...'
+                                    : 'Send Message'}
+                            </button>
+
+                            {/* RESPONSE */}
+
+                            {message && (
+                                <div
+                                    role="status"
+                                    aria-live="polite"
+                                    style={{
+                                        marginTop: '20px',
+                                        padding: '15px',
+                                        borderRadius: '6px',
+                                        background: success
+                                            ? '#EDF7EF'
+                                            : '#FFF0F0',
+                                        color: success
+                                            ? '#276738'
+                                            : '#A33B3B',
+                                        fontSize: '14px',
+                                        lineHeight: 1.6,
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    {message}
+                                </div>
+                            )}
+
+                            <p
+                                style={{
+                                    ...regularFont,
+                                    fontSize: '12px',
+                                    lineHeight: 1.6,
+                                    color: colors.muted,
+                                    textAlign: 'center',
+                                    margin: '20px 0 0'
+                                }}
+                            >
+                                Your information will be
+                                used to respond to your inquiry.
+                            </p>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        );
     }
 }
+
 export default Contact;

@@ -1,23 +1,31 @@
-export async function LoadGraphics(companyid) {
-    const APIURL = `${process.env.REACT_APP_SERVER_API}/gfk/${companyid}/loadgraphiclogs`;
+export async function DownLoadFigure(projectid, figureid) {
+
+
+
+    const baseURL = process.env.REACT_APP_SERVER_API.replace(/\/+$/, '');
+
+    const APIURL =
+
+    `${baseURL}/gfk/${encodeURIComponent(projectid)}/figures/${encodeURIComponent(figureid)}/reportxml`;
 
     try {
-        const resp = await fetch(APIURL, { credentials: 'include' });
+        const resp = await fetch(APIURL, {
+            credentials: 'include'
+        });
 
         if (!resp.ok) {
-            // Try to extract server error message if available
-            const errorData = await resp.json().catch(() => ({}));
-            const message =
+            const errorData = await resp.json().catch(() => null);
+
+            throw new Error(
                 errorData?.message ||
-                (resp.status >= 400 && resp.status < 500
-                    ? 'Client error while loading project.'
-                    : 'Please try again later, server is not responding.');
-            throw new Error(message);
+                `Failed to download report. HTTP ${resp.status}`
+            );
         }
 
-        return await resp.json();
+        return await resp.blob();
+
     } catch (err) {
-        console.error('❌ Error loading project:', err);
+        console.error('Error downloading report:', err);
         throw err;
     }
 }
