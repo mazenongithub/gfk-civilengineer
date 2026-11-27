@@ -414,38 +414,103 @@ export async function SaveGraphics(companyid, graphics) {
     return data;
 }
 
+export async function DeleteGraphicImage (companyid, graphicid) {
 
-export async function UploadGraphics(
-    companyid,
-    graphicid,
-    graphics,
-    file
-) {
+    const response = await fetch(
+        `${process.env.REACT_APP_SERVER_API}/gfk/${encodeURIComponent(companyid)}/graphiclogs/${encodeURIComponent(graphicid)}/image`,
+        {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
+        }
+    );
 
-    const APIURL =
-        `${process.env.REACT_APP_SERVER_API}/gfk/` +
-        `${encodeURIComponent(companyid)}/uploadgraphiclog`;
+    const data = await response.json();
 
-    const formData = new FormData();
-
-    formData.append('graphiclog', file);
-    formData.append('graphicid', graphicid);
-    formData.append('graphics', JSON.stringify(graphics));
-
-    const resp = await fetch(APIURL, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-    });
-
-    const data = await resp.json();
-
-    if (!resp.ok) {
-        throw new Error(data.Error || resp.statusText);
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            data.message ||
+            'Failed to delete graphic image'
+        );
     }
 
     return data;
+};
+
+
+export const UploadGraphics = async (
+    companyid,
+    graphicid,
+    graphic,
+    file
+) => {
+
+    const formData = new FormData();
+
+    formData.append('graphicid', graphicid);
+    formData.append('code', graphic.code || '');
+    formData.append(
+        'description',
+        graphic.description || ''
+    );
+    formData.append('graphiclog', file);
+
+    const response = await fetch(
+        `${process.env.REACT_APP_SERVER_API}/gfk/${encodeURIComponent(companyid)}/uploadgraphiclog`,
+        {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            'Failed to upload graphic image'
+        );
+    }
+
+    return data;
+};
+
+
+export async function DownLoadBoring(projectid, boringid) {
+
+
+
+    const baseURL = process.env.REACT_APP_SERVER_API.replace(/\/+$/, '');
+
+    const APIURL =
+        `${baseURL}/gfk/xml/${encodeURIComponent(projectid)}/boring/${encodeURIComponent(boringid)}`;
+
+    try {
+        const resp = await fetch(APIURL, {
+            credentials: 'include'
+        });
+
+        if (!resp.ok) {
+            const errorData = await resp.json().catch(() => null);
+
+            throw new Error(
+                errorData?.message ||
+                `Failed to download report. HTTP ${resp.status}`
+            );
+        }
+
+        return await resp.blob();
+
+    } catch (err) {
+        console.error('Error downloading report:', err);
+        throw err;
+    }
 }
+
 
 
 

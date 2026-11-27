@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import GFK from './gfk';
 import { milestoneformatdatestring, calcdryden, moist, formatDateReport } from './functions'
 import '../logdraft.css';
+import { clickToDownload } from './svg';
+import { DownLoadBoring } from './actions/api';
 
 
 class LogDraft extends Component {
@@ -61,29 +63,16 @@ class LogDraft extends Component {
     }
 
     viewBox() {
-        const gfk = new GFK();
-        const {projectid, boringid} = this.props.match.params
-        const samples = gfk.getSamplesByBoringId.call(this,projectid, boringid)
-        
-        let viewBox = "0 0 1002 1295"
-        if (samples.length > 0) {
-
-            let bottomdepth = Math.ceil(Number(samples[samples.length - 1].depth));
-
-            if (bottomdepth > 32) {
-                viewBox = `0 0 1002 ${1291 + 30 * (bottomdepth - 32)}`
-            }
-
-        }
-        return viewBox;
-
-
+        const bottomdepth = Math.ceil(this.getBottomDepth());
+        return bottomdepth > 32
+            ? `0 0 1002 ${1295 + 30 * (bottomdepth - 32)}`
+            : '0 0 1002 1295';
     }
     getBoring() {
         const gfk = new GFK();
-        const {projectid, boringid} = this.props.match.params
-        const boring = gfk.getBoringById.call(this,projectid, boringid)
-        
+        const { projectid, boringid } = this.props.match.params
+        const boring = gfk.getBoringById.call(this, projectid, boringid)
+
         return boring
 
     }
@@ -106,9 +95,31 @@ class LogDraft extends Component {
     }
     getSamples() {
         const gfk = new GFK();
-        const {projectid, boringid} = this.props.match.params
-        const samples = gfk.getSamplesByBoringId.call(this,projectid, boringid)
+        const { projectid, boringid } = this.props.match.params
+        const samples = gfk.getSamplesByBoringId.call(this, projectid, boringid)
         return samples;
+    }
+
+    // Depths are in feet; each foot occupies 30 SVG units.
+    // Prefer an explicit boring termination depth when available.
+    getBottomDepth() {
+        const boring = this.getBoring();
+        const explicit = [boring?.bottomdepth, boring?.totaldepth, boring?.depth]
+            .find(value => value !== null && value !== '' &&
+                Number.isFinite(Number(value)) && Number(value) > 0);
+        if (explicit !== undefined) return Number(explicit);
+
+        const depths = (this.getSamples() || [])
+            .map(sample => Number(sample.depth))
+            .filter(depth => Number.isFinite(depth) && depth >= 0);
+        return depths.length ? Math.max(...depths) : 0;
+    }
+
+    getGroundwaterDepth() {
+        const raw = this.getBoring()?.gwdepth;
+        if (raw === null || raw === undefined || String(raw).trim() === '') return null;
+        const depth = Number(raw);
+        return Number.isFinite(depth) && depth >= 0 ? depth : null;
     }
 
     showsamplenumber(samplenos, depth) {
@@ -138,80 +149,80 @@ class LogDraft extends Component {
         let style_1 = { stroke: "black" }
         let style_2 = { stroke: "black", strokeWidth: 1 };
 
-     
 
-            if (diameter === 1.9375) {
-                return (<g transform={`translate(50,${131.5 + (30 * depth)})`}>
-                    <line x1="0" x2="25" y1="0" y2={length * 30} style={style_1}></line>
-                    <rect x="0" y="0" height={length * 30} width="25" style={style}></rect>
-                    <line x1="25" x2="0" y1="0" y2={length * 30} style={style_1}></line></g>);
-            } else if (diameter === 1.375) {
 
-                return (
-                    <g transform={`translate(50,${131.5 + (30 * depth)})`}>
-                        <path d={`M 25 0 L 0 ${length * 30} L 25 ${length * 30} Z`}></path>
-                        <rect x="0" y="0" height={length * 30} width="25" style={style}> </rect>
-                        <line x1="25" x2="0" y1="0" y2={length * 30} style={style_1}></line></g>)
-            } else {
+        if (diameter === 1.9375) {
+            return (<g transform={`translate(50,${131.5 + (30 * depth)})`}>
+                <line x1="0" x2="25" y1="0" y2={length * 30} style={style_1}></line>
+                <rect x="0" y="0" height={length * 30} width="25" style={style}></rect>
+                <line x1="25" x2="0" y1="0" y2={length * 30} style={style_1}></line></g>);
+        } else if (diameter === 1.375) {
 
-                return (<g transform={`translate(50,${131.5 + (30 * depth)})`}>
-                    <rect x="0" y="0" height={length * 30} width="25" style={style_2}></rect>
-                    <line x1="25" x2="0" y1="0" y2={length * 30} style={style_1}></line>
-                </g>)
+            return (
+                <g transform={`translate(50,${131.5 + (30 * depth)})`}>
+                    <path d={`M 25 0 L 0 ${length * 30} L 25 ${length * 30} Z`}></path>
+                    <rect x="0" y="0" height={length * 30} width="25" style={style}> </rect>
+                    <line x1="25" x2="0" y1="0" y2={length * 30} style={style_1}></line></g>)
+        } else {
 
-            }
+            return (<g transform={`translate(50,${131.5 + (30 * depth)})`}>
+                <rect x="0" y="0" height={length * 30} width="25" style={style_2}></rect>
+                <line x1="25" x2="0" y1="0" y2={length * 30} style={style_1}></line>
+            </g>)
 
-        
+        }
+
+
 
     }
 
-  loadSampleType() {
-  const samples = this.getSamples();
-  console.log(samples)
+    loadSampleType() {
+        const samples = this.getSamples();
+        console.log(samples)
 
-  if (!Array.isArray(samples) || samples.length === 0) {
-    return [];
-  }
+        if (!Array.isArray(samples) || samples.length === 0) {
+            return [];
+        }
 
-  return samples
-    .filter(sample => Number(sample.sptlength) > 0)
-    .map(sample => {
-        console.log(sample)
-      const depth = Number(sample.depth);
-      const sampleLength = Number(sample.sptlength) / 12;
-      const diameter = Number(sample.diameter);
+        return samples
+            .filter(sample => Number(sample.sptlength) > 0)
+            .map(sample => {
+                console.log(sample)
+                const depth = Number(sample.depth);
+                const sampleLength = Number(sample.sptlength) / 12;
+                const diameter = Number(sample.diameter);
 
-      return this.drawsample(depth, sampleLength, diameter);
-    });
-}
+                return this.drawsample(depth, sampleLength, diameter);
+            });
+    }
 
-   showgraphic(y1, y2, url, key) {
-    const height = (y2 - y1) * 30;
+    showgraphic(y1, y2, url, key) {
+        const height = (y2 - y1) * 30;
 
-    if (!url || height <= 0) return null;
+        if (!url || height <= 0) return null;
 
-    return (
-        <g key={key} transform="translate(75.5,131.5)">
-            <foreignObject
-                x="0"
-                y={y1 * 30}
-                width="80"
-                height={height}
-            >
-                <div xmlns="http://www.w3.org/1999/xhtml"
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        backgroundImage: `url("${url}")`,
-                        backgroundRepeat: 'repeat-y',
-                        backgroundSize: '100% auto',
-                        backgroundPosition: 'top center'
-                    }}
-                />
-            </foreignObject>
-        </g>
-    );
-}
+        return (
+            <g key={key} transform="translate(75.5,131.5)">
+                <foreignObject
+                    x="0"
+                    y={y1 * 30}
+                    width="80"
+                    height={height}
+                >
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            backgroundImage: `url("${url}")`,
+                            backgroundRepeat: 'repeat-y',
+                            backgroundSize: '100% auto',
+                            backgroundPosition: 'top center'
+                        }}
+                    />
+                </foreignObject>
+            </g>
+        );
+    }
 
     getGraphicImageUrl(graphic) {
         const companyid = this.getCompanyId();
@@ -244,31 +255,96 @@ class LogDraft extends Component {
         }).filter(Boolean);
     }
 
-    showdescription(description, depth) {
-
+    showdescription(description, topDepth, bottomDepth, key) {
+        const top = 131.5 + (30 * topDepth);
+        const height = (bottomDepth - topDepth) * 30;
+        if (!description || height <= 0) return null;
 
         return (
-            <foreignObject x="156" y={`${Math.ceil(115.5 + (30 * depth))}`} width="431" height="700">
-                <div className="logdraft-description">
-                    {description}
+            <foreignObject key={key} x="156" y={top} width="430" height={height}>
+                <div xmlns="http://www.w3.org/1999/xhtml"
+                    title={description}
+                    style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-end',
+                        boxSizing: 'border-box',
+                        padding: '2px 7px 3px',
+                        overflow: 'hidden'
+                    }}>
+                    <div className="logdraft-description"
+                        style={{ maxHeight: '100%', overflow: 'hidden' }}>
+                        {description}
+                    </div>
                 </div>
             </foreignObject>
-        )
-
+        );
     }
 
     loaddescription() {
-        const samples = this.getSamples();
-        let descriptions = [];
-        if (samples) {
-            // eslint-disable-next-line
-            samples.map(sample => {
-                descriptions.push(this.showdescription(sample.description, sample.depth))
-            })
+        const samples = [...(this.getSamples() || [])]
+            .filter(sample => Number.isFinite(Number(sample.depth)))
+            .sort((a, b) => Number(a.depth) - Number(b.depth));
 
-        }
-        return descriptions;
+        let previousDepth = 0;
+        return samples.map((sample, index) => {
+            const depth = Math.min(Number(sample.depth), this.getBottomDepth());
+            const element = this.showdescription(
+                sample.description,
+                previousDepth,
+                depth,
+                sample.sampleid || index
+            );
+            previousDepth = Math.max(previousDepth, depth);
+            return element;
+        }).filter(Boolean);
+    }
 
+    showDepthAnnotations() {
+        const bottomDepth = this.getBottomDepth();
+        if (bottomDepth <= 0) return null;
+
+        const bottomY = 131.5 + 30 * bottomDepth;
+        const groundwaterDepth = this.getGroundwaterDepth();
+        const hasGroundwater = groundwaterDepth !== null && groundwaterDepth <= bottomDepth;
+
+        return (
+            <g key="boring-depth-annotations">
+                <text
+                    x="500"
+                    y={bottomY + 22}
+                    textAnchor="middle"
+                    style={{
+                        fontFamily: 'Arial, Helvetica, sans-serif',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        fill: '#333'
+                    }}
+                >
+                    Bottom of Boring — {bottomDepth.toFixed(1)} ft
+                </text>
+                {!hasGroundwater && (
+                    <text x="830" y={bottomY - 5}
+                        style={{ font: '12px Arial, sans-serif', fill: '#555' }}>
+                        Groundwater: {groundwaterDepth === null
+                            ? 'not recorded'
+                            : 'outside logged depth'}
+                    </text>
+                )}
+                {hasGroundwater && (
+                    <g>
+                        <line x1="76" x2="155" y1={131.5 + 30 * groundwaterDepth}
+                            y2={131.5 + 30 * groundwaterDepth}
+                            stroke="#2876B8" strokeWidth="2" strokeDasharray="5 3" />
+                        <text x="832" y={Math.max(144, 131.5 + 30 * groundwaterDepth - 4)}
+                            style={{ font: 'bold 12px Arial, sans-serif', fill: '#2876B8' }}>
+                            GW: {groundwaterDepth.toFixed(1)} ft
+                        </text>
+                    </g>
+                )}
+            </g>
+        );
     }
 
     showuscs(uscs, depth) {
@@ -379,68 +455,68 @@ class LogDraft extends Component {
         return (<text className="logdraft-7" width="22" text-anchor="middle" transform={`translate(12.5 ${130.5 + (30 * depth)}) scale(1 1)`}>{depth}</text>)
     }
 
- getBoringReportDate(project, boringid) {
+    getBoringReportDate(project, boringid) {
 
-    const { projects } = this.props;
+        const { projects } = this.props;
 
-    const projectid = project.projectid;
+        const projectid = project.projectid;
 
-    // Find the project in Redux if projects is an array.
-    const reduxProject = Array.isArray(projects)
-        ? projects.find(p => p.projectid === projectid)
-        : projects;
+        // Find the project in Redux if projects is an array.
+        const reduxProject = Array.isArray(projects)
+            ? projects.find(p => p.projectid === projectid)
+            : projects;
 
-    // Retrieve the reports associated with this project.
-    const reports =
-        reduxProject?.reports ||
-        project?.reports ||
-        [];
+        // Retrieve the reports associated with this project.
+        const reports =
+            reduxProject?.reports ||
+            project?.reports ||
+            [];
 
-    if (!Array.isArray(reports)) {
-        console.log("Reports not found:", reports);
-        return null;
+        if (!Array.isArray(reports)) {
+            console.log("Reports not found:", reports);
+            return null;
+        }
+
+        // Recursively search report sections and subsections.
+        const containsBoring = (sections = []) => {
+
+            if (!Array.isArray(sections)) return false;
+
+            return sections.some(section => {
+
+                if (
+                    section.type === 'boringlog' &&
+                    String(section.referenceid) === String(boringid)
+                ) {
+                    return true;
+                }
+
+                return containsBoring(section.subsections);
+            });
+        };
+
+        // Find reports containing this boring.
+        const matchingReports = reports.filter(report =>
+            report.datereport &&
+            containsBoring(report.sections)
+        );
+
+        if (!matchingReports.length) {
+            console.log("No report references boring:", boringid);
+            return null;
+        }
+
+        // Select the latest report containing this boring.
+        matchingReports.sort((a, b) =>
+            new Date(b.datereport) - new Date(a.datereport)
+        );
+
+        const report = matchingReports[0];
+
+        console.log("Matching report:", report);
+
+        return report.datereport;
     }
-
-    // Recursively search report sections and subsections.
-    const containsBoring = (sections = []) => {
-
-        if (!Array.isArray(sections)) return false;
-
-        return sections.some(section => {
-
-            if (
-                section.type === 'boringlog' &&
-                String(section.referenceid) === String(boringid)
-            ) {
-                return true;
-            }
-
-            return containsBoring(section.subsections);
-        });
-    };
-
-    // Find reports containing this boring.
-    const matchingReports = reports.filter(report =>
-        report.datereport &&
-        containsBoring(report.sections)
-    );
-
-    if (!matchingReports.length) {
-        console.log("No report references boring:", boringid);
-        return null;
-    }
-
-    // Select the latest report containing this boring.
-    matchingReports.sort((a, b) =>
-        new Date(b.datereport) - new Date(a.datereport)
-    );
-
-    const report = matchingReports[0];
-
-    console.log("Matching report:", report);
-
-    return report.datereport;
-}
 
     showBoringFooter(y, project, datereport, figure) {
         const x = 28;
@@ -505,100 +581,94 @@ class LogDraft extends Component {
 
     getBoringFigureNumber(project, boringid) {
 
-    const { projects } = this.props;
+        const { projects } = this.props;
 
-    const projectid = project.projectid;
+        const projectid = project.projectid;
 
-    const reduxProject = Array.isArray(projects)
-        ? projects.find(p => p.projectid === projectid)
-        : projects;
+        const reduxProject = Array.isArray(projects)
+            ? projects.find(p => p.projectid === projectid)
+            : projects;
 
-    const reports =
-        reduxProject?.reports ||
-        project?.reports ||
-        [];
+        const reports =
+            reduxProject?.reports ||
+            project?.reports ||
+            [];
 
-    if (!Array.isArray(reports)) return "";
+        if (!Array.isArray(reports)) return "";
 
-    const findBoringInSections = (sections, appendixLetter, pageNumber = 0) => {
+        const findBoringInSections = (sections, appendixLetter, pageNumber = 0) => {
 
-        if (!Array.isArray(sections)) {
-            return null;
-        }
+            if (!Array.isArray(sections)) {
+                return null;
+            }
 
-        let currentPage = pageNumber;
+            let currentPage = pageNumber;
 
-        for (const section of sections) {
+            for (const section of sections) {
 
-            if (section.type === "boringlog") {
+                if (section.type === "boringlog") {
 
-                currentPage++;
+                    currentPage++;
 
-                if (String(section.referenceid) === String(boringid)) {
-                    return `${appendixLetter}${currentPage}`;
+                    if (String(section.referenceid) === String(boringid)) {
+                        return `${appendixLetter}${currentPage}`;
+                    }
+                }
+
+                if (Array.isArray(section.subsections)) {
+
+                    const result = findBoringInSections(
+                        section.subsections,
+                        appendixLetter,
+                        currentPage
+                    );
+
+                    if (result) return result;
                 }
             }
 
-            if (Array.isArray(section.subsections)) {
+            return null;
+        };
 
-                const result = findBoringInSections(
-                    section.subsections,
-                    appendixLetter,
-                    currentPage
+        for (const report of reports) {
+
+            let appendixIndex = 0;
+
+            for (const section of report.sections || []) {
+
+                if (section.type !== "appendix") continue;
+
+                const appendixLetter = String.fromCharCode(
+                    65 + appendixIndex
                 );
 
-                if (result) return result;
+                appendixIndex++;
+
+                const figureNumber = findBoringInSections(
+                    section.subsections,
+                    appendixLetter
+                );
+
+                if (figureNumber) {
+                    return figureNumber;
+                }
             }
         }
 
-        return null;
-    };
-
-    for (const report of reports) {
-
-        let appendixIndex = 0;
-
-        for (const section of report.sections || []) {
-
-            if (section.type !== "appendix") continue;
-
-            const appendixLetter = String.fromCharCode(
-                65 + appendixIndex
-            );
-
-            appendixIndex++;
-
-            const figureNumber = findBoringInSections(
-                section.subsections,
-                appendixLetter
-            );
-
-            if (figureNumber) {
-                return figureNumber;
-            }
-        }
+        return "";
     }
-
-    return "";
-}
 
     completeblock() {
         const gfk = new GFK();
-        let {projectid, boringid}= this.props.match.params;
+        let { projectid, boringid } = this.props.match.params;
         let completeblock = [];
-        let bottomdepth = 0;
+        let bottomdepth = this.getBottomDepth();
         let datereport = null;
         const project = gfk.getProjectById.call(this, projectid)
         if (!project) return completeblock;
         datereport = this.getBoringReportDate(project, boringid);
         const figure = this.getBoringFigureNumber(project, boringid);
         const samples = this.getSamples();
-        if (samples.length > 0) {
-
-            bottomdepth = Number(samples[samples.length - 1].depth);
-
-
-        }
 
 
         if (bottomdepth > 0) {
@@ -611,6 +681,7 @@ class LogDraft extends Component {
             completeblock.push(<line className="logdraft-2" x1="764.5" y1="131.5" x2="764.5" y2={`${131.5 + (30 * Number(bottomdepth))}`} />)
             completeblock.push(<line className="logdraft-2" x1="823.5" y1="131.5" x2="823.5" y2={`${131.5 + (30 * Number(bottomdepth))}`} />)
             completeblock.push(<line className="logdraft-2" x1="23.5" y1={`${131.5 + (30 * Number(bottomdepth))}`} x2="1000" y2={`${131.5 + (30 * Number(bottomdepth))}`} />)
+            completeblock.push(this.showDepthAnnotations());
 
         }
 
@@ -648,15 +719,57 @@ class LogDraft extends Component {
 
     }
 
+
+    async downloadBoring() {
+        try {
+            const { projectid, boringid } = this.props.match.params;
+
+            if (!projectid || !boringid) {
+                throw new Error('Project ID or Boring ID is missing');
+            }
+
+            // Download boring log PDF from server
+            const pdfBlob = await DownLoadBoring(
+                projectid,
+                boringid
+            );
+
+            // Create temporary URL
+            const url = window.URL.createObjectURL(pdfBlob);
+
+            try {
+                // Create download link
+                const link = document.createElement('a');
+
+                link.href = url;
+                link.download = `BoringLog-${boringid}.pdf`;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } finally {
+                // Release temporary URL
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                }, 1000);
+            }
+
+        } catch (err) {
+            console.error('Error downloading boring log:', err);
+            alert(`Could not download boring log: ${err.message}`);
+        }
+    }
+
     render() {
         const gfk = new GFK();
         const styles = MyStylesheet();
         const engineerid = this.props.match.params.engineerid;
         const headerFont = gfk.getHeaderFont.call(this)
         const regularFont = gfk.getRegularFont.call(this);
-        const {projectid, boringid} = this.props.match.params
-        const project = gfk.getProjectById.call(this,projectid)
-        const boring = gfk.getBoringById.call(this,projectid, boringid);
+        const { projectid, boringid } = this.props.match.params
+        const project = gfk.getProjectById.call(this, projectid)
+        const boring = gfk.getBoringById.call(this, projectid, boringid);
 
 
         if (project) {
@@ -672,28 +785,32 @@ class LogDraft extends Component {
                                 to={`/${engineerid}/profile`}>
                                 /{engineerid}
                             </Link>
-                      
+
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/projects`}>
                                 /projects
                             </Link>
-                       
+
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/projects/${projectid}`}>
                                 /{project.projectnumber} - {project.title}
                             </Link>
-         
+
                             <Link
                                 style={{ ...styles.generalFont, ...headerFont, ...styles.generalLink, ...styles.boldFont }}
                                 to={`/${engineerid}/projects/${projectid}/borings`}>
                                 /Borings
                             </Link>
-                   
+
                             <Link style={{ ...styles.generalLink, ...styles.boldFont, ...headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/samples`}>/Boring Number {boring.boringnumber} </Link>
-                 
+
                             <Link style={{ ...styles.generalLink, ...styles.boldFont, ...headerFont }} to={`/${engineerid}/projects/${projectid}/borings/${boringid}/logdraft`}>/LogDraft</Link>
+                        </div>
+
+                        <div style={{ ...styles.generalContainer, ...styles.alignCenter, ...styles.bottomMargin15 }}>
+                            <button className={`generalButton`} style={{ width: '5em' }} onClick={() => { this.downloadBoring() }}>{clickToDownload()}  </button> <span style={{ ...regularFont, ...styles.generalFont }}>Click to Download</span>
                         </div>
 
                         <div style={{ ...styles.generalContainer }}>
@@ -728,7 +845,7 @@ class LogDraft extends Component {
                                     <text className="logdraft-11" transform="translate(706.99 99.5) scale(0.56 0.79)">D<tspan className="logdraft-12" x="12.09" y="0">r</tspan><tspan x="19.54" y="0">y Density</tspan><tspan x="28.27" y="24.05">(pc</tspan><tspan className="logdraft-13" x="56.57" y="24.05">f</tspan><tspan x="64.26" y="24.05">)</tspan></text>
                                     <text className="logdraft-11" transform="translate(773.38 99.5) scale(0.56 0.79)">Moistu<tspan className="logdraft-14" x="59.88" y="0">r</tspan>
 
-                                    <tspan className="logdraft-15" x="67.01" y="0">e</tspan><tspan x="32.02" y="24.05">%</tspan></text>
+                                        <tspan className="logdraft-15" x="67.01" y="0">e</tspan><tspan x="32.02" y="24.05">%</tspan></text>
                                     <text className="logdraft-11" transform="translate(891.6 99.5) scale(0.56 0.79)">Remarks</text>
 
                                     <rect className="logdraft-2" x="0.5" y="61.5" width="1000" height="70" />
@@ -812,8 +929,8 @@ class LogDraft extends Component {
 function mapStateToProps(state) {
     return {
         myuser: state.myuser,
-        projects:state.projects,
-        company:state.company
+        projects: state.projects,
+        company: state.company
     }
 }
 export default connect(mapStateToProps, actions)(LogDraft);

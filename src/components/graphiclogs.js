@@ -8,7 +8,8 @@ import { MyStylesheet } from './styles';
 import {
     LoadGraphics,
     SaveGraphics,
-    UploadGraphics
+    UploadGraphics,
+    DeleteGraphicImage
 } from './actions/api';
 
 class GraphicLogs extends Component {
@@ -22,6 +23,7 @@ class GraphicLogs extends Component {
             loading: false,
             saving: false,
             uploading: false,
+            deleting: false,
             error: '',
             message: '',
             imageVersion: 0,
@@ -365,17 +367,27 @@ class GraphicLogs extends Component {
     // UPLOAD IMAGE TO BACKBLAZE B2
     // ============================================
 
+
     uploadGraphic = async () => {
+
+        // ============================================
+        // PREVENT CONFLICTING OPERATIONS
+        // ============================================
 
         if (
             this.state.uploading ||
             this.state.saving ||
-            this.state.loading
+            this.state.loading ||
+            this.state.deleting
         ) {
             return;
         }
 
         const file = this.state.file;
+
+        // ============================================
+        // VALIDATE SELECTED FILE
+        // ============================================
 
         if (!file) {
             this.setState({
@@ -384,10 +396,12 @@ class GraphicLogs extends Component {
             return;
         }
 
-        if (
-            ['image/jpeg', 'image/png']
-                .indexOf(file.type) === -1
-        ) {
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
             this.setState({
                 error: 'Only JPEG and PNG files are supported.'
             });
@@ -401,6 +415,35 @@ class GraphicLogs extends Component {
             return;
         }
 
+        // ============================================
+        // GET COMPANY AND ACTIVE GRAPHIC
+        // ============================================
+
+        const company = this.getCompany();
+
+        if (!company) {
+            this.setState({
+                error: 'Company not found.'
+            });
+            return;
+        }
+
+        const graphic = this.getActiveGraphic();
+
+        if (!graphic) {
+            this.setState({
+                error:
+                    'Enter a graphic code or description to create a graphic before uploading.'
+            });
+            return;
+        }
+
+        const graphicid = graphic.graphicid;
+
+        // ============================================
+        // START UPLOAD
+        // ============================================
+
         this.setState({
             uploading: true,
             error: '',
@@ -409,62 +452,164 @@ class GraphicLogs extends Component {
 
         try {
 
-            const company = this.getCompany();
-
-            if (!company) {
-                throw new Error('Company not found.');
-            }
+            // ========================================
+            // UPLOAD IMAGE AND GRAPHIC PROPERTIES
+            // ========================================
 
             const response = await UploadGraphics(
                 'gfk',
-                this.state.activegraphicid,
-                this.getGraphics(),
-                this.state.file
+                graphicid,
+                graphic,
+                file
             );
 
-            this.props.reduxCompany({
-                ...company,
-                graphiclogs: response.graphiclogs.graphics
-            })
+            // ========================================
+            // VALIDATE SERVER RESPONSE
+            // ========================================
 
-            if (!response || !response.graphiclog) {
+            const uploadedGraphics =
+                response?.graphiclogs?.graphics;
+
+            if (!Array.isArray(uploadedGraphics)) {
+                throw new Error(
+                    'Upload did not return the updated graphic library.'
+                );
+            }
+
+            const uploadedGraphic = uploadedGraphics.find(
+                item => item.graphicid === graphicid
+            );
+
+            if (!uploadedGraphic?.graphiclog) {
                 throw new Error(
                     'Upload did not return an image key.'
                 );
             }
 
-            if (this._mounted) {
+            if (!this._mounted) return;
 
-                // Replaces the active graphic's image key.
-                // Creates a graphic if none is active.
-                this.handleGraphicChange(
-                    'graphiclog',
-                    response.graphiclog
-                );
+            // ========================================
+            // UPDATE REDUX COMPANY
+            // ========================================
 
-                this.setState(state => ({
-                    file: null,
-                    imageVersion: state.imageVersion + 1,
-                    message:
-                        'Image uploaded. Click Save to store the image key.'
-                }));
+            const latestCompany = this.getCompany();
 
-                if (this.fileInput.current) {
-                    this.fileInput.current.value = '';
-                }
+            this.props.reduxCompany({
+                ...latestCompany,
+                graphiclogs: uploadedGraphics
+            });
+
+            // ========================================
+            // RESET FILE INPUT AND REFRESH THUMBNAILS
+            // ========================================
+
+            if (this.fileInput.current) {
+                this.fileInput.current.value = '';
             }
+
+            this.setState(state => ({
+                file: null,
+                activegraphicid: graphicid,
+                dirty: false,
+                imageVersion: state.imageVersion + 1,
+                error: '',
+                message: 'Graphic image uploaded and saved successfully.'
+            }));
 
         } catch (error) {
 
+            console.error(
+                'Graphic image upload error:',
+                error
+            );
+
             if (this._mounted) {
-                this.setState({ error: error.message });
+                this.setState({
+                    error:
+                        error.message ||
+                        'Could not upload graphic image.'
+                });
             }
 
         } finally {
 
             if (this._mounted) {
-                this.setState({ uploading: false });
+                this.setState({
+                    uploading: false
+                });
             }
+        }
+    };
+
+
+    // ============================================
+    // DELETE ENTIRE GRAPHIC (B2 IMAGE + MONGODB RECORD)
+    // ============================================
+
+    removeGraphicImage = async () => {
+        if (
+            this.state.loading ||
+            this.state.saving ||
+            this.state.uploading ||
+            this.state.deleting
+        ) return;
+
+        const graphic = this.getActiveGraphic();
+
+        if (!graphic) {
+            this.setState({ error: 'Select a graphic first.' });
+            return;
+        }
+
+        const confirmed = window.confirm(
+            'Permanently delete this graphic and its Backblaze image?\n\n' +
+            'The graphic ID, code, and description will be removed from the library. ' +
+            'Any boring samples assigned to this graphic must also be updated.'
+        );
+        if (!confirmed) return;
+
+        this.setState({ deleting: true, error: '', message: '' });
+
+        try {
+            const response = await DeleteGraphicImage(
+                'gfk', graphic.graphicid
+            );
+
+            const serverGraphics = response?.graphiclogs?.graphics;
+            if (
+                !Array.isArray(serverGraphics) ||
+                serverGraphics.some(item => item.graphicid === graphic.graphicid)
+            ) {
+                throw new Error('The server did not confirm that the graphic was deleted.');
+            }
+
+            if (!this._mounted) return;
+
+            const company = this.getCompany();
+
+            this.props.reduxCompany({
+                ...company,
+                graphiclogs: serverGraphics
+            });
+
+            if (this.fileInput.current) {
+                this.fileInput.current.value = '';
+            }
+
+            this.setState(state => ({
+                file: null,
+                activegraphicid: '',
+                dirty: false,
+                imageVersion: state.imageVersion + 1,
+                message: 'Graphic removed from Backblaze and the library. Check existing sample assignments.',
+                error: ''
+            }));
+        } catch (error) {
+            if (this._mounted) {
+                this.setState({ error: error.message || 'Could not delete image.' });
+            }
+        } finally {
+            if (this._mounted) this.setState({ deleting: false });
         }
     };
 
@@ -593,7 +738,8 @@ class GraphicLogs extends Component {
         const busy =
             this.state.loading ||
             this.state.saving ||
-            this.state.uploading;
+            this.state.uploading ||
+            this.state.deleting;
 
         const fieldStyle = {
             ...styles.generalField,
@@ -603,8 +749,31 @@ class GraphicLogs extends Component {
 
         const buttonStyle = {
             ...styles.generalButton,
-            marginRight: 8,
-            cursor: 'pointer'
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            minWidth: '120px',
+            minHeight: '48px',
+
+            padding: '12px 18px',
+            boxSizing: 'border-box',
+
+            backgroundColor: '#6A7EA6',
+            color: '#FFFFFF',
+
+            border: '1px solid #526587',
+            borderRadius: '10px',
+
+            fontSize: '16px',
+            fontWeight: 600,
+            fontFamily: 'inherit',
+
+            cursor: 'pointer',
+            touchAction: 'manipulation',
+
+            WebkitAppearance: 'none',
+            appearance: 'none'
         };
 
         return (
@@ -644,19 +813,14 @@ class GraphicLogs extends Component {
                     </label>
 
                     <label style={{ flex: '2 1 230px' }}>
-                        Graphic Log (B2 image key)
+                        Graphic Log (B2 image key - managed by server)
 
                         <input
                             type="text"
                             style={fieldStyle}
                             disabled={busy}
                             value={active ? active.graphiclog || '' : ''}
-                            onChange={e =>
-                                this.handleGraphicChange(
-                                    'graphiclog',
-                                    e.target.value
-                                )
-                            }
+                            readOnly
                         />
                     </label>
 
@@ -684,8 +848,18 @@ class GraphicLogs extends Component {
                    ================================== */}
 
                 <div style={{
-                    marginTop: 12,
-                    marginBottom: 12
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: '12px',
+
+                    marginTop: '16px',
+                    marginBottom: '20px',
+                    padding: '16px',
+
+                    backgroundColor: '#F5F7FA',
+                    border: '1px solid #DCE3EE',
+                    borderRadius: '12px'
                 }}>
 
                     <input
@@ -717,13 +891,32 @@ class GraphicLogs extends Component {
 
                     <button
                         type="button"
-                        style={buttonStyle}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: '#FFFFFF',
+                            color: '#425574',
+                            borderColor: '#A7B5CC'
+                        }}
                         disabled={busy}
                         onClick={this.saveGraphicLogs}
                     >
                         {this.state.saving
                             ? 'Saving...'
                             : 'Save'}
+                    </button>
+
+                    <button
+                        type="button"
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: '#B00020',
+                            color: '#FFFFFF',
+                            borderColor: '#94001B'
+                        }}
+                        disabled={busy || !active}
+                        onClick={this.removeGraphicImage}
+                    >
+                        {this.state.deleting ? 'Deleting...' : 'Delete Graphic'}
                     </button>
 
                     <span>

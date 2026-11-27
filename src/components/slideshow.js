@@ -67,7 +67,7 @@ class SlideShow extends Component {
                 title: 'Boring Logs & Soil Profiles',
                 caption:
                     'Document subsurface conditions with detailed boring logs, sample information, and graphic soil profiles using actual soil sample photographs.',
-                url: '/images/logdraft.jpeg'
+                url: '/images/logdraft.jpg'
             },
             {
                 title: 'Slope Stability Analysis',

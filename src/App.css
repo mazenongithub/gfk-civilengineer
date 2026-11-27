@@ -741,6 +741,20 @@
   stroke-miterlimit: 10;
 }
 
+.clicktodownload-1 {
+  fill: #fff;
+}
+
+.clicktodownload-1,
+.clicktodownload-2 {
+  stroke: #231f20;
+  stroke-miterlimit: 10;
+}
+
+.clicktodownload-2 {
+  fill: #a7a9ac;
+}
+
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {

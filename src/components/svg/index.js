@@ -409,6 +409,22 @@ export function radioIcon() {
 }
 
 
+export function clickToDownload() {
+    return(
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 86.15 81.36">
+  <g id="png">
+    <g>
+      <rect className="clicktodownload-2" x=".5" y=".5" width="85.15" height="80.36" rx="4.25" ry="4.25"/>
+      <g>
+        <rect className="clicktodownload-1" x="35.03" y="9.87" width="16.72" height="43.96"/>
+        <polygon className="clicktodownload-1" points="43.39 71.49 64.12 50.77 22.67 50.77 43.39 71.49"/>
+      </g>
+    </g>
+  </g>
+</svg>)
+}
+
+
 
 export function downloadIcon() {
     return (<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272.44 80.72">
