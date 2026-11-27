@@ -2,14 +2,9 @@
 import React, { Component } from 'react';
 import GFK from './gfk';
 import { MyStylesheet } from './styles';
-import {
-    pressPlay,
-    slideLeft,
-    slideRight,
-    stopButton
-} from './svg';
 
 class SlideShow extends Component {
+
     constructor(props) {
         super(props);
 
@@ -34,7 +29,7 @@ class SlideShow extends Component {
 
         this.updateWindowDimensions();
 
-        // Start automatically unless reduced motion is preferred.
+        // Respect accessibility settings.
         const reducedMotion =
             window.matchMedia &&
             window.matchMedia(
@@ -98,7 +93,7 @@ class SlideShow extends Component {
     }
 
     clearSlideshow() {
-        if (this.slideshowinterval) {
+        if (this.slideshowinterval !== null) {
             clearInterval(this.slideshowinterval);
             this.slideshowinterval = null;
         }
@@ -172,42 +167,150 @@ class SlideShow extends Component {
         }
     }
 
+    // Responsive SVG navigation icons.
+    renderArrow(direction) {
+        return (
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
+                style={{
+                    display: 'block',
+                    width: '22px',
+                    height: '22px',
+                    flexShrink: 0,
+                    overflow: 'visible'
+                }}
+            >
+                {direction === 'left' ? (
+                    <path d="M15 18L9 12L15 6" />
+                ) : (
+                    <path d="M9 18L15 12L9 6" />
+                )}
+            </svg>
+        );
+    }
+
+    // Responsive play and stop icons.
+    renderPlayButton(isplaying) {
+        return (
+            <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
+                style={{
+                    display: 'block',
+                    width: '22px',
+                    height: '22px',
+                    flexShrink: 0
+                }}
+            >
+                {isplaying ? (
+                    <rect
+                        x="6"
+                        y="6"
+                        width="12"
+                        height="12"
+                        rx="1"
+                        fill="currentColor"
+                        stroke="none"
+                    />
+                ) : (
+                    <path
+                        d="M8 5L19 12L8 19V5Z"
+                        fill="currentColor"
+                        stroke="none"
+                    />
+                )}
+            </svg>
+        );
+    }
+
     render() {
         const styles = MyStylesheet();
         const gfk = new GFK();
 
-        const regularFont = gfk.getRegularFont.call(this);
-        const headerFont = gfk.getHeaderFont.call(this);
+        const regularFont =
+            gfk.getRegularFont.call(this);
+
+        const headerFont =
+            gfk.getHeaderFont.call(this);
 
         const slides = this.getSlides();
-        const { activeslide, isplaying, width } = this.state;
+
+        const {
+            activeslide,
+            isplaying,
+            width
+        } = this.state;
 
         const slide = slides[activeslide];
-        const isMobile = width < 700;
 
-      const colors = {
-    primary: '#6A7EA6',
-    sand: '#6A7EA6',
-    dark: '#303845',
-    muted: '#657084',
-    border: '#DCE3EE',
-    white: '#FFFFFF'
-};
+        const isMobile =
+            width > 0 && width < 700;
+
+        const colors = {
+            primary: '#6A7EA6',
+            dark: '#303845',
+            muted: '#657084',
+            border: '#DCE3EE',
+            white: '#FFFFFF',
+            light: '#F1F3F7',
+            inactive: '#D2D8E3'
+        };
+
         const controlStyle = {
-            ...styles.generalButton,
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
+
+            flex: '0 0 auto',
+
             width: isMobile ? '55px' : '75px',
-            height: '42px',
-            padding: '8px 12px',
-            cursor: 'pointer'
+            minWidth: isMobile ? '55px' : '75px',
+            height: '44px',
+
+            padding: '8px',
+            boxSizing: 'border-box',
+
+            backgroundColor: colors.primary,
+            color: colors.white,
+
+            border: 'none',
+            borderRadius: '8px',
+
+            WebkitAppearance: 'none',
+            appearance: 'none',
+
+            cursor: 'pointer',
+            touchAction: 'manipulation',
+
+            boxShadow:
+                '0 2px 6px rgba(0,0,0,0.10)',
+
+            transition:
+                'background-color 0.2s ease'
         };
 
         return (
             <div
                 style={{
                     ...styles.generalContainer,
+
                     maxWidth: '1050px',
                     width: '100%',
                     margin: 'auto',
@@ -232,13 +335,16 @@ class SlideShow extends Component {
                     <div
                         style={{
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            justifyContent:
+                                'space-between',
                             alignItems: 'center',
                             flexWrap: 'wrap',
                             gap: '10px',
+
                             padding: isMobile
                                 ? '14px'
                                 : '18px 25px',
+
                             borderBottom:
                                 `1px solid ${colors.border}`
                         }}
@@ -246,9 +352,11 @@ class SlideShow extends Component {
                         <span
                             style={{
                                 ...headerFont,
+
                                 fontSize: isMobile
                                     ? '17px'
                                     : '21px',
+
                                 fontWeight: 'bold',
                                 color: colors.dark
                             }}
@@ -260,7 +368,8 @@ class SlideShow extends Component {
                             style={{
                                 ...regularFont,
                                 fontSize: '13px',
-                                color: colors.muted
+                                color: colors.muted,
+                                whiteSpace: 'nowrap'
                             }}
                         >
                             {activeslide + 1} / {slides.length}
@@ -271,10 +380,12 @@ class SlideShow extends Component {
 
                     <div
                         style={{
-                            background: '#f1f0ed',
+                            background: colors.light,
+
                             padding: isMobile
                                 ? '10px'
                                 : '22px',
+
                             textAlign: 'center'
                         }}
                     >
@@ -282,17 +393,23 @@ class SlideShow extends Component {
                             key={slide.url}
                             src={slide.url}
                             alt={slide.title}
+
                             style={{
                                 display: 'block',
+
                                 width: '100%',
                                 maxWidth: '100%',
                                 height: 'auto',
+
                                 maxHeight: isMobile
                                     ? '350px'
                                     : '570px',
+
                                 objectFit: 'contain',
                                 margin: 'auto',
+
                                 borderRadius: '5px',
+
                                 boxShadow:
                                     '0 3px 12px rgba(0,0,0,0.08)'
                             }}
@@ -306,22 +423,32 @@ class SlideShow extends Component {
                             padding: isMobile
                                 ? '20px 16px'
                                 : '25px 35px',
+
                             textAlign: 'center',
+
                             minHeight: isMobile
                                 ? '105px'
                                 : '95px',
+
                             boxSizing: 'border-box'
                         }}
-                        aria-live={isplaying ? 'off' : 'polite'}
+
+                        aria-live={
+                            isplaying ? 'off' : 'polite'
+                        }
                     >
                         <p
                             style={{
                                 ...regularFont,
+
                                 fontSize: isMobile
                                     ? '14px'
                                     : '16px',
+
                                 lineHeight: 1.7,
+
                                 color: colors.muted,
+
                                 maxWidth: '850px',
                                 margin: 'auto'
                             }}
@@ -338,38 +465,60 @@ class SlideShow extends Component {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+
                         gap: '10px',
+
                         marginTop: '22px',
                         marginBottom: '20px'
                     }}
+
+                    role="group"
                     aria-label="Choose a slideshow image"
                 >
                     {slides.map((item, index) => (
                         <button
                             key={index}
                             type="button"
-                            aria-label={`Show ${item.title}`}
+
+                            aria-label={
+                                `Show ${item.title}`
+                            }
+
                             aria-current={
                                 activeslide === index
                                     ? 'true'
                                     : undefined
                             }
+
                             onClick={() =>
                                 this.handleSelectSlide(index)
                             }
+
                             style={{
-                                width: activeslide === index
-                                    ? '28px'
-                                    : '11px',
+                                flex: '0 0 auto',
+
+                                width:
+                                    activeslide === index
+                                        ? '28px'
+                                        : '11px',
+
                                 height: '11px',
+
                                 borderRadius: '20px',
+
                                 background:
                                     activeslide === index
-                                        ? colors.sand
-                                        : '#d2cec6',
+                                        ? colors.primary
+                                        : colors.inactive,
+
                                 border: 'none',
                                 padding: 0,
+
+                                WebkitAppearance: 'none',
+                                appearance: 'none',
+
                                 cursor: 'pointer',
+
                                 transition:
                                     'width 0.2s ease'
                             }}
@@ -377,59 +526,86 @@ class SlideShow extends Component {
                     ))}
                 </div>
 
-                {/* CONTROLS */}
+                {/* NAVIGATION CONTROLS */}
 
                 <div
                     style={{
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        gap: isMobile ? '14px' : '25px',
+
+                        flexWrap: 'nowrap',
+
+                        gap: isMobile
+                            ? '12px'
+                            : '25px',
+
+                        width: '100%',
+                        maxWidth: '100%',
+
+                        boxSizing: 'border-box',
+
                         marginBottom: '25px'
                     }}
                 >
+                    {/* PREVIOUS */}
+
                     <button
                         type="button"
                         aria-label="Previous slide"
+
                         style={controlStyle}
+
                         onClick={() =>
                             this.handlePrevSlide()
                         }
                     >
-                        {slideLeft()}
+                        {this.renderArrow('left')}
                     </button>
+
+                    {/* PLAY / STOP */}
 
                     <button
                         type="button"
+
                         aria-label={
                             isplaying
-                                ? 'Pause slideshow'
+                                ? 'Stop slideshow'
                                 : 'Play slideshow'
                         }
+
                         style={{
                             ...controlStyle,
+
                             width: isMobile
-                                ? '90px'
-                                : '120px'
+                                ? '80px'
+                                : '110px',
+
+                            minWidth: isMobile
+                                ? '80px'
+                                : '110px'
                         }}
+
                         onClick={() =>
                             this.handlePlaySlideshow()
                         }
                     >
-                        {isplaying
-                            ? stopButton()
-                            : pressPlay()}
+                        {this.renderPlayButton(isplaying)}
                     </button>
+
+                    {/* NEXT */}
 
                     <button
                         type="button"
                         aria-label="Next slide"
+
                         style={controlStyle}
+
                         onClick={() =>
                             this.handleNextSlide()
                         }
                     >
-                        {slideRight()}
+                        {this.renderArrow('right')}
                     </button>
                 </div>
             </div>
