@@ -17,6 +17,11 @@ class SlideShow extends Component {
 
         this.slideshowinterval = null;
 
+        // Touch gesture tracking
+        this.touchStartX = null;
+        this.touchStartY = null;
+        this.touchStartTime = null;
+
         this.updateWindowDimensions =
             this.updateWindowDimensions.bind(this);
     }
@@ -29,7 +34,6 @@ class SlideShow extends Component {
 
         this.updateWindowDimensions();
 
-        // Respect accessibility settings.
         const reducedMotion =
             window.matchMedia &&
             window.matchMedia(
@@ -92,6 +96,8 @@ class SlideShow extends Component {
         ];
     }
 
+    // SLIDESHOW TIMER
+
     clearSlideshow() {
         if (this.slideshowinterval !== null) {
             clearInterval(this.slideshowinterval);
@@ -126,6 +132,8 @@ class SlideShow extends Component {
             isplaying: true
         });
     }
+
+    // MANUAL NAVIGATION
 
     handlePrevSlide() {
         this.stopSlideshow();
@@ -167,7 +175,81 @@ class SlideShow extends Component {
         }
     }
 
-    // Responsive SVG navigation icons.
+    // TOUCH SWIPE EVENTS
+
+    handleTouchStart(event) {
+        // Only track a single-finger gesture.
+        if (event.touches.length !== 1) {
+            this.resetTouch();
+            return;
+        }
+
+        const touch = event.touches[0];
+
+        this.touchStartX = touch.clientX;
+        this.touchStartY = touch.clientY;
+        this.touchStartTime = Date.now();
+    }
+
+    handleTouchEnd(event) {
+        if (
+            this.touchStartX === null ||
+            this.touchStartY === null
+        ) {
+            return;
+        }
+
+        const touch = event.changedTouches[0];
+
+        if (!touch) {
+            this.resetTouch();
+            return;
+        }
+
+        const deltaX =
+            touch.clientX - this.touchStartX;
+
+        const deltaY =
+            touch.clientY - this.touchStartY;
+
+        const elapsed =
+            Date.now() - this.touchStartTime;
+
+        this.resetTouch();
+
+        const minSwipeDistance = 50;
+        const maxSwipeTime = 1000;
+
+        const isHorizontalSwipe =
+            Math.abs(deltaX) >
+            Math.abs(deltaY) * 1.5;
+
+        // Ignore short, slow, or vertical gestures.
+        if (
+            Math.abs(deltaX) < minSwipeDistance ||
+            elapsed > maxSwipeTime ||
+            !isHorizontalSwipe
+        ) {
+            return;
+        }
+
+        if (deltaX < 0) {
+            // Swipe left: next slide.
+            this.handleNextSlide();
+        } else {
+            // Swipe right: previous slide.
+            this.handlePrevSlide();
+        }
+    }
+
+    resetTouch() {
+        this.touchStartX = null;
+        this.touchStartY = null;
+        this.touchStartTime = null;
+    }
+
+    // SVG ICONS
+
     renderArrow(direction) {
         return (
             <svg
@@ -185,8 +267,7 @@ class SlideShow extends Component {
                     display: 'block',
                     width: '22px',
                     height: '22px',
-                    flexShrink: 0,
-                    overflow: 'visible'
+                    flexShrink: 0
                 }}
             >
                 {direction === 'left' ? (
@@ -198,7 +279,6 @@ class SlideShow extends Component {
         );
     }
 
-    // Responsive play and stop icons.
     renderPlayButton(isplaying) {
         return (
             <svg
@@ -300,34 +380,51 @@ class SlideShow extends Component {
             touchAction: 'manipulation',
 
             boxShadow:
-                '0 2px 6px rgba(0,0,0,0.10)',
-
-            transition:
-                'background-color 0.2s ease'
+                '0 2px 6px rgba(0,0,0,0.10)'
         };
 
         return (
             <div
                 style={{
                     ...styles.generalContainer,
-
                     maxWidth: '1050px',
                     width: '100%',
                     margin: 'auto',
                     boxSizing: 'border-box'
                 }}
             >
-                {/* MAIN SLIDE */}
+                {/* MAIN SLIDE - SWIPE AREA */}
 
                 <div
+                    onTouchStart={(event) =>
+                        this.handleTouchStart(event)
+                    }
+
+                    onTouchEnd={(event) =>
+                        this.handleTouchEnd(event)
+                    }
+
+                    onTouchCancel={() =>
+                        this.resetTouch()
+                    }
+
                     style={{
                         background: colors.white,
+
                         border:
                             `1px solid ${colors.border}`,
+
                         borderRadius: '12px',
                         overflow: 'hidden',
+
                         boxShadow:
-                            '0 10px 35px rgba(0,0,0,0.08)'
+                            '0 10px 35px rgba(0,0,0,0.08)',
+
+                        // Allows normal vertical scrolling.
+                        touchAction: 'pan-y',
+
+                        WebkitUserSelect: 'none',
+                        userSelect: 'none'
                     }}
                 >
                     {/* SLIDE HEADER */}
@@ -335,10 +432,13 @@ class SlideShow extends Component {
                     <div
                         style={{
                             display: 'flex',
+
                             justifyContent:
                                 'space-between',
+
                             alignItems: 'center',
                             flexWrap: 'wrap',
+
                             gap: '10px',
 
                             padding: isMobile
@@ -393,10 +493,10 @@ class SlideShow extends Component {
                             key={slide.url}
                             src={slide.url}
                             alt={slide.title}
+                            draggable={false}
 
                             style={{
                                 display: 'block',
-
                                 width: '100%',
                                 maxWidth: '100%',
                                 height: 'auto',
@@ -411,7 +511,9 @@ class SlideShow extends Component {
                                 borderRadius: '5px',
 
                                 boxShadow:
-                                    '0 3px 12px rgba(0,0,0,0.08)'
+                                    '0 3px 12px rgba(0,0,0,0.08)',
+
+                                pointerEvents: 'none'
                             }}
                         />
                     </div>
@@ -446,7 +548,6 @@ class SlideShow extends Component {
                                     : '16px',
 
                                 lineHeight: 1.7,
-
                                 color: colors.muted,
 
                                 maxWidth: '850px',
